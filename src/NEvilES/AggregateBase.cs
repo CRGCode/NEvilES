@@ -70,7 +70,7 @@ namespace NEvilES
             }
             else
             {
-                var interfaces = type.GetInterfaces();
+                var interfaces = type.GetTypeInfo().GetInterfaces();
                 foreach (var i in interfaces)
                 {
                     if (applyMethods.ContainsKey(i))
@@ -139,7 +139,7 @@ namespace NEvilES
                     yield return new ApplyMethod(m.GetParameters().First().ParameterType, m);
                 }
 
-                type = type.BaseType;
+                type = type.GetTypeInfo().BaseType;
             } while (type != null);
         }
 
@@ -154,7 +154,7 @@ namespace NEvilES
                     yield return new ApplyMethod(m.GetParameters().Single().ParameterType, m);
                 }
 
-                type = type.BaseType;
+                type = type.GetTypeInfo().BaseType;
             } while (type != null);
         }
 

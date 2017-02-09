@@ -42,7 +42,7 @@ namespace NEvilES.Testing
 
             var agg = TestingRepository.Get<TAggregate>(giv.StreamId);
             handler(agg);
-            
+
             if (!then.Any())
             {
                 return;
@@ -134,9 +134,9 @@ namespace NEvilES.Testing
         private static bool IdMatch(Guid id, object value)
         {
             var type = value.GetType();
-            return type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            return type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.CanRead && p.PropertyType == typeof(Guid))
-                .Select(pa => pa.GetValue(value, BindingFlags.Public, null, null, null))
+                .Select(pa => pa.GetValue(value))
                 .Any(valExpected => id == (Guid)valExpected);
         }
 
@@ -156,12 +156,12 @@ namespace NEvilES.Testing
         {
             var expectedType = expected.GetType();
             var resultType = result.GetType();
-            foreach (var pa in expectedType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead))
+            foreach (var pa in expectedType.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead))
             {
-                var valResult = resultType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                var valResult = resultType.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                                              .First(p => p.CanRead && p.Name == pa.Name)
-                                             .GetValue(result, BindingFlags.Public, null, null, null);
-                var valExpected = pa.GetValue(expected, BindingFlags.Public, null, null, null);
+                                             .GetValue(result);
+                var valExpected = pa.GetValue(expected);
                 if (valExpected == null || (pa.PropertyType == typeof(Guid) && valExpected.Equals(Guid.Empty)))
                     continue;
                 Assert.True(valResult != null, string.Format("EventType {0} has a Property '{1}' that was null, when it should have been '{2}'. \nLook at your command handler and make sure your command passes thru all command properties to the event being raised",
@@ -185,7 +185,7 @@ namespace NEvilES.Testing
             var result = true;
             //Get all properties of obj
             //And compare each other
-            foreach (var property in obj.GetType().GetProperties())
+            foreach (var property in obj.GetType().GetTypeInfo().GetProperties())
             {
                 var objValue = property.GetValue(obj);
                 var anotherValue = property.GetValue(another);
@@ -202,10 +202,10 @@ namespace NEvilES.Testing
             if (obj.GetType() != another.GetType()) return false;
 
             //properties: int, double, DateTime, etc, not class
-            if (!obj.GetType().IsClass) return obj.Equals(another);
+            if (!obj.GetType().GetTypeInfo().IsClass) return obj.Equals(another);
 
             var result = true;
-            foreach (var property in obj.GetType().GetProperties())
+            foreach (var property in obj.GetType().GetTypeInfo().GetProperties())
             {
                 var objValue = property.GetValue(obj);
                 var anotherValue = property.GetValue(another);

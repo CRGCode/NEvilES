@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace NEvilES.DataStore
 {
@@ -18,8 +19,8 @@ namespace NEvilES.DataStore
 
         public IEventTypeLookupStrategy ScanAssemblyOfType(Type type)
         {
-            var candidateTypes = type.Assembly.GetTypes().Where(x =>
-                x.IsClass && !x.IsAbstract && (x.GetInterfaces().Contains(_eventType) || x.GetInterfaces().Contains(_aggType))).ToArray();
+            var candidateTypes = type.GetTypeInfo().Assembly.GetTypes().Where(x =>
+                x.GetTypeInfo().IsClass && !x.GetTypeInfo().IsAbstract && (x.GetTypeInfo().GetInterfaces().Contains(_eventType) || x.GetTypeInfo().GetInterfaces().Contains(_aggType))).ToArray();
 
             foreach (var candidateType in candidateTypes)
             {

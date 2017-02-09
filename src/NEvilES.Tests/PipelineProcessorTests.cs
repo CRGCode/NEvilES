@@ -7,12 +7,12 @@ using Xunit;
 
 namespace NEvilES.Tests
 {
-    public class PipelineProcessorTests : IUseFixture<SharedFixtureContext>
+    public class PipelineProcessorTests : IClassFixture<SharedFixtureContext>
     {
         private ICommandProcessor _commandProcessor;
         private IRepository _repository;
         private IContainer _container;
-        
+
         public void SetFixture(SharedFixtureContext context)
         {
             _container = context.Container.GetNestedContainer();
@@ -33,7 +33,7 @@ namespace NEvilES.Tests
         public void CommandWithDifferentEventHandlerOnAggregateWithException()
         {
             var streamId = Guid.NewGuid();
-            Assert.Throws<DomainAggregateException>(() => 
+            Assert.Throws<DomainAggregateException>(() =>
                 _commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "God") }));
         }
 
@@ -98,7 +98,7 @@ namespace NEvilES.Tests
 
             var streamId = Guid.NewGuid();
 
-            Assert.Throws<CommandValidationException>(() => 
+            Assert.Throws<CommandValidationException>(() =>
                 _commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "Smith") }));
         }
 

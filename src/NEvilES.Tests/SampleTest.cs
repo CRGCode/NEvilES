@@ -1,8 +1,8 @@
 using System;
-using Inlogik.ESS.BDD;
+using NEvilES.Testing;
 using Xunit;
 
-namespace Inlogik.ESS.Tests
+namespace NEvilES.Tests
 {
     public class SampleTest : BaseAggregateTest<SampleAggregate>
     {

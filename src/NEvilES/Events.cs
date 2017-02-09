@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections;
-using System.Runtime.Serialization;
+//using System.Runtime.Serialization;
 
 namespace NEvilES
 {
     public interface IMessage
     {
-        [IgnoreDataMember]
+        //TODO: Why is this used? doesn't exist in netcore
+        //[IgnoreDataMember]
+
         Guid StreamId { get; set; }
     }
 

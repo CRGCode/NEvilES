@@ -1,0 +1,20 @@
+{
+    "version": "1.0.0-*",
+    "buildOptions": {
+        "debugType": "portable"
+    },
+    "dependencies": {
+        "xunit": "2.2.0-beta5-build3474"
+    },
+    "frameworks": {
+        "netstandard1.6": {
+            "dependencies": {
+                "NETStandard.Library": "1.6.1",
+                "NEvilES":{
+                    "target":"project",
+                    "version":"*"
+                }
+            }
+        }
+    }
+}
