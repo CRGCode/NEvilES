@@ -69,7 +69,7 @@ namespace NEvilES.Tests.Sample
         {
             public string Name { get; private set; }
 
-            public void Handle(Create c)
+            protected void Handle(Create c)
             {
                 GuardFromEmptyOrNulls(c.Person.FirstName, c.Person.FirstName);
 
@@ -109,6 +109,7 @@ namespace NEvilES.Tests.Sample
             // ReSharper disable UnusedMember.Local
             private void Apply(Created ev)
             {
+                Id = ev.StreamId;
                 Name = ev.Person.Name;
             }
 

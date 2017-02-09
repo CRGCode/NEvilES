@@ -46,7 +46,7 @@ namespace NEvilES
             ((IAggregateHandlers)this).Handlers = methodCache.HandlerMethods;
         }
 
-        public Guid Id { get; private set; }
+        public Guid Id { get; protected set; }
         public int Version { get; private set; }
 
         void IAggregate.ApplyEvent<T>(T @event)

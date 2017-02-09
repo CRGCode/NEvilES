@@ -50,12 +50,14 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="xunit, Version=1.9.2.1705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
       <HintPath>..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStoreSmokeTests.cs" />
     <Compile Include="InMemoryEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sample\Common.cs" />
@@ -69,6 +71,8 @@
     <Compile Include="Sample\UniqueNameValidation.cs" />
     <Compile Include="SharedFixtureContext.cs" />
     <Compile Include="PipelineProcessorTests.cs" />
+    <Compile Include="SQLConnectionString.cs" />
+    <Compile Include="Sample\ReadModel\TestReadModel.cs" />
     <Compile Include="WriteThruCacheTests.cs" />
   </ItemGroup>
   <ItemGroup>

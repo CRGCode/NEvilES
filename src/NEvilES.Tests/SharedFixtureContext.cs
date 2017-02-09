@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using NEvilES.Pipeline;
 using NEvilES.Tests.Sample;
+using NEvilES.Tests.Sample.ReadModel;
 using StructureMap;
 
 namespace NEvilES.Tests
@@ -34,6 +36,8 @@ namespace NEvilES.Tests
                 x.For<IReadModel>().Use<TestReadModel>();
 
                 x.For<CommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), Guid.NewGuid(), Guid.NewGuid(), new CommandContext.User(Guid.NewGuid(), 007), ""));
+                x.For<IDbConnection>().Use("Connection", s => new SqlConnection(s.GetInstance<IConnectionString>().ConnectionString));
+                x.For<IDbTransaction>().Use("Transaction", s => s.GetInstance<IDbConnection>().BeginTransaction());
             });
         }
 
@@ -41,14 +45,9 @@ namespace NEvilES.Tests
         public Container Container { get; private set; }
     }
 
-    public class TestReadModel : IReadModel
+    public interface IConnectionString
     {
-        public TestReadModel()
-        {
-            People = new Dictionary<Guid, PersonalDetails>();
-        }
-
-        public Dictionary<Guid, PersonalDetails> People { get; }
+        string ConnectionString { get; }
     }
 
     public class Factory : IFactory
