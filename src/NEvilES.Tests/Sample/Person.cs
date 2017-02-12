@@ -5,7 +5,7 @@ namespace NEvilES.Tests.Sample
 {
     public class Person
     {
-        public abstract class Create : ICommand
+        public class Create : ICommand
         {
             public Guid StreamId { get; set; }
             public PersonalDetails Person { get; set; }

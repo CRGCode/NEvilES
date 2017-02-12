@@ -7,13 +7,13 @@ namespace NEvilES.Pipeline
     public class CommandResult
     {
         public List<AggregateCommit> UpdatedAggregates { get; } = new List<AggregateCommit>();
-        public ArrayList ReadModelItems { get; }
+        public List<object> ReadModelItems { get; }
 
         public CommandResult() : this(new AggregateCommit[] { }) { }
         public CommandResult(IEnumerable<AggregateCommit> commits)
         {
             UpdatedAggregates.AddRange(commits);
-            ReadModelItems = new ArrayList();
+            ReadModelItems = new List<object>();
         }
 
         public CommandResult(params AggregateCommit[] commits) : this((IEnumerable<AggregateCommit>)commits)

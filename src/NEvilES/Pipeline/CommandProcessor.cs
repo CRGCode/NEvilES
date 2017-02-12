@@ -101,7 +101,7 @@ namespace NEvilES.Pipeline
                     var projectorType = typeof(IProject<>).MakeGenericType(type);
                     var projectors = factory.GetAll(projectorType);
 
-                    // TODO below looks like it needs some DRY attention
+                    // TODO: below looks like it needs some DRY attention
                     foreach (var projector in projectors)
                     {
 #if !DEBUG

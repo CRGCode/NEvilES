@@ -7,25 +7,26 @@ using Xunit;
 
 namespace NEvilES.Tests
 {
-    public class PipelineProcessorTests : IUseFixture<SharedFixtureContext>
+    public class PipelineProcessorTests : IClassFixture<SharedFixtureContext>
     {
         private ICommandProcessor commandProcessor;
         private IRepository repository;
         private IContainer container;
-        
-        public void SetFixture(SharedFixtureContext context)
+
+        public PipelineProcessorTests(SharedFixtureContext context)
         {
             container = context.Container.GetNestedContainer();
             commandProcessor = container.GetInstance<ICommandProcessor>();
             repository = container.GetInstance<IRepository>();
         }
 
+
         [Fact]
         public void CommandWithDifferentEventHandlerOnAggregate()
         {
             var streamId = Guid.NewGuid();
 
-            var expected = commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John","Smith")});
+            var expected = commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "Smith") });
             Assert.Equal(streamId, expected.FilterEvents<Person.Created>().First().StreamId);
         }
 
@@ -33,7 +34,8 @@ namespace NEvilES.Tests
         public void CommandWithDifferentEventHandlerOnAggregateWithException()
         {
             var streamId = Guid.NewGuid();
-            Assert.Throws<DomainAggregateException>(() => 
+
+            Assert.Throws<DomainAggregateException>(() =>
                 commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "God") }));
         }
 
@@ -94,11 +96,11 @@ namespace NEvilES.Tests
         public void WithExternalValidator_Failure()
         {
             var readModel = container.GetInstance<IReadModel>();
-            readModel.People.Add(Guid.NewGuid(),new PersonalDetails("John", "Smith"));
+            readModel.People.Add(Guid.NewGuid(), new PersonalDetails("John", "Smith"));
 
             var streamId = Guid.NewGuid();
 
-            Assert.Throws<CommandValidationException>(() => 
+            Assert.Throws<CommandValidationException>(() =>
                 commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "Smith") }));
         }
 
@@ -107,7 +109,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var command = new Person.SendInvite (streamId, new PersonalDetails("John", "Smith"), "john@gmail.com");
+            var command = new Person.SendInvite(streamId, new PersonalDetails("John", "Smith"), "john@gmail.com");
             var expected = commandProcessor.Process(command);
 
             Assert.True(expected.UpdatedAggregates.Count == 2);

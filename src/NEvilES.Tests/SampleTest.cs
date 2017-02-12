@@ -27,6 +27,7 @@ namespace NEvilES.Tests
                     new Person.NameCorrected() {StreamId = streamId, Name = "CraigGardiner"}),
                 When(x => x.Handle(new Person.CorrectName() {StreamId = streamId, Name = "Craig Gardiner"})),
                 Then(new Person.NameCorrectedV2 {StreamId = streamId, FirstName = "Craig", LastName = "Gardiner"}));
+
         }
 
         [Fact]

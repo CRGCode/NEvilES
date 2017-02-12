@@ -41,7 +41,6 @@ namespace NEvilES.Tests
             });
         }
 
-
         public Container Container { get; private set; }
     }
 
@@ -74,5 +73,4 @@ namespace NEvilES.Tests
             return container.GetAllInstances(type);
         }
     }
-
 }
