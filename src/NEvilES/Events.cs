@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
-using System.Runtime.Serialization;
 
 namespace NEvilES
 {
     public interface IMessage
     {
-        [IgnoreDataMember]
+        [JsonIgnore]
         Guid StreamId { get; set; }
     }
 

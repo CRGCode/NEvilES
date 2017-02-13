@@ -196,7 +196,12 @@ namespace NEvilES.DataStore
                 {
                     value = valueFactory();
                     if (!CreateIndexes(value).Select(x => x.Key).Contains(index.Key))
-                        throw new DataException("Value to be added does not match the specified index");
+                    {
+                        //DataException doesn't exist .netcore
+                        //throw new DataException("Value to be added does not match the specified index");
+                        throw new Exception("Value to be added does not match the specified index");
+                    }
+
                     task = whenAdded(value);
                     valuesPendingTasks.TryAdd(value, task);
                     AddToIndex(value);
@@ -217,7 +222,7 @@ namespace NEvilES.DataStore
             return new[] { value };
         }
 
-        public class Index 
+        public class Index
         {
             private readonly Cache<T> lookup;
             private readonly Func<IEnumerable<T>> loader;
