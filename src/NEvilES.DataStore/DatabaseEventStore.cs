@@ -42,7 +42,7 @@ namespace NEvilES.DataStore
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
-                    @"SELECT Id, Category, StreamId, TransactionId, MetaData, BodyType, Body, [By], [At], [Version], AppVersion, SessionId FROM Events WHERE StreamId=@StreamId ORDER BY Id";
+                    @"SELECT Id, Category, StreamId, TransactionId, MetaData, BodyType, Body, By, At, Version, AppVersion, SessionId FROM Events WHERE StreamId=@StreamId ORDER BY Id";
                 CreateParam(cmd, "@StreamId", DbType.Guid, id);
 
                 using (var reader = cmd.ExecuteReader())
@@ -100,7 +100,7 @@ namespace NEvilES.DataStore
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
-                    @"SELECT [Version], Category FROM Events WHERE StreamId=@StreamId ORDER BY Id DESC";
+                    @"SELECT Version, Category FROM Events WHERE StreamId=@StreamId ORDER BY Id DESC";
                 CreateParam(cmd, "@StreamId", DbType.Guid, id);
 
                 using (var reader = cmd.ExecuteReader())
@@ -146,7 +146,8 @@ namespace NEvilES.DataStore
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
-                    @"INSERT INTO Events VALUES(@Category, @StreamId, @TransactionId, @MetaData, @BodyType, @Body, @By, @At, @Version, @AppVersion, @SessionId)";
+                    @"INSERT INTO Events(category,streamid,transactionid,metadata,bodytype,body,by,at,version,appversion,sessionid)
+                    VALUES(@Category, @StreamId, @TransactionId, @MetaData, @BodyType, @Body, @By, @At, @Version, @AppVersion, @SessionId)";
                 var category = CreateParam(cmd, "@Category", DbType.String, 500);
                 var streamId = CreateParam(cmd, "@StreamId", DbType.Guid);
                 var version = CreateParam(cmd, "@Version", DbType.Int32);
