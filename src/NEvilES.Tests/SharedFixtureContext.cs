@@ -35,7 +35,7 @@ namespace NEvilES.Tests
                 x.For<IRepository>().Use<InMemoryEventStore>();
                 x.For<IReadModel>().Use<TestReadModel>();
 
-                x.For<CommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), Guid.NewGuid(), Guid.NewGuid(), new CommandContext.User(Guid.NewGuid(), 007), ""));
+                x.For<CommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
                 x.For<IDbConnection>().Use("Connection", s => new SqlConnection(s.GetInstance<IConnectionString>().ConnectionString));
                 x.For<IDbTransaction>().Use("Transaction", s => s.GetInstance<IDbConnection>().BeginTransaction());
             });

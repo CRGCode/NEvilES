@@ -36,11 +36,24 @@ namespace NEvilES.Tests.Sample
         Dictionary<Guid, PersonalDetails> People { get; }
     }
 
-    public class SampleProjector2 : IProject<Person.Created>
+    public class SampleProjector2 :
+        IProject<Person.Created>,
+        IProject<Employee.PaidBonus>,
+        IProject<Customer.SendEmail>
     {
         public void Project(Person.Created message, ProjectorData data)
         {
             // do something....
+        }
+
+        public void Project(Employee.PaidBonus message, ProjectorData data)
+        {
+            data.CommandContext.Result.ReadModelItems.Add(message.Amount);
+        }
+
+        public void Project(Customer.SendEmail message, ProjectorData data)
+        {
+            data.CommandContext.Result.ReadModelItems.Add(message.Text);
         }
     }
 }

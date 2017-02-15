@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\NEvilES\NEvilES.csproj" />
+    <ProjectReference Include="..\GTD.Common\GTD.Common.csproj" />
+    <ProjectReference Include="..\GTD.Domain\GTD.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

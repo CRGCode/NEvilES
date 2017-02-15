@@ -1,12 +1,13 @@
 namespace NEvilES.Pipeline
 {
-    public interface IProcessPipelineStage<T> where T : IMessage
+    public interface IProcessPipelineStage<in T> where T : IMessage
     {
         CommandResult Process(T command);
     }
 
     public interface ICommandProcessor
     {
+        // TODO commands or events ...
         CommandResult Process<T>(T command) where T : IMessage;
         CommandContext Context { get; }
     }
@@ -27,8 +28,8 @@ namespace NEvilES.Pipeline
             where T : IMessage
         {
             var commandProcessor = new CommandProcessor<T>(factory, Context);
-            var validationProcessor = new ValidationProcessor<T>(factory,commandProcessor);
-            var securityProcessor = new SecurityProcessor<T>(securityContext,validationProcessor);
+            var validationProcessor = new ValidationProcessor<T>(factory, commandProcessor);
+            var securityProcessor = new SecurityProcessor<T>(securityContext, validationProcessor);
             return securityProcessor.Process(command);
         }
 

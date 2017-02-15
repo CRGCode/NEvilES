@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace NEvilES
 {
+    // TODO - Why is this public?
     public interface IAggregateHandlers
     {
         IDictionary<Type, MethodInfo> Handlers { get; set; }
@@ -43,7 +44,7 @@ namespace NEvilES
             var methodCache = AggregateTypes[type];
 
             applyMethods = methodCache.ApplyMethods;
-            ((IAggregateHandlers)this).Handlers = methodCache.HandlerMethods;
+            ((IAggregateHandlers) this).Handlers = methodCache.HandlerMethods;
         }
 
         public Guid Id { get; protected set; }
@@ -51,8 +52,8 @@ namespace NEvilES
 
         void IAggregate.ApplyEvent<T>(T @event)
         {
-            var type = GetRealType(@event);
-            var foundHandlers = FindHandler(type);
+            var type = @event.GetType();
+            var foundHandlers = FindApplyHandler(type);
 
             foreach (var handler in foundHandlers)
             {
@@ -62,7 +63,7 @@ namespace NEvilES
             Version++;
         }
 
-        private IEnumerable<Action<IAggregate, object>> FindHandler(Type type)
+        private IEnumerable<Action<IAggregate, object>> FindApplyHandler(Type type)
         {
             if (applyMethods.ContainsKey(type))
             {
@@ -83,7 +84,7 @@ namespace NEvilES
 
         ICollection IAggregate.GetUncommittedEvents()
         {
-            return (ICollection)uncommittedEvents;
+            return (ICollection) uncommittedEvents;
         }
 
         void IAggregate.ClearUncommittedEvents()
@@ -116,7 +117,7 @@ namespace NEvilES
                     throw new Exception(string.Format("'{0}' has previously been registered. Please check for duplicate Apply methods for this type.", apply.Type.FullName));
                 }
 
-                applyMethods.Add(apply.Type, (a, m) => applyMethod.Invoke(a, new[] { m }));
+                applyMethods.Add(apply.Type, (a, m) => applyMethod.Invoke(a, new[] {m}));
             }
 
             var handlerMethods = GetHandleMethods(aggregateType).ToDictionary(x => x.Type, x => x.MethodInfo);
@@ -158,7 +159,7 @@ namespace NEvilES
             } while (type != null);
         }
 
-        public class ApplyMethod
+        private class ApplyMethod
         {
             public ApplyMethod(Type type, MethodInfo m)
             {
@@ -175,33 +176,39 @@ namespace NEvilES
             }
         }
 
-        public virtual void RaiseEvent<T>(T @event) where T : IEvent
+        public void Raise<TEvent>(object command) where TEvent : class, IEvent, new()
         {
-            var type = GetRealType(@event);
-            if (!FindHandler(type).Any())
+            var evt = SimpleMapper.Map<TEvent>(command);
+
+            var type = typeof(TEvent);
+            if (!FindApplyHandler(type).Any())
             {
                 throw new Exception(string.Format("You have forgotten to add private event method for '{0}' to aggregate '{1}'", type, GetType()));
             }
-            ((IAggregate)this).ApplyEvent(@event);
-            uncommittedEvents.Add(new EventData(type.FullName, @event, DateTime.UtcNow, Version));
+            ((IAggregate)this).ApplyEvent(evt);
+            uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
         }
 
-        public void RaiseStatelessEvent<T>(T msg) where T : IEvent
+        public virtual void RaiseEvent<T>(T evt) where T : IEvent
         {
-            var type = GetRealType(msg);
-            if (FindHandler(type).Any())
+            var type = typeof(T);
+            if (!FindApplyHandler(type).Any())
+            {
+                throw new Exception(string.Format("You have forgotten to add private event method for '{0}' to aggregate '{1}'", type, GetType()));
+            }
+            ((IAggregate) this).ApplyEvent(evt);
+            uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
+        }
+
+        public void RaiseStateless<T>(T msg) where T : IEvent
+        {
+            var type = msg.GetType();
+            if (FindApplyHandler(type).Any())
             {
                 throw new Exception(string.Format("You can't RaiseStatelessEvent - There's a 'private void Apply({0} e)' method on this '{1}' aggregate!", type, GetType()));
             }
             Version++;
-            uncommittedEvents.Add(new EventData(type.FullName, msg, DateTime.UtcNow, Version));
-        }
-
-        private static Type GetRealType<T>(T @event)
-        {
-            var type = typeof(T);
-            type = type == typeof(IEvent) ? @event.GetType() : type;
-            return type;
+            uncommittedEvents.Add(new EventData(type, msg, DateTime.UtcNow, Version));
         }
 
         public override int GetHashCode()
@@ -266,6 +273,29 @@ namespace NEvilES
             {
                 Version = version;
             }
+        }
+    }
+
+    public static class SimpleMapper
+    {
+        public static TEvent Map<TEvent>(object command) where TEvent : class, new()
+        {
+            var evt = new TEvent();
+
+            var cmdProps = command.GetType().GetTypeInfo().GetProperties().Where(x => x.CanRead).ToList();
+            var evtProps = typeof(TEvent).GetTypeInfo().GetProperties()
+                    .Where(x => x.CanWrite)
+                    .ToList();
+
+            foreach (var sourceProp in cmdProps)
+            {
+                if (evtProps.All(x => x.Name != sourceProp.Name))
+                    continue;
+                var p = evtProps.First(x => x.Name == sourceProp.Name);
+                p.SetValue(evt, sourceProp.GetValue(command, null), null);
+            }
+
+            return evt;
         }
     }
 }

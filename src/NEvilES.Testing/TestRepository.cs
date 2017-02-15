@@ -116,7 +116,7 @@ namespace NEvilES.Testing
 
         public IAggregate GetStateless(Type type, Guid id)
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }

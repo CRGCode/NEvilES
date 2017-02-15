@@ -20,8 +20,7 @@ namespace NEvilES.Pipeline
         {
             var commandType = command.GetType();
             var commandResult = new CommandResult();
-
-            var streamId = ((IMessage)command).StreamId;
+            var streamId = command.StreamId;
             var repo = (IRepository)factory.Get(typeof(IRepository));
 
             if (command is ICommand)
@@ -73,7 +72,8 @@ namespace NEvilES.Pipeline
                 var singleAggHandler = factory.TryGet(type);
 
                 var agg = repo.GetStateless(singleAggHandler?.GetType(), streamId);
-                agg.RaiseStatelessEvent((IEvent)command);
+                // TODO don't like the cast below of command to IEvent
+                agg.RaiseStateless((IEvent)command);
                 var commit = repo.Save(agg);
                 commandResult.Append(commit);
             }
@@ -96,9 +96,8 @@ namespace NEvilES.Pipeline
             {
                 foreach (var message in agg.UpdatedEvents.Cast<EventData>())
                 {
-                    var type = message.Event.GetType();
                     var data = new ProjectorData(agg.StreamId, commandContext, message.Type, message.Event, message.TimeStamp, message.Version);
-                    var projectorType = typeof(IProject<>).MakeGenericType(type);
+                    var projectorType = typeof(IProject<>).MakeGenericType(message.Type);
                     var projectors = factory.GetAll(projectorType);
 
                     // TODO: below looks like it needs some DRY attention
@@ -118,7 +117,7 @@ namespace NEvilES.Pipeline
 #endif
                     }
 
-                    projectorType = typeof(IProjectWithResult<>).MakeGenericType(type);
+                    projectorType = typeof(IProjectWithResult<>).MakeGenericType(message.Type);
                     projectors = factory.GetAll(projectorType);
 
                     foreach (var projector in projectors)

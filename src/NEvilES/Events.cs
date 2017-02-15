@@ -10,6 +10,20 @@ namespace NEvilES
         Guid StreamId { get; set; }
     }
 
+    public class Event : IEvent
+    {
+        //public static Type GetRealType<T>(T @event)
+        //{
+        //    var type = typeof(T);
+        //    if (type == typeof(IEvent))
+        //        return @event.GetType();
+        //    else
+        //        return type;
+        //}
+
+        public Guid StreamId { get; set; }
+    }
+
     public interface ICommand : IMessage { }
     public interface IEvent : IMessage { }
 
@@ -22,8 +36,9 @@ namespace NEvilES
         ICollection GetUncommittedEvents();
         void ClearUncommittedEvents();
 
-        void RaiseEvent<T>(T msg) where T : IEvent;
-        void RaiseStatelessEvent<T>(T msg) where T : IEvent;
+        void Raise<TEvent>(object command) where TEvent : class, IEvent, new();
+        void RaiseEvent<T>(T evt) where T : IEvent;
+        void RaiseStateless<T>(T msg) where T : IEvent;
     }
 
     public interface IStatelessAggregate
@@ -33,7 +48,7 @@ namespace NEvilES
 
     public interface IEventData
     {
-        string Type { get; }
+        Type Type { get; }
         DateTime TimeStamp { get; }
         int Version { get; }
         object Event { get; }
@@ -41,12 +56,12 @@ namespace NEvilES
 
     public class EventData : IEventData
     {
-        public string Type { get; }
+        public Type Type { get; }
         public object Event { get; }
         public DateTime TimeStamp { get; }
         public int Version { get; }
 
-        public EventData(string type, object @event, DateTime stamp, int version)
+        public EventData(Type type, object @event, DateTime stamp, int version)
         {
             Event = @event;
             Type = type;
