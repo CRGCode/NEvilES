@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Autofac;
 using GTD.Common;
 using GTD.Domain;
@@ -23,9 +22,12 @@ namespace GTD.SeedData
 
             var container = Register<IContainer>.Build(builder);
 
+            EventStoreDatabaseModule.TestLocalDbExists(container.Resolve<IConnectionString>());
+
             container.Resolve<IEventTypeLookupStrategy>().ScanAssemblyOfType(typeof(Domain.Client));
 
             var id = CombGuid.NewGuid();
+
             using (container.Resolve<PipelineTransaction>())
             {
                 var processor = container.Resolve<ICommandProcessor>();

@@ -1,9 +1,5 @@
-using System;
-using System.Data;
-using System.Data.SqlClient;
 using System.Reflection;
 using Autofac;
-using Autofac.Features.Variance;
 using GTD.Common;
 using GTD.ReadModel;
 using NEvilES;
