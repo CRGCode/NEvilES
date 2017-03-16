@@ -6,7 +6,6 @@ using System.Reflection;
 
 namespace NEvilES
 {
-    // TODO - Why is this public?
     public interface IAggregateHandlers
     {
         IDictionary<Type, MethodInfo> Handlers { get; set; }
@@ -108,7 +107,7 @@ namespace NEvilES
                 return;
 
             var applyMethods = new Dictionary<Type, Action<IAggregate, object>>();
-            foreach (var apply in GetApplyMethods(aggregateType))
+            foreach (var apply in GetMethods(aggregateType,"Apply"))
             {
                 var applyMethod = apply.MethodInfo;
 
@@ -120,7 +119,7 @@ namespace NEvilES
                 applyMethods.Add(apply.Type, (a, m) => applyMethod.Invoke(a, new[] {m}));
             }
 
-            var handlerMethods = GetHandleMethods(aggregateType).ToDictionary(x => x.Type, x => x.MethodInfo);
+            var handlerMethods = GetMethods(aggregateType,"Handle").ToDictionary(x => x.Type, x => x.MethodInfo);
 
             AggregateTypes[aggregateType] = new AggregateMethodCache
             {
@@ -129,46 +128,31 @@ namespace NEvilES
             };
         }
 
-        private static IEnumerable<ApplyMethod> GetHandleMethods(Type type)
+        private static IEnumerable<TypeToMethod> GetMethods(Type type, string name)
         {
             do
             {
                 var methods = type.GetTypeInfo().DeclaredMethods;
                 foreach (var m in methods
-                    .Where(m => m.Name == "Handle" && m.GetParameters().Length >= 1 && m.ReturnType == typeof(void)))
+                    .Where(m => m.Name == name && m.GetParameters().Length >= 1 && m.ReturnType == typeof(void)))
                 {
-                    yield return new ApplyMethod(m.GetParameters().First().ParameterType, m);
+                    yield return new TypeToMethod(m.GetParameters().First().ParameterType, m);
                 }
 
                 type = type.GetTypeInfo().BaseType;
             } while (type != null);
         }
 
-        private static IEnumerable<ApplyMethod> GetApplyMethods(Type type)
+        private class TypeToMethod
         {
-            do
-            {
-                var methods = type.GetTypeInfo().DeclaredMethods;
-                foreach (var m in methods
-                    .Where(m => m.Name == "Apply" && m.GetParameters().Length == 1 && m.ReturnType == typeof(void)))
-                {
-                    yield return new ApplyMethod(m.GetParameters().Single().ParameterType, m);
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            } while (type != null);
-        }
-
-        private class ApplyMethod
-        {
-            public ApplyMethod(Type type, MethodInfo m)
+            public TypeToMethod(Type type, MethodInfo m)
             {
                 Type = type;
                 MethodInfo = m;
             }
 
-            public Type Type { get; set; }
-            public MethodInfo MethodInfo { get; set; }
+            public Type Type { get; }
+            public MethodInfo MethodInfo { get; }
 
             public override string ToString()
             {
@@ -241,28 +225,6 @@ namespace NEvilES
             foreach (var o in args)
             {
                 GuardFromEmptyOrNull(GetType().Name, o);
-            }
-        }
-
-        public void MustBeUtc(params DateTime?[] args)
-        {
-            foreach (var o in args)
-            {
-                if (o != null && o.Value.Kind != DateTimeKind.Utc)
-                {
-                    throw new DomainAggregateException(this, "DateTime must be in UTC");
-                }
-            }
-        }
-
-        public void MustBeUtc(params DateTime[] args)
-        {
-            foreach (var o in args)
-            {
-                if (o.Kind != DateTimeKind.Utc)
-                {
-                    throw new DomainAggregateException(this, "DateTime must be in UTC");
-                }
             }
         }
 

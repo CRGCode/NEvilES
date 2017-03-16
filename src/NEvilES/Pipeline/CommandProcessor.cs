@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -9,19 +11,57 @@ namespace NEvilES.Pipeline
     {
         private readonly IFactory factory;
         private readonly CommandContext commandContext;
+        private readonly INeedApproval approver;
 
-        public CommandProcessor(IFactory factory, CommandContext commandContext)
+        public CommandProcessor(IFactory factory, CommandContext commandContext, INeedApproval approver)
         {
             this.factory = factory;
             this.commandContext = commandContext;
+            this.approver = approver;
         }
 
         public CommandResult Process(TCommand command)
         {
-            var commandType = command.GetType();
+            CommandResult result;
+            if (commandContext.ApprovalContext != null)
+            {
+                var approvalContext = commandContext.ApprovalContext;
+                switch (approvalContext.Perform)
+                {
+                    case ApprovalContext.Action.Request:
+                        result = new CommandResult(approver.Capture(command));
+                        break;
+                    case ApprovalContext.Action.Approve:
+                        var approvalResult = approver.Approve(command.StreamId);
+                        var method = GetType().GetTypeInfo().GetMethod("Execute");
+                        var genericMethod = method.MakeGenericMethod(approvalResult.Command.GetType());
+
+                        commandContext.ApprovalContext = null;
+                        result = (CommandResult) genericMethod.Invoke(this, new [] { approvalResult.Command });
+                        result.Append(approvalResult.Commit);
+                        break;
+                    case ApprovalContext.Action.Decline:
+                        result = Execute(command);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            else
+            {
+                result = Execute(command);
+            }
+
+            var projectResults = ReadModelProjectorHelper.Project(result, factory, commandContext);
+            return commandContext.Result.Add(projectResults);
+        }
+
+        public CommandResult Execute<T>(T command) where  T : IMessage
+        {
             var commandResult = new CommandResult();
+            var commandType = command.GetType();
             var streamId = command.StreamId;
-            var repo = (IRepository)factory.Get(typeof(IRepository));
+            var repo = (IRepository) factory.Get(typeof(IRepository));
 
             if (command is ICommand)
             {
@@ -39,7 +79,7 @@ namespace NEvilES.Pipeline
 
                     var handler = aggHandler.Handlers[commandType];
                     var parameters = handler.GetParameters();
-                    var deps = new object[] { command }.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
+                    var deps = new object[] {command}.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
 
                     try
                     {
@@ -65,6 +105,12 @@ namespace NEvilES.Pipeline
                 {
                     commandHandler.Handle(command);
                 }
+                // Version using reflection 
+                //foreach (var commandHandler in commandHandlers)
+                //{
+                //    var method = commandHandler.GetType().GetMethod("Handle");
+                //    method.Invoke(commandHandler, new object[] { command });
+                //}
             }
             else
             {
@@ -73,13 +119,11 @@ namespace NEvilES.Pipeline
 
                 var agg = repo.GetStateless(singleAggHandler?.GetType(), streamId);
                 // TODO don't like the cast below of command to IEvent
-                agg.RaiseStateless((IEvent)command);
+                agg.RaiseStateless((IEvent) command);
                 var commit = repo.Save(agg);
                 commandResult.Append(commit);
             }
-
-            var projectResults = ReadModelProjectorHelper.Project(commandResult, factory, commandContext);
-            return commandContext.Result.Add(projectResults);
+            return commandResult;
         }
     }
 
@@ -100,7 +144,7 @@ namespace NEvilES.Pipeline
                     var projectorType = typeof(IProject<>).MakeGenericType(message.Type);
                     var projectors = factory.GetAll(projectorType);
 
-                    // TODO: below looks like it needs some DRY attention
+                    // TODO below looks like it needs some DRY attention
                     foreach (var projector in projectors)
                     {
 #if !DEBUG

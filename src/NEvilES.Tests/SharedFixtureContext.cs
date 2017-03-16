@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Data;
 using System.Data.SqlClient;
+using NEvilES.DataStore;
 using NEvilES.Pipeline;
 using NEvilES.Tests.Sample;
 using NEvilES.Tests.Sample.ReadModel;
@@ -13,6 +14,10 @@ namespace NEvilES.Tests
     {
         public SharedFixtureContext()
         {
+            var lookup = new EventTypeLookupStrategy();
+            lookup.ScanAssemblyOfType(typeof(Person.Created));
+            lookup.ScanAssemblyOfType(typeof(ApprovalRequest));
+
             Container = new Container(x =>
             {
                 x.Scan(s =>
@@ -32,6 +37,7 @@ namespace NEvilES.Tests
                 });
 
                 x.For<ICommandProcessor>().Use<PipelineProcessor>();
+                x.For<IEventTypeLookupStrategy>().Add(lookup).Singleton();
                 x.For<IRepository>().Use<InMemoryEventStore>();
                 x.For<IReadModel>().Use<TestReadModel>();
 

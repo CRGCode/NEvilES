@@ -17,8 +17,9 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170123-02" />
         <ProjectReference Include="../NEvilES.Testing/NEvilES.Testing.csproj" />
+        <ProjectReference Include="..\NEvilES.DataStore\NEvilES.DataStore.csproj" />
         <PackageReference Include="StructureMap" Version="4.4.2" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta5-build1225" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
         <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
     </ItemGroup>
     <ItemGroup>
