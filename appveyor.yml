@@ -1,0 +1,31 @@
+image: Visual Studio 2017
+version: 0.1.0-alpha{build}
+nuget:
+  account_feed: true
+  project_feed: true
+environment:
+  ver_num: 0.1.0
+  ver_suffix: -alpha
+build_script:
+- cmd: >-
+    build_server.bat
+test_script:
+- cmd: dotnet test .\tests\SAMLSilly.Tests\SAMLSilly.Tests.csproj
+after_test:
+- cmd: dotnet pack .\src\SAMLSilly\SAMLSilly.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- path: 'artifacts\**\*.nupkg'
+  name: SAMLSilly
+deploy:
+- provider: NuGet
+  api_key:
+    secure: U9zqZ3JPcAM/4jiTw2hwZms8xY0naWWHbAIJRIvHYexzsMZS/LeZxJZdVMxslygj
+  artifact: 'artifacts\**\*.nupkg'
+  on:
+    branch: master
+- provider: NuGet
+  server: https://www.myget.org/F/ebyte23/api/v2/package
+  api_key:
+    secure: YtC3mG0Rq+bi8DUTzJ89j0REA5Apj8bYTgJXroTEoRmXHLW4jts/S693V35lp3Dn
+  artifact: 'artifacts\**\*.nupkg'
+  on:
+    branch: dev
