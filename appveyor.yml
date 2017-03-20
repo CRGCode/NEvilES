@@ -7,10 +7,9 @@ environment:
   ver_num: 0.1.0
   ver_suffix: -alpha
 build_script:
-- cmd: >-
-    build_server.bat
+- cmd: dotnet build .\NEvilES.sln
 test_script:
-- cmd: dotnet test .\tests\SAMLSilly.Tests\SAMLSilly.Tests.csproj
+- cmd: dotnet test .\NEvilES.Tests\NEvilES.Tests.csproj
 after_test:
 - cmd: dotnet pack .\src\SAMLSilly\SAMLSilly.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 - path: 'artifacts\**\*.nupkg'
