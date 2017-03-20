@@ -17,4 +17,7 @@
         <ProjectReference Include="../NEvilES.DataStore/NEvilES.DataStore.csproj" />
         <PackageReference Include="xunit" Version="2.2.0" />
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
+    </ItemGroup>
 </Project>

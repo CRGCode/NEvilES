@@ -58,6 +58,7 @@ namespace GTD.SeedData
             var reader = container.Resolve<IReadData>();
             var client = reader.Get<ReadModel.Client>(id);
             Console.WriteLine("Id {0} - {1}",id, client.Name);
+            Console.WriteLine("Done - Hit any key!");
             Console.ReadKey();
         }
     }

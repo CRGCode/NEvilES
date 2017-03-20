@@ -4,6 +4,10 @@
         <DebugType>portable</DebugType>
         <AssemblyName>NEvilES</AssemblyName>
         <PackageId>NEvilES</PackageId>
+        <PackageId>NEvilES.Tests</PackageId>
+        <Description>.Net Evil Event Sourcing Core</Description>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <Authors>Craig Gardiner</Authors>
         <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
         <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
         <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
