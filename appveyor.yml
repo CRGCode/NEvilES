@@ -11,9 +11,9 @@ build_script:
 test_script:
 - cmd: dotnet test .\NEvilES.Tests\NEvilES.Tests.csproj
 after_test:
-- cmd: dotnet pack .\src\SAMLSilly\SAMLSilly.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack .\src\NEvilES\NEvilES.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 - path: 'artifacts\**\*.nupkg'
-  name: SAMLSilly
+  name: NEvilES
 deploy:
 - provider: NuGet
   api_key:
