@@ -11,46 +11,16 @@ namespace NEvilES.Pipeline
     {
         private readonly IFactory factory;
         private readonly CommandContext commandContext;
-        private readonly INeedApproval approver;
 
-        public CommandProcessor(IFactory factory, CommandContext commandContext, INeedApproval approver)
+        public CommandProcessor(IFactory factory, CommandContext commandContext)
         {
             this.factory = factory;
             this.commandContext = commandContext;
-            this.approver = approver;
         }
 
         public CommandResult Process(TCommand command)
         {
-            CommandResult result;
-            if (commandContext.ApprovalContext != null)
-            {
-                var approvalContext = commandContext.ApprovalContext;
-                switch (approvalContext.Perform)
-                {
-                    case ApprovalContext.Action.Request:
-                        result = new CommandResult(approver.Capture(command));
-                        break;
-                    case ApprovalContext.Action.Approve:
-                        var approvalResult = approver.Approve(command.StreamId);
-                        var method = GetType().GetTypeInfo().GetMethod("Execute");
-                        var genericMethod = method.MakeGenericMethod(approvalResult.Command.GetType());
-
-                        commandContext.ApprovalContext = null;
-                        result = (CommandResult) genericMethod.Invoke(this, new [] { approvalResult.Command });
-                        result.Append(approvalResult.Commit);
-                        break;
-                    case ApprovalContext.Action.Decline:
-                        result = Execute(command);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-            else
-            {
-                result = Execute(command);
-            }
+            var result = Execute(command);
 
             var projectResults = ReadModelProjectorHelper.Project(result, factory, commandContext);
             return commandContext.Result.Add(projectResults);

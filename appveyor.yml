@@ -7,9 +7,7 @@ environment:
   ver_num: 0.1.0
   ver_suffix: -alpha
 build_script:
-- cmd: >-
-  dotnet restore .\src\NEvilES.sln
-  dotnet build .\src\NEvilES.sln
+- cmd: build_server.bat
 test_script:
 - cmd: dotnet test .\src\NEvilES.Tests\NEvilES.Tests.csproj
 after_test:

@@ -18,6 +18,7 @@ namespace NEvilES.DataStore
         {
             DefaultValueHandling = DefaultValueHandling.Populate,
             NullValueHandling = NullValueHandling.Ignore,
+            TypeNameHandling = TypeNameHandling.Auto,
             Converters = new JsonConverter[] {new StringEnumConverter()}
         };
 

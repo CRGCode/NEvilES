@@ -16,7 +16,7 @@ namespace NEvilES.Tests
         {
             var lookup = new EventTypeLookupStrategy();
             lookup.ScanAssemblyOfType(typeof(Person.Created));
-            lookup.ScanAssemblyOfType(typeof(ApprovalRequest));
+            lookup.ScanAssemblyOfType(typeof(Approval));
 
             Container = new Container(x =>
             {
@@ -36,6 +36,7 @@ namespace NEvilES.Tests
                     s.SingleImplementationsOfInterface();
                 });
 
+                x.For<IApprovalWorkflowEngine>().Use<ApprovalWorkflowEngine>();
                 x.For<ICommandProcessor>().Use<PipelineProcessor>();
                 x.For<IEventTypeLookupStrategy>().Add(lookup).Singleton();
                 x.For<IRepository>().Use<InMemoryEventStore>();

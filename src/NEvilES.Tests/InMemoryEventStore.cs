@@ -27,6 +27,7 @@ namespace NEvilES.Tests
         {
             DefaultValueHandling = DefaultValueHandling.Populate,
             NullValueHandling = NullValueHandling.Ignore,
+            TypeNameHandling = TypeNameHandling.Auto,
             Converters = new JsonConverter[] { new StringEnumConverter() }
         };
 
@@ -56,7 +57,7 @@ namespace NEvilES.Tests
 
             foreach (var eventDb in evts.OrderBy(x => x.Version))
             {
-                var message = (IEvent)JsonConvert.DeserializeObject(eventDb.Body, eventDb.BodyType);
+                var message = (IEvent)JsonConvert.DeserializeObject(eventDb.Body, eventTypeLookupStrategy.Resolve(eventDb.BodyType.FullName), SerializerSettings);
                 message.StreamId = eventDb.StreamId;
                 aggregate.ApplyEvent(message);
             }
