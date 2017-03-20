@@ -79,8 +79,8 @@ CREATE TABLE [dbo].[events](
        [metadata] [nvarchar](max) NOT NULL,
        [bodytype] [nvarchar](500) NOT NULL,
        [body] [nvarchar](max) NOT NULL,
-       [by] [uniqueidentifier] NOT NULL,
-       [at] [datetime] NOT NULL,
+       [who] [uniqueidentifier] NOT NULL,
+       [_when] [datetime] NOT NULL,
        [version] [int] NOT NULL,
        [appversion] [nvarchar](20) NOT NULL,
 PRIMARY KEY CLUSTERED
