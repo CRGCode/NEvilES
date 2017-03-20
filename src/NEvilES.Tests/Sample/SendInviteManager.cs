@@ -13,7 +13,7 @@ namespace NEvilES.Tests.Sample
 
         public void Handle(Person.SendInvite command)
         {
-            processor.Process(new Employee.Create()
+            processor.Process(new Employee.Create
             {
                 StreamId = command.StreamId,
                 Person = command.Person

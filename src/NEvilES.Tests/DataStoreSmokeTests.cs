@@ -10,6 +10,15 @@ using Xunit.Abstractions;
 
 namespace NEvilES.Tests
 {
+    public class Transaction : CommandContext.ITransaction
+    {
+        public Guid Id { get; }
+        public Transaction(Guid id)
+        {
+            Id = id;
+        }
+    }
+
     public class DataStoreSmokeTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
         //This is use instead of Console.Write or Debug.Write
@@ -31,7 +40,7 @@ namespace NEvilES.Tests
             conn.Open();
             transaction = conn.BeginTransaction(IsolationLevel.ReadUncommitted);
             repository = new DatabaseEventStore(transaction, new EventTypeLookupStrategy(),
-                new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), Guid.NewGuid(), Guid.NewGuid(), new CommandContext.User(Guid.NewGuid(), 007), ""));
+                new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()),  new CommandContext.User(Guid.NewGuid(), 007), ""));
         }
 
         [Fact]
@@ -50,7 +59,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { StreamId = streamId, Person = new PersonalDetails("John", "Citizen") });
+            agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
 
             var expected = repository.Save(agg);
             Assert.NotNull(expected);
@@ -63,8 +72,8 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { StreamId = streamId, Person = new PersonalDetails("John", "Citizen") });
-            agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
+            agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
+            agg.RaiseStateless(new Customer.Refunded(streamId, 800.80M));
 
             var expected = repository.Save(agg);
             Assert.NotNull(expected);

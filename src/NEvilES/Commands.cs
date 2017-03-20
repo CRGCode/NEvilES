@@ -1,3 +1,8 @@
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedMemberInSuper.Global
+// ReSharper disable UnusedTypeParameter
+// ReSharper disable TypeParameterCanBeVariant
+
 namespace NEvilES
 {
     public interface IProcessCommand<T> where T : ICommand

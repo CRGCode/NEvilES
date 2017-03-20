@@ -101,7 +101,7 @@ namespace NEvilES.Testing
 
         protected Dictionary<Guid, IEnumerable<IMessage>> Expect(Guid streamId, params IMessage[] messages)
         {
-            return new Dictionary<Guid, IEnumerable<IMessage>>()
+            return new Dictionary<Guid, IEnumerable<IMessage>>
             {
                 {streamId, messages}
             };

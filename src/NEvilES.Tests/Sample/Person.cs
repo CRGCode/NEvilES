@@ -97,7 +97,7 @@ namespace NEvilES.Tests.Sample
                         "Come on, you need to learn to type! Name correction limit of {0} exceeded", limit);
                 }
 
-                var e = new NameCorrectedV2()
+                var e = new NameCorrectedV2
                 {
                     StreamId = c.StreamId,
                     FirstName = c.Name.Split(' ').First(),
@@ -128,6 +128,14 @@ namespace NEvilES.Tests.Sample
             {
                 Name = ev.FirstName + ' ' + ev.LastName;
                 nameCorrected++;
+            }
+        }
+
+        public class Validate : INeedExternalValidation<Create>
+        {
+            public CommandValidationResult Dispatch(Create command)
+            {
+                return new CommandValidationResult(true);
             }
         }
     }

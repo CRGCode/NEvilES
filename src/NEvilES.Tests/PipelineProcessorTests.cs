@@ -62,6 +62,7 @@ namespace NEvilES.Tests
             var expected = commandProcessor.Process(new Employee.PayBonus { StreamId = streamId, Amount = bonus });
             var payPerson = expected.FilterEvents<Employee.PaidBonus>().First();
             Assert.Equal(streamId, payPerson.StreamId);
+            Assert.Equal(bonus, payPerson.Amount);
 
             var agg = repository.Get<Employee.Aggregate>(streamId);
             Assert.Equal(bonus, agg.Bonus);
@@ -76,6 +77,15 @@ namespace NEvilES.Tests
 
             var expected = commandProcessor.Process(new Person.StatelessBirthdateChanged { StreamId = streamId, Birthdate = DateTime.Now });
             Assert.Equal(streamId, expected.FilterEvents<Person.StatelessBirthdateChanged>().First().StreamId);
+        }
+
+        [Fact]
+        public void BadProcessStatelessEvent_Throws()
+        {
+            var streamId = Guid.NewGuid();
+
+            Assert.Throws<Exception>(() =>
+                commandProcessor.Process(new Customer.BadStatelessEvent { StreamId = streamId }));
         }
 
         [Fact]
@@ -122,6 +132,29 @@ namespace NEvilES.Tests
             var email = expected.FilterEvents<Email.PersonInvited>().First();
             Assert.True(email.StreamId != streamId);
             Assert.True(email.EmailAddress == command.Email);
+        }
+
+
+        [Fact]
+        public void Projector_RaiseCommandCastAsEvent_GivenCommandInherentsFromEvent()
+        {
+            var streamId = Guid.NewGuid();
+
+            var bonus = new Employee.PayBonus { StreamId = streamId, Amount = 10000M };
+            var results = commandProcessor.Process(bonus);
+            var projectedItem = (decimal)results.ReadModelItems[0];
+            Assert.True(projectedItem == bonus.Amount);
+        }
+
+        [Fact]
+        public void Projector_RaiseStatelessEvent()
+        {
+            var streamId = Guid.NewGuid();
+
+            var email = new Customer.SendEmail { StreamId = streamId, Text = "Testing" };
+            var results = commandProcessor.Process(email);
+            var projectedItem = results.ReadModelItems[0];
+            Assert.True((string)projectedItem == email.Text);
         }
     }
 }

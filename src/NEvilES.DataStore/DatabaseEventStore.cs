@@ -42,7 +42,8 @@ namespace NEvilES.DataStore
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
-                    @"SELECT Id, Category, StreamId, TransactionId, MetaData, BodyType, Body, By, At, Version, AppVersion, SessionId FROM Events WHERE StreamId=@StreamId ORDER BY Id";
+                    @"SELECT Id, Category, StreamId, TransactionId, MetaData, BodyType, Body, Who, _When
+, Version, AppVersion FROM Events WHERE StreamId=@StreamId ORDER BY Id";
                 CreateParam(cmd, "@StreamId", DbType.Guid, id);
 
                 using (var reader = cmd.ExecuteReader())
@@ -51,17 +52,17 @@ namespace NEvilES.DataStore
                     {
                         var item = new EventDb
                         {
-                            Id = reader.GetInt32(0),
+                            Id = (int) reader.GetInt64(0),
                             Category = reader.GetString(1),
                             StreamId = reader.GetGuid(2),
                             TransactionId = reader.GetGuid(3),
                             Metadata = reader.GetString(4),
                             BodyType = reader.GetString(5),
-                            By = reader.GetGuid(6),
-                            At = reader.GetDateTime(7),
-                            Version = reader.GetInt32(8),
-                            AppVersion = reader.GetString(9),
-                            SessionId = reader.GetGuid(10)
+                            Body = reader.GetString(6),
+                            Who = reader.GetGuid(7),
+                            When = reader.GetDateTime(8),
+                            Version = reader.GetInt32(9),
+                            AppVersion = reader.GetString(10),
                         };
                         events.Add(item);
                     }
@@ -93,8 +94,8 @@ namespace NEvilES.DataStore
         {
             IAggregate aggregate;
 
-            int? version;
-            string category;
+            int? version = null;
+            string category = null;
             using (var cmd = transaction.Connection.CreateCommand())
             {
                 cmd.Transaction = transaction;
@@ -105,8 +106,11 @@ namespace NEvilES.DataStore
 
                 using (var reader = cmd.ExecuteReader())
                 {
-                    version = reader.GetInt32(0);
-                    category = reader.GetString(1);
+                    if (reader.Read())
+                    {
+                        version = reader.GetInt32(0);
+                        category = reader.GetString(1);
+                    }
                 }
             }
 
@@ -146,8 +150,8 @@ namespace NEvilES.DataStore
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
-                    @"INSERT INTO Events(category,streamid,transactionid,metadata,bodytype,body,by,at,version,appversion,sessionid)
-                    VALUES(@Category, @StreamId, @TransactionId, @MetaData, @BodyType, @Body, @By, @At, @Version, @AppVersion, @SessionId)";
+                    @"INSERT INTO Events(category,streamid,transactionid,metadata,bodytype,body,who,_when,version,appversion)
+                    VALUES(@Category, @StreamId, @TransactionId, @MetaData, @BodyType, @Body, @Who, @When, @Version, @AppVersion)";
                 var category = CreateParam(cmd, "@Category", DbType.String, 500);
                 var streamId = CreateParam(cmd, "@StreamId", DbType.Guid);
                 var version = CreateParam(cmd, "@Version", DbType.Int32);
@@ -155,24 +159,22 @@ namespace NEvilES.DataStore
                 var metaData = CreateParam(cmd, "@MetaData", DbType.String, -1);
                 var bodyType = CreateParam(cmd, "@BodyType", DbType.String, 500);
                 var body = CreateParam(cmd, "@Body", DbType.String, -1);
-                var by = CreateParam(cmd, "@By", DbType.Guid);
-                var at = CreateParam(cmd, "@At", DbType.DateTime);
+                var by = CreateParam(cmd, "@Who", DbType.Guid);
+                var at = CreateParam(cmd, "@When", DbType.DateTime);
                 var appVersion = CreateParam(cmd, "@AppVersion", DbType.String, 20);
-                var sessionId = CreateParam(cmd, "@SessionId", DbType.Guid);
                 cmd.Prepare();
 
                 foreach (var eventData in eventDatas)
                 {
                     streamId.Value = aggregate.Id;
                     version.Value = aggregate.Version - eventDatas.Length + count + 1;
-                    transactionId.Value = commandContext.TransactionId;
+                    transactionId.Value = commandContext.Transaction.Id;
                     appVersion.Value = commandContext.AppVersion;
                     at.Value = DateTime.UtcNow;
                     body.Value = JsonConvert.SerializeObject(eventData.Event, SerializerSettings);
                     category.Value = aggregate.GetType().FullName;
-                    bodyType.Value = eventData.Type;
+                    bodyType.Value = eventData.Type.FullName;
                     by.Value = commandContext.ImpersonatorBy?.GuidId ?? commandContext.By.GuidId;
-                    sessionId.Value = commandContext.SessionId;
                     metaData.Value = metadata;
 
                     cmd.ExecuteNonQuery();

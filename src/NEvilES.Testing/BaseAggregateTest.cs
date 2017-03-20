@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -15,11 +13,9 @@ namespace NEvilES.Testing
     {
         private readonly TAggregate sut;
         protected object Handler;
-        private Dictionary<Type, object> aggregateCommandDependencies;
 
         protected BaseAggregateTest()
         {
-            aggregateCommandDependencies = new Dictionary<Type, object>();
             sut = new TAggregate();
         }
 
@@ -40,7 +36,7 @@ namespace NEvilES.Testing
             return agg =>
             {
                 doAction(agg);
-                return agg.GetUncommittedEvents().Cast<EventData>().Select(x=>x.Event).ToArray();
+                return agg.GetUncommittedEvents().Cast<EventData>().Select(x => x.Event).ToArray();
             };
         }
 
@@ -50,7 +46,7 @@ namespace NEvilES.Testing
             {
                 if (got is Exception)
                 {
-                    throw (Exception)got;
+                    throw (Exception) got;
                 }
 
                 var gotEvents = got as object[];
@@ -62,8 +58,9 @@ namespace NEvilES.Testing
                         {
                             var expectedType = expectedEvents[i].GetType();
                             var actualType = gotEvents[i].GetType();
-                            Assert.True(expectedType == actualType || actualType.GetTypeInfo().IsSubclassOf(expectedType), string.Format("Incorrect event in results; expected a {0} but got a {1}",
-                                expectedType.Name, actualType.Name));
+                            Assert.True(expectedType == actualType || actualType.GetTypeInfo().IsSubclassOf(expectedType),
+                                string.Format("Incorrect event in results; expected a {0} but got a {1}",
+                                    expectedType.Name, actualType.Name));
                             Assert.Equal(JsonConvert.SerializeObject(expectedEvents[i]), JsonConvert.SerializeObject(gotEvents[i]));
                         }
                     }
@@ -100,7 +97,7 @@ namespace NEvilES.Testing
             {
                 var ex = got as TException;
                 if (ex == null)
-                    throw (Exception)got;
+                    throw (Exception) got;
 
                 if (condition != null && !condition.Compile()(ex))
                 {
@@ -125,6 +122,7 @@ namespace NEvilES.Testing
     {
         public ThenFailWithConditionFailed(string condition, Exception innerException)
             : base(string.Format(@"Then failed with ""{0}""", condition), innerException)
-        { }
+        {
+        }
     }
 }

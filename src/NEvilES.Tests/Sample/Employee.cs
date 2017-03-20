@@ -21,9 +21,7 @@ namespace NEvilES.Tests.Sample
             public decimal Amount { get; set; }
         }
 
-        public class Create : Person.Create
-        {
-        }
+        public class Create : Person.Create, ICommand { }
 
         public class Aggregate : Person.Aggregate,
             IHandleAggregateCommand<Create>,
@@ -32,7 +30,8 @@ namespace NEvilES.Tests.Sample
         {
             public void Handle(PayBonus command)
             {
-                RaiseEvent<PaidBonus>(command);
+                //RaiseEvent<PaidBonus>(command);                
+                Raise<PaidBonus>(command);
             }
 
             public void Handle(PayPerson c, TaxRuleEngine taxCalculator)
@@ -40,7 +39,7 @@ namespace NEvilES.Tests.Sample
                 // Use the RuleEngine to do something....
                 c.Tax = taxCalculator.Calculate(c.NetAmount);
 
-                RaiseStatelessEvent<PaidPerson>(c);
+                RaiseStateless<PaidPerson>(c);
             }
 
             public void Handle(Create command)

@@ -1,34 +1,40 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using NEvilES.DataStore;
 
 namespace NEvilES.Tests
-{
+{ 
     public class InMemoryEventStore : IRepository
     {
-        private readonly Dictionary<Guid, IAggregate> aggregates;
-
-        public InMemoryEventStore()
+        private class EventDb
         {
-            aggregates = new Dictionary<Guid, IAggregate>();
+            public int Id { get; set; }
+            public string Category { get; set; }
+            public Guid StreamId { get; set; }
+            public Type BodyType { get; set; }
+            public string Body { get; set; }
+            public int Version { get; set; }
         }
 
-        public AggregateCommit Save(IAggregate aggregate)
+        private readonly Dictionary<Guid, List<EventDb>> eventData;
+
+        private readonly IEventTypeLookupStrategy eventTypeLookupStrategy;
+
+        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
-            if (aggregate.Id == Guid.Empty)
-            {
-                throw new Exception($"The aggregate {aggregate.GetType().FullName} has tried to be saved will an empty id");
-            }
+            DefaultValueHandling = DefaultValueHandling.Populate,
+            NullValueHandling = NullValueHandling.Ignore,
+            Converters = new JsonConverter[] { new StringEnumConverter() }
+        };
 
-            if (!aggregates.ContainsKey(aggregate.Id))
-            {
-                aggregates.Add(aggregate.Id, aggregate);
-            }
+        public InMemoryEventStore(IEventTypeLookupStrategy eventTypeLookupStrategy)
+        {
+            eventData = new Dictionary<Guid, List<EventDb>>();
 
-            var events = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
-
-            aggregate.ClearUncommittedEvents();
-            return new AggregateCommit(aggregate.Id, Guid.Empty, string.Empty, events);
+            this.eventTypeLookupStrategy = eventTypeLookupStrategy;
         }
 
         public TAggregate Get<TAggregate>(Guid id) where TAggregate : IAggregate
@@ -38,31 +44,95 @@ namespace NEvilES.Tests
 
         public IAggregate Get(Type type, Guid id)
         {
-            if (aggregates.ContainsKey(id))
-                return aggregates[id];
+            if (!eventData.ContainsKey(id))
+            {
+                var emptyAggregate = (IAggregate)Activator.CreateInstance(type, true);
+                ((AggregateBase)emptyAggregate).SetState(id);
+                return emptyAggregate;
+            }
+            var evts = eventData[id].OrderBy(x => x.Id).ToArray();
 
-            var aggregate = (IAggregate) Activator.CreateInstance(type, true);
+            var aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(evts[0].Category));
+
+            foreach (var eventDb in evts.OrderBy(x => x.Version))
+            {
+                var message = (IEvent)JsonConvert.DeserializeObject(eventDb.Body, eventDb.BodyType);
+                message.StreamId = eventDb.StreamId;
+                aggregate.ApplyEvent(message);
+            }
             ((AggregateBase)aggregate).SetState(id);
 
-            aggregates.Add(id, aggregate);
             return aggregate;
         }
 
         public IAggregate GetStateless(Type type, Guid id)
         {
-            if (aggregates.ContainsKey(id))
-                return aggregates[id];
+            IAggregate aggregate;
 
-            if (type == null)
+            EventDb eventDb = null;
+
+            List<EventDb> events;
+            if (eventData.TryGetValue(id, out events))
             {
-                throw new Exception($"Attempt to get stateless instance of a non-constructable aggregate with stream: {id}");
+                eventDb = events
+                    .Take(1)
+                    .OrderByDescending(x => x.Id)
+                    .SingleOrDefault();
             }
 
-            var aggregate = (IAggregate)Activator.CreateInstance(type, true);
-            ((AggregateBase)aggregate).SetState(id);
+            if (eventDb == null)
+            {
+                if (type == null)
+                {
+                    throw new Exception($"Attempt to get stateless instance of a non-constructable aggregate with stream: {id}");
+                }
 
-            aggregates.Add(id, aggregate);
+                aggregate = (IAggregate)Activator.CreateInstance(type, true);
+            }
+            else
+            {
+                aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(eventDb.Category));
+            }
+             ((AggregateBase)aggregate).SetState(id, eventDb?.Version ?? 0);
+
             return aggregate;
+        }
+
+        public AggregateCommit Save(IAggregate aggregate)
+        {
+            if (aggregate.Id == Guid.Empty)
+            {
+                throw new Exception($"The aggregate {aggregate.GetType().FullName} has tried to be saved will an empty id");
+            }
+
+            var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
+            var count = 0;
+
+            List<EventDb> events;
+            if (!eventData.TryGetValue(aggregate.Id, out events))
+            {
+                events = new List<EventDb>();
+                eventData.Add(aggregate.Id, events);
+            }
+            foreach (var uncommittedEvent in uncommittedEvents)
+            {
+                var version = aggregate.Version - uncommittedEvents.Length + count + 1;
+                var dbEvent = new EventDb()
+                {
+                    Id = version,
+                    StreamId = aggregate.Id,
+                    Body = JsonConvert.SerializeObject(uncommittedEvent.Event, SerializerSettings),
+                    Category = aggregate.GetType().FullName,
+                    BodyType = uncommittedEvent.Type,
+                    Version = version,
+                };
+
+                events.Add(dbEvent);
+                count++;
+            }
+
+            aggregate.ClearUncommittedEvents();
+            return new AggregateCommit(aggregate.Id, Guid.Empty, "", uncommittedEvents);
         }
     }
 }

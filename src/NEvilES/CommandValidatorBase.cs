@@ -14,6 +14,7 @@ namespace NEvilES
         protected abstract CommandValidationResult Dispatch(T command);
     }
 
+    // TODO rename this
     public interface INeedExternalValidation<in T>
     {
         CommandValidationResult Dispatch(T command);

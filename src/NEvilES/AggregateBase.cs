@@ -43,7 +43,7 @@ namespace NEvilES
             var methodCache = AggregateTypes[type];
 
             applyMethods = methodCache.ApplyMethods;
-            ((IAggregateHandlers)this).Handlers = methodCache.HandlerMethods;
+            ((IAggregateHandlers) this).Handlers = methodCache.HandlerMethods;
         }
 
         public Guid Id { get; protected set; }
@@ -51,8 +51,8 @@ namespace NEvilES
 
         void IAggregate.ApplyEvent<T>(T @event)
         {
-            var type = GetRealType(@event);
-            var foundHandlers = FindHandler(type);
+            var type = @event.GetType();
+            var foundHandlers = FindApplyHandler(type);
 
             foreach (var handler in foundHandlers)
             {
@@ -62,7 +62,7 @@ namespace NEvilES
             Version++;
         }
 
-        private IEnumerable<Action<IAggregate, object>> FindHandler(Type type)
+        private IEnumerable<Action<IAggregate, object>> FindApplyHandler(Type type)
         {
             if (applyMethods.ContainsKey(type))
             {
@@ -83,7 +83,7 @@ namespace NEvilES
 
         ICollection IAggregate.GetUncommittedEvents()
         {
-            return (ICollection)uncommittedEvents;
+            return (ICollection) uncommittedEvents;
         }
 
         void IAggregate.ClearUncommittedEvents()
@@ -107,7 +107,7 @@ namespace NEvilES
                 return;
 
             var applyMethods = new Dictionary<Type, Action<IAggregate, object>>();
-            foreach (var apply in GetApplyMethods(aggregateType))
+            foreach (var apply in GetMethods(aggregateType,"Apply"))
             {
                 var applyMethod = apply.MethodInfo;
 
@@ -116,10 +116,10 @@ namespace NEvilES
                     throw new Exception(string.Format("'{0}' has previously been registered. Please check for duplicate Apply methods for this type.", apply.Type.FullName));
                 }
 
-                applyMethods.Add(apply.Type, (a, m) => applyMethod.Invoke(a, new[] { m }));
+                applyMethods.Add(apply.Type, (a, m) => applyMethod.Invoke(a, new[] {m}));
             }
 
-            var handlerMethods = GetHandleMethods(aggregateType).ToDictionary(x => x.Type, x => x.MethodInfo);
+            var handlerMethods = GetMethods(aggregateType,"Handle").ToDictionary(x => x.Type, x => x.MethodInfo);
 
             AggregateTypes[aggregateType] = new AggregateMethodCache
             {
@@ -128,46 +128,31 @@ namespace NEvilES
             };
         }
 
-        private static IEnumerable<ApplyMethod> GetHandleMethods(Type type)
+        private static IEnumerable<TypeToMethod> GetMethods(Type type, string name)
         {
             do
             {
                 var methods = type.GetTypeInfo().DeclaredMethods;
                 foreach (var m in methods
-                    .Where(m => m.Name == "Handle" && m.GetParameters().Length >= 1 && m.ReturnType == typeof(void)))
+                    .Where(m => m.Name == name && m.GetParameters().Length >= 1 && m.ReturnType == typeof(void)))
                 {
-                    yield return new ApplyMethod(m.GetParameters().First().ParameterType, m);
+                    yield return new TypeToMethod(m.GetParameters().First().ParameterType, m);
                 }
 
                 type = type.GetTypeInfo().BaseType;
             } while (type != null);
         }
 
-        private static IEnumerable<ApplyMethod> GetApplyMethods(Type type)
+        private class TypeToMethod
         {
-            do
-            {
-                var methods = type.GetTypeInfo().DeclaredMethods;
-                foreach (var m in methods
-                    .Where(m => m.Name == "Apply" && m.GetParameters().Length == 1 && m.ReturnType == typeof(void)))
-                {
-                    yield return new ApplyMethod(m.GetParameters().Single().ParameterType, m);
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            } while (type != null);
-        }
-
-        public class ApplyMethod
-        {
-            public ApplyMethod(Type type, MethodInfo m)
+            public TypeToMethod(Type type, MethodInfo m)
             {
                 Type = type;
                 MethodInfo = m;
             }
 
-            public Type Type { get; set; }
-            public MethodInfo MethodInfo { get; set; }
+            public Type Type { get; }
+            public MethodInfo MethodInfo { get; }
 
             public override string ToString()
             {
@@ -175,33 +160,39 @@ namespace NEvilES
             }
         }
 
-        public virtual void RaiseEvent<T>(T @event) where T : IEvent
+        public void Raise<TEvent>(object command) where TEvent : class, IEvent, new()
         {
-            var type = GetRealType(@event);
-            if (!FindHandler(type).Any())
+            var evt = SimpleMapper.Map<TEvent>(command);
+
+            var type = typeof(TEvent);
+            if (!FindApplyHandler(type).Any())
             {
                 throw new Exception(string.Format("You have forgotten to add private event method for '{0}' to aggregate '{1}'", type, GetType()));
             }
-            ((IAggregate)this).ApplyEvent(@event);
-            uncommittedEvents.Add(new EventData(type.FullName, @event, DateTime.UtcNow, Version));
+            ((IAggregate)this).ApplyEvent(evt);
+            uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
         }
 
-        public void RaiseStatelessEvent<T>(T msg) where T : IEvent
+        public virtual void RaiseEvent<T>(T evt) where T : IEvent
         {
-            var type = GetRealType(msg);
-            if (FindHandler(type).Any())
+            var type = typeof(T);
+            if (!FindApplyHandler(type).Any())
+            {
+                throw new Exception(string.Format("You have forgotten to add private event method for '{0}' to aggregate '{1}'", type, GetType()));
+            }
+            ((IAggregate) this).ApplyEvent(evt);
+            uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
+        }
+
+        public void RaiseStateless<T>(T msg) where T : IEvent
+        {
+            var type = msg.GetType();
+            if (FindApplyHandler(type).Any())
             {
                 throw new Exception(string.Format("You can't RaiseStatelessEvent - There's a 'private void Apply({0} e)' method on this '{1}' aggregate!", type, GetType()));
             }
             Version++;
-            uncommittedEvents.Add(new EventData(type.FullName, msg, DateTime.UtcNow, Version));
-        }
-
-        private static Type GetRealType<T>(T @event)
-        {
-            var type = typeof(T);
-            type = type == typeof(IEvent) ? @event.GetType() : type;
-            return type;
+            uncommittedEvents.Add(new EventData(type, msg, DateTime.UtcNow, Version));
         }
 
         public override int GetHashCode()
@@ -237,28 +228,6 @@ namespace NEvilES
             }
         }
 
-        public void MustBeUtc(params DateTime?[] args)
-        {
-            foreach (var o in args)
-            {
-                if (o != null && o.Value.Kind != DateTimeKind.Utc)
-                {
-                    throw new DomainAggregateException(this, "DateTime must be in UTC");
-                }
-            }
-        }
-
-        public void MustBeUtc(params DateTime[] args)
-        {
-            foreach (var o in args)
-            {
-                if (o.Kind != DateTimeKind.Utc)
-                {
-                    throw new DomainAggregateException(this, "DateTime must be in UTC");
-                }
-            }
-        }
-
         public void SetState(Guid id, int version = 0)
         {
             Id = id;
@@ -266,6 +235,29 @@ namespace NEvilES
             {
                 Version = version;
             }
+        }
+    }
+
+    public static class SimpleMapper
+    {
+        public static TEvent Map<TEvent>(object command) where TEvent : class, new()
+        {
+            var evt = new TEvent();
+
+            var cmdProps = command.GetType().GetTypeInfo().GetProperties().Where(x => x.CanRead).ToList();
+            var evtProps = typeof(TEvent).GetTypeInfo().GetProperties()
+                    .Where(x => x.CanWrite)
+                    .ToList();
+
+            foreach (var sourceProp in cmdProps)
+            {
+                if (evtProps.All(x => x.Name != sourceProp.Name))
+                    continue;
+                var p = evtProps.First(x => x.Name == sourceProp.Name);
+                p.SetValue(evt, sourceProp.GetValue(command, null), null);
+            }
+
+            return evt;
         }
     }
 }

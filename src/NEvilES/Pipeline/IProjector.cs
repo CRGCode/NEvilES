@@ -30,7 +30,7 @@ namespace NEvilES.Pipeline
 
     public class ProjectorData
     {
-        public ProjectorData(Guid streamId, CommandContext commandContext, string type, object @event, DateTime timeStamp, int version)
+        public ProjectorData(Guid streamId, CommandContext commandContext, Type type, object @event, DateTime timeStamp, int version)
         {
             StreamId = streamId;
             CommandContext = commandContext;
@@ -42,11 +42,11 @@ namespace NEvilES.Pipeline
 
         public Guid StreamId { get; private set; }
         public CommandContext CommandContext { get; set; }
-        public CommandContext.User By => CommandContext.By;
-        public string Type { get; private set; }
+        public CommandContext.IUser By => CommandContext.By;
+        public Type Type { get; private set; }
         public object Event { get; private set; }
         public DateTime TimeStamp { get; private set; }
         public int Version { get; private set; }
-        public Guid TranId => CommandContext.TransactionId;
+        public Guid TranId => CommandContext.Transaction.Id;
     }
 }
