@@ -3,9 +3,12 @@ version: 0.1.0-alpha{build}
 nuget:
   account_feed: true
   project_feed: true
+  disable_publish_on_pr: true 
 environment:
   ver_num: 0.1.0
   ver_suffix: -alpha
+services:
+  - mssql2016  
 build_script:
 - cmd: build_server.bat
 test_script:
@@ -14,6 +17,9 @@ after_test:
 - cmd: dotnet pack .\src\NEvilES\NEvilES.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 - path: 'artifacts\**\*.nupkg'
   name: NEvilES
+before_deploy:
+- ps: >-    
+    Push-AppveyorArtifact artifacts\**\*.nupkg;
 deploy:
 - provider: NuGet
   api_key:

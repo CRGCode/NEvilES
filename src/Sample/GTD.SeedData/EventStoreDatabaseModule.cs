@@ -34,7 +34,7 @@ namespace GTD.SeedData
 
         public static void TestLocalDbExists(IConnectionString connString)
         {
-            using (var connection = new SqlConnection(string.Format(@"Data Source = {0}; Initial Catalog = Master; Integrated Security = True", connString.DataSource)))
+            using (var connection = new SqlConnection(string.Format(@"Server={0};Database=Master;Integrated Security=true;", connString.DataSource)))
             {
                 connection.Open();
 

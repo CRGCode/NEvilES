@@ -18,7 +18,7 @@ namespace GTD.SeedData
             builder.RegisterInstance(new CommandContext.User(Guid.NewGuid())).Named<CommandContext.IUser>("user");
 
             builder.RegisterModule(
-                new EventStoreDatabaseModule("Server=(localdb)\\MSSQLLocalDB;Database=es_test;Integrated Security=true"));
+                new EventStoreDatabaseModule("Server=(localdb)\\SQL2016;Database=es_test;Integrated Security=true"));
 
             var container = Register<IContainer>.Build(builder);
 
