@@ -1,6 +1,6 @@
 namespace NEvilES.Tests
 {
-    class SqlConnectionString : IConnectionString
+    public class SqlConnectionString : IConnectionString
     {
         public string ConnectionString { get; }
 
@@ -8,5 +8,7 @@ namespace NEvilES.Tests
         {
             ConnectionString = connectionString;
         }
+
+        public string DataSource => ConnectionString.Split(';')[0].Split('=')[1];
     }
 }

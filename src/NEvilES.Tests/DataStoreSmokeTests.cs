@@ -19,28 +19,16 @@ namespace NEvilES.Tests
         }
     }
 
-    public class DataStoreSmokeTests : IClassFixture<SharedFixtureContext>, IDisposable
+    public class DataStoreSmokeTests : IClassFixture<SharedFixtureContext>
     {
         //This is use instead of Console.Write or Debug.Write
         private readonly ITestOutputHelper output;
-        private IRepository repository;
-        private IContainer container;
-        private IDbTransaction transaction;
+        private readonly IRepository repository;
 
         public DataStoreSmokeTests(ITestOutputHelper helper, SharedFixtureContext context)
         {
             output = helper;
-            container = context.Container.GetNestedContainer();
-            context.Container.Configure(x =>
-            {
-                x.For<IConnectionString>().Use(s => new SqlConnectionString("Server=(localdb)\\MSSQLLocalDB;Database=es_test;Integrated Security=true;"));
-            });
-
-            var conn = container.GetInstance<IDbConnection>();
-            conn.Open();
-            transaction = conn.BeginTransaction(IsolationLevel.ReadUncommitted);
-            repository = new DatabaseEventStore(transaction, new EventTypeLookupStrategy(),
-                new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()),  new CommandContext.User(Guid.NewGuid(), 007), ""));
+            repository = context.Container.GetInstance<IRepository>();
         }
 
         [Fact]
@@ -79,12 +67,6 @@ namespace NEvilES.Tests
             Assert.NotNull(expected);
             Assert.Equal(expected.StreamId, streamId);
             Assert.Equal(expected.UpdatedEvents.Length, 2);
-        }
-
-        void IDisposable.Dispose()
-        {
-            //Use this to commit events testdata
-            //transaction.Commit();
         }
 
         //[Fact]
