@@ -5,7 +5,6 @@
     <DebugType>portable</DebugType>
     <AssemblyName>NEvilES.DataStore</AssemblyName>
     <PackageId>NEvilES.DataStore</PackageId>
-    <PackageId>NEvilES.Tests</PackageId>
     <Description>.Net Evil Event Sourcing Data Store</Description>
     <VersionPrefix>0.0.1</VersionPrefix>
     <Authors>Craig Gardiner</Authors>

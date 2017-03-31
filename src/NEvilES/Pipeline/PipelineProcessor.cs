@@ -19,12 +19,6 @@ namespace NEvilES.Pipeline
         }
     }
 
-    public interface INeedApproval
-    {
-        AggregateCommit Capture<TCommand>(TCommand command) where TCommand : IMessage;
-        ApprovalResult Approve(Guid id);
-    }
-
     public interface ICommandProcessor
     {
         CommandResult Process<T>(T command) where T : IMessage;
@@ -34,21 +28,19 @@ namespace NEvilES.Pipeline
     public class PipelineProcessor : ICommandProcessor
     {
         private readonly IFactory factory;
-        private readonly INeedApproval approvalStep;
         private readonly ISecurityContext securityContext;
 
-        public PipelineProcessor(ISecurityContext securityContext, IFactory factory, CommandContext commandContext, INeedApproval approvalStep = null)
+        public PipelineProcessor(ISecurityContext securityContext, IFactory factory, CommandContext commandContext)
         {
             this.securityContext = securityContext;
             this.factory = factory;
-            this.approvalStep = approvalStep;
             Context = commandContext;
         }
 
         public CommandResult Process<T>(T command)
             where T : IMessage
         {
-            var commandProcessor = new CommandProcessor<T>(factory, Context, approvalStep);
+            var commandProcessor = new CommandProcessor<T>(factory, Context);
             var validationProcessor = new ValidationProcessor<T>(factory,commandProcessor);
             var securityProcessor = new SecurityProcessor<T>(securityContext,validationProcessor);
             return securityProcessor.Process(command);

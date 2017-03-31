@@ -18,7 +18,6 @@ namespace NEvilES.Pipeline
         public IUser ImpersonatorBy { get; set; }
         public string AppVersion { get; set; }
         public CommandResult Result { get; set; }
-        public ApprovalContext ApprovalContext { get; set; }
 
         public class User : IUser
         {
@@ -50,24 +49,6 @@ namespace NEvilES.Pipeline
         public interface ITransaction
         {
             Guid Id { get; }
-        }
-    }
-
-    public class ApprovalContext
-    {
-        public enum Action
-        {
-            Request,
-            Approve,
-            Decline
-        }
-
-        public Action Perform { get; }
-        public string Reason { get; set; }
-
-        public ApprovalContext(Action perform)
-        {
-            Perform = perform;
         }
     }
 }

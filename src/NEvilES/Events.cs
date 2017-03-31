@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections;
+using System.Linq;
 
 namespace NEvilES
 {
@@ -91,6 +92,11 @@ namespace NEvilES
             By = by;
             Metadata = metadata;
             UpdatedEvents = updatedEvents;
+        }
+
+        public override string ToString()
+        {
+            return string.Join(",", UpdatedEvents.Select(x => x.Event));
         }
     }
 }
