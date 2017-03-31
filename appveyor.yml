@@ -3,23 +3,25 @@ version: 0.1.0-alpha{build}
 nuget:
   account_feed: true
   project_feed: true
-  disable_publish_on_pr: true 
+  disable_publish_on_pr: true
 environment:
   ver_num: 0.1.0
   ver_suffix: -alpha
 services:
   - mssql2016  
 build_script:
-  - cmd: build_server.bat
+- cmd: build_server.bat
 test_script:
-  - cmd: dotnet test .\src\NEvilES.Tests\NEvilES.Tests.csproj
+- cmd: dotnet test .\src\NEvilES.Tests\NEvilES.Tests.csproj
 after_test:
-  - cmd: dotnet pack .\src\NEvilES\NEvilES.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
-  - ps: Get-ChildItem artifacts\*.nupkg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+- cmd: dotnet pack .\src\NEvilES\NEvilES.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+artifacts:
+- path: 'artifacts\*.nupkg'
+  name: NEvilES
 deploy:
 - provider: NuGet
   api_key:
     secure: mcOSBTDOBqJx6zeg9o6aLSwh22Vf/EdUOs7/pDTz03qgZSN6g97xfVnD2rWTf88U
-  artifact: 'artifacts/*.nupkg'
+  artifact: NEvilES
   on:
     branch: master
