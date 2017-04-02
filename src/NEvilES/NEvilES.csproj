@@ -15,6 +15,10 @@
         <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
         <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
         <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+        <Version>1.0.0</Version>
+        <PackageProjectUrl>github.com/CRGCode/NEvilES</PackageProjectUrl>
+        <RepositoryUrl>github.com/CRGCode/NEvilES</RepositoryUrl>
+        <PackageTags>event-sourcing event-store cqrs</PackageTags>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
