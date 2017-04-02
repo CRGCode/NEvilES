@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using NEvilES.DataStore;
 
-namespace NEvilES.Tests
+namespace NEvilES
 { 
     public class InMemoryEventStore : IRepository
     {
