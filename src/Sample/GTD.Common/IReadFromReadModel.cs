@@ -2,7 +2,7 @@
 
 namespace GTD.Common
 {
-    public interface IReadData
+    public interface IReadFromReadModel
     {
         T Get<T>(Guid id) where T : IHaveIdentity;
     }

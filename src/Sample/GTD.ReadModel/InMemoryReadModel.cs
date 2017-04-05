@@ -4,11 +4,17 @@ using GTD.Common;
 
 namespace GTD.ReadModel
 {
-    public class DataAccess : IReadData, IWriteData
+    public interface IWriteReadModel
+    {
+        void Insert<T>(T item) where T : class, IHaveIdentity;
+        void Update<T>(T item) where T : class, IHaveIdentity;
+    }
+
+    public class InMemoryReadModel : IReadFromReadModel, IWriteReadModel
     {
         private readonly ConcurrentDictionary<Guid, object> data;
 
-        public DataAccess()
+        public InMemoryReadModel()
         {
             data = new ConcurrentDictionary<Guid, object>();
         }

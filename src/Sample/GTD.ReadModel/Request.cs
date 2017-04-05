@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using GTD.Common;
 using NEvilES.Pipeline;
 
@@ -8,23 +7,41 @@ namespace GTD.ReadModel
 {
     public class Request : IHaveIdentity
     {
-        public Request(Guid id, string name)
+        public Request(Domain.Request.Created c)
         {
-            Id = id;
-            Name = name;
+            Id = c.StreamId;
+            ProjectId = c.ProjectId;
+            ShortName = c.ShortName;
+            Description = c.Description;
+            Priority = c.Priority;
         }
 
         public Guid Id { get; }
-        public string Name { get; }
+        public Guid ProjectId { get; set; }
+        public string ShortName { get; set; }
+        public string Description { get; set; }
+        public int Priority { get; set; }
+        public List<Comment> Comments { get; set; }
+
+        public class Comment
+        {
+            public Guid Id { get; }
+            public string Text { get; set; }
+            public Comment(Domain.Request.CommentAdded c)
+            {
+                Id = c.StreamId;
+                Text = c.Text;
+            }
+        }
 
         public class Projector :
             IProject<Domain.Request.Created>,
             IProject<Domain.Request.CommentAdded>
         {
-            private readonly IReadData reader;
-            private readonly IWriteData writer;
+            private readonly IReadFromReadModel reader;
+            private readonly IWriteReadModel writer;
 
-            public Projector(IReadData reader, IWriteData writer)
+            public Projector(IReadFromReadModel reader, IWriteReadModel writer)
             {
                 this.reader = reader;
                 this.writer = writer;
@@ -32,14 +49,14 @@ namespace GTD.ReadModel
 
             public void Project(Domain.Request.Created message, ProjectorData data)
             {
-                //writer.Insert(new Client(message.StreamId, message.Name));
+                writer.Insert(new Request(message));
             }
 
             public void Project(Domain.Request.CommentAdded message, ProjectorData data)
             {
-                //var client = reader.Get<Client>(message.StreamId);
-                //client.NotificationEndPoints.Remove(client.NotificationEndPoints.First(x => x.EmailAddress == message.EmailAddress));
-                //writer.Update(client);
+                var request = reader.Get<Request>(message.StreamId);
+                request.Comments.Add(new Comment(message));
+                writer.Update(request);
             }
         }
     }
