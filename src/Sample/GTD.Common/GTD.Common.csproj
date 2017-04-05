@@ -1,14 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netstandard1.5</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.3.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\NEvilES.DataStore\NEvilES.DataStore.csproj" />
     <ProjectReference Include="..\..\NEvilES\NEvilES.csproj" />
   </ItemGroup>
 

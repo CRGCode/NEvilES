@@ -1,27 +1,27 @@
 using System.Data;
 using System.Data.SqlClient;
 using Autofac;
-using GTD.Common;
+using NEvilES.DataStore;
+using Module = Autofac.Module;
 
-namespace GTD.SeedData
+namespace GTD.Common
 {
     public class EventStoreDatabaseModule : Module
     {
-        public string ConnectionString { get; set; }
+        private readonly ConnectionString connString;
 
         public EventStoreDatabaseModule(string connectionString)
         {
-            ConnectionString = connectionString;
+            connString = new ConnectionString(connectionString);
         }
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(c => new SqlConnectionString(ConnectionString))
-                .As<IConnectionString>().SingleInstance();
+            builder.RegisterInstance(connString).As<IConnectionString>().SingleInstance();
 
             builder.Register(c =>
             {
-                var conn = new SqlConnection(c.Resolve<IConnectionString>().ConnectionString);
+                var conn = new SqlConnection(connString.Data);
                 conn.Open();
                 return conn;
             }).As<IDbConnection>().InstancePerLifetimeScope();
@@ -34,7 +34,7 @@ namespace GTD.SeedData
 
         public static void TestLocalDbExists(IConnectionString connString)
         {
-            using (var connection = new SqlConnection(string.Format(@"Server={0};Database=Master;Integrated Security=true;", connString.DataSource)))
+            using (var connection = new SqlConnection(string.Format(@"Server={0};Database=Master;Integrated Security=true;", connString.Keys["Server"])))
             {
                 connection.Open();
 
@@ -58,14 +58,14 @@ EXEC ('CREATE DATABASE [{0}] ON PRIMARY
 	SIZE = 25MB, 
 	MAXSIZE = 50MB, 
 	FILEGROWTH = 5MB )')
-", "ES_Test");
+", connString.Keys["Database"]);
 
                 var command = connection.CreateCommand();
                 command.CommandText = createDb;
                 command.ExecuteNonQuery();
             }
 
-            using (var connection = new SqlConnection( connString.ConnectionString))
+            using (var connection = new SqlConnection(connString.Data))
             {
                 connection.Open();
                 var command = connection.CreateCommand();

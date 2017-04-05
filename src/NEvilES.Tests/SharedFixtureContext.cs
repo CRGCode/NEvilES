@@ -55,9 +55,9 @@ namespace NEvilES.Tests
                 x.For<IRepository>().Use<InMemoryEventStore>();
                 x.For<IReadModel>().Use<TestReadModel>();
 
-                x.For<IConnectionString>().Use(s => new SqlConnectionString(configuration.GetConnectionString(connString)));
+                x.For<IConnectionString>().Use(s => new ConnectionString(configuration.GetConnectionString(connString))).Singleton();
                 x.For<CommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
-                x.For<IDbConnection>().Use("Connection", s => new SqlConnection(s.GetInstance<IConnectionString>().ConnectionString));
+                x.For<IDbConnection>().Use("Connection", s => new SqlConnection(s.GetInstance<IConnectionString>().Data));
                 x.For<IDbTransaction>().Use("Transaction", s => s.GetInstance<IDbConnection>().BeginTransaction());
             });
 
@@ -72,7 +72,7 @@ namespace NEvilES.Tests
 
         public static void TestLocalDbExists(IConnectionString connString)
         {
-            using (var connection = new SqlConnection(string.Format(@"Server={0};Database=Master;Integrated Security=true;", connString.DataSource)))
+            using (var connection = new SqlConnection(string.Format(@"Server={0};Database=Master;Integrated Security=true;", connString.Keys["Server"])))
             {
                 connection.Open();
 
@@ -96,7 +96,7 @@ EXEC ('CREATE DATABASE [{0}] ON PRIMARY
 	SIZE = 25MB, 
 	MAXSIZE = 50MB, 
 	FILEGROWTH = 5MB )')
-", "ES_Test");
+", connString.Keys["Database"]);
 
                 var command = connection.CreateCommand();
                 command.CommandText = createDb;
@@ -109,7 +109,7 @@ EXEC ('CREATE DATABASE [{0}] ON PRIMARY
                 //command.ExecuteNonQuery();
             }
 
-            using (var connection = new SqlConnection(connString.ConnectionString))
+            using (var connection = new SqlConnection(connString.Data))
             {
                 connection.Open();
                 var command = connection.CreateCommand();
@@ -142,14 +142,6 @@ PRIMARY KEY CLUSTERED
             Container?.Dispose();
         }
     }
-
-    public interface IConnectionString
-    {
-        string ConnectionString { get; }
-        string DataSource { get; }
-    }
-
-
 
     public class Factory : IFactory
     {

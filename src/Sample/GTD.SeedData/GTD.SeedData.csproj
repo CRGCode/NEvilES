@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.3.0" />
-    <PackageReference Include="structuremap" Version="4.4.2" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
   </ItemGroup>
 

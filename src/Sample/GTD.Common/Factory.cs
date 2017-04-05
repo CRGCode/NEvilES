@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Autofac;
 using NEvilES.Pipeline;
 
-namespace GTD.SeedData
+namespace GTD.Common
 {
     public class Factory : IFactory
     {

@@ -32,10 +32,10 @@ namespace GTD.ReadModel
             IProject<Domain.Client.UserNotificationAdded>,
             IProject<Domain.Client.UserNotificationRemoved>
         {
-            private readonly IReadData reader;
-            private readonly IWriteData writer;
+            private readonly IReadFromReadModel reader;
+            private readonly IWriteReadModel writer;
 
-            public Projector(IReadData reader, IWriteData writer)
+            public Projector(IReadFromReadModel reader, IWriteReadModel writer)
             {
                 this.reader = reader;
                 this.writer = writer;

@@ -8,17 +8,6 @@ namespace NEvilES.Pipeline
         CommandResult Process(T command);
     }
 
-    public class ApprovalResult
-    {
-        public AggregateCommit Commit { get; }
-        public object Command { get; }
-        public ApprovalResult(object command, AggregateCommit commit)
-        {
-            Command = command;
-            Commit = commit;
-        }
-    }
-
     public interface ICommandProcessor
     {
         CommandResult Process<T>(T command) where T : IMessage;

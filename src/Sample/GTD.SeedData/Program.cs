@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Autofac;
 using GTD.Common;
 using GTD.Domain;
@@ -17,12 +18,13 @@ namespace GTD.SeedData
             var builder = new ContainerBuilder();
             builder.RegisterInstance(new CommandContext.User(Guid.NewGuid())).Named<CommandContext.IUser>("user");
 
-            builder.RegisterModule(
-                new EventStoreDatabaseModule("Server=(localdb)\\SQL2016;Database=es_test;Integrated Security=true"));
+            const string connString = "Server=(localdb)\\SQL2016;Database=ES_GTD;Trusted_Connection=True";
+            builder.RegisterModule(new EventStoreDatabaseModule(connString));
+            builder.RegisterModule(new EventProcessorModule(typeof(User).GetTypeInfo().Assembly, null));
 
-            var container = Register<IContainer>.Build(builder);
+            var container = builder.Build();
 
-            EventStoreDatabaseModule.TestLocalDbExists(container.Resolve<IConnectionString>());
+            EventStoreDatabaseModule.TestLocalDbExists(new ConnectionString(connString));
 
             container.Resolve<IEventTypeLookupStrategy>().ScanAssemblyOfType(typeof(Domain.Client));
 
@@ -55,9 +57,9 @@ namespace GTD.SeedData
                 processor.Process(new Request.CommentAdded { StreamId = request.StreamId, Text = "System test comment" });
             }
 
-            var reader = container.Resolve<IReadData>();
-            var client = reader.Get<ReadModel.Client>(id);
-            Console.WriteLine("Id {0} - {1}",id, client.Name);
+            //var reader = container.Resolve<IReadFromReadModel>();
+            //var client = reader.Get<ReadModel.Client>(id);
+            //Console.WriteLine("Id {0} - {1}",id, client.Name);
             Console.WriteLine("Done - Hit any key!");
             Console.ReadKey();
         }
