@@ -8,7 +8,7 @@ using NEvilES.Pipeline;
 
 namespace NEvilES.DataStore
 {
-    public class DatabaseEventStore : IRepository
+    public class DatabaseEventStore : IRepository, IAccessDataStore
     {
         private readonly IDbTransaction transaction;
         private readonly IEventTypeLookupStrategy eventTypeLookupStrategy;
@@ -204,6 +204,41 @@ namespace NEvilES.DataStore
                 param.Value = value;
             cmd.Parameters.Add(param);
             return param;
+        }
+
+        public IEnumerable<AggregateCommit> Read(int from = 0, int to = 0)
+        {
+            using (var cmd = transaction.Connection.CreateCommand())
+            {
+                cmd.Transaction = transaction;
+                cmd.CommandType = CommandType.Text;
+                if (from == 0 && to == 0)
+                {
+                    cmd.CommandText = "SELECT StreamId, MetaData, BodyType, Body, Who, _When, Version FROM Events ORDER BY Id";
+                }
+                else
+                {
+                    cmd.CommandText = "SELECT StreamId, MetaData, BodyType, Body, Who, _When, Version FROM Events WHERE Id BETWEEN @from AND @to ORDER BY Id";
+                    CreateParam(cmd, "@from", DbType.Int32, from);
+                    CreateParam(cmd, "@to", DbType.Int32, to);
+                }
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var streamId = reader.GetGuid(0);
+                        var metadata = reader.GetString(1);
+                        var type = eventTypeLookupStrategy.Resolve(reader.GetString(2));
+                        var @event = (IEvent)JsonConvert.DeserializeObject(reader.GetString(3), type); @event.StreamId = streamId;
+                        var who = reader.GetGuid(4);
+                        var when = reader.GetDateTime(5);
+                        var version = reader.GetInt32(6);
+
+                        var eventData = (IEventData)new EventData(type, @event, when, version);
+                        yield return new AggregateCommit(streamId, who, metadata, new[] { eventData });
+                    }
+                }
+            }
         }
     }
 }

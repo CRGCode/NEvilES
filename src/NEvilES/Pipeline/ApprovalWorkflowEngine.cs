@@ -2,7 +2,6 @@ using System;
 using Newtonsoft.Json;
 
 namespace NEvilES.Pipeline
-
 {
     public interface IApprovalWorkflowEngine
     {

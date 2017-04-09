@@ -27,18 +27,12 @@ namespace GTD.Common
 
             //builder.RegisterSource(new ContravariantRegistrationSource());
 
-            //builder.RegisterAssemblyTypes(readModel).AsClosedTypesOf(typeof(IProject<>));
-            //builder.RegisterAssemblyTypes(readModel).AsClosedTypesOf(typeof(IProjectWithResult<>));
-            //builder.RegisterType<DataAccess>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterAssemblyTypes(readModel).AsClosedTypesOf(typeof(IProject<>));
+            builder.RegisterAssemblyTypes(readModel).AsClosedTypesOf(typeof(IProjectWithResult<>));
 
-            var eventStore = new[]
-            {
-                typeof(DatabaseEventStore).GetTypeInfo().Assembly,
-                typeof(PipelineProcessor).GetTypeInfo().Assembly,
-            };
-            builder.RegisterAssemblyTypes(eventStore).AsImplementedInterfaces().InstancePerLifetimeScope();
-
-            builder.RegisterType<DatabaseEventStore>().As<IRepository>().InstancePerLifetimeScope();
+            builder.RegisterType<PipelineProcessor>().As<ICommandProcessor>().InstancePerLifetimeScope();
+            builder.RegisterType<SecurityContext>().As<ISecurityContext>().InstancePerLifetimeScope();
+            builder.RegisterType<DatabaseEventStore>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Factory>().As<IFactory>().InstancePerLifetimeScope();
             builder.RegisterType<PipelineTransaction>().As<CommandContext.ITransaction>().AsSelf().InstancePerLifetimeScope();
 
