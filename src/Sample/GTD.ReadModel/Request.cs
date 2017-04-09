@@ -14,6 +14,7 @@ namespace GTD.ReadModel
             ShortName = c.ShortName;
             Description = c.Description;
             Priority = c.Priority;
+            Comments = new List<Comment>();
         }
 
         public Guid Id { get; }

@@ -12,6 +12,7 @@ namespace GTD.ReadModel
         {
             Id = id;
             Name = name;
+            NotificationEndPoints = new List<NotificationEndPoint>();
         }
         public Guid Id { get; }
         public string Name { get; }
