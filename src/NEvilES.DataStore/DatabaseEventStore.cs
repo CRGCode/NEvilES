@@ -43,8 +43,8 @@ namespace NEvilES.DataStore
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
-                    @"SELECT Id, Category, StreamId, TransactionId, MetaData, BodyType, Body, Who, _When
-, Version, AppVersion FROM Events WHERE StreamId=@StreamId ORDER BY Id";
+                    @"SELECT id, category, streamid, transactionid, metadata, bodytype, body, who, _when
+, version, appversion FROM events WHERE streamid=@StreamId ORDER BY Id";
                 CreateParam(cmd, "@StreamId", DbType.Guid, id);
 
                 using (var reader = cmd.ExecuteReader())
