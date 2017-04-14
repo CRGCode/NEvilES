@@ -44,7 +44,7 @@ namespace NEvilES.DataStore
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
                     @"SELECT id, category, streamid, transactionid, metadata, bodytype, body, who, _when
-, version, appversion FROM events WHERE streamid=@StreamId ORDER BY Id";
+, version, appversion FROM events WHERE streamid=@StreamId ORDER BY id";
                 CreateParam(cmd, "@StreamId", DbType.Guid, id);
 
                 using (var reader = cmd.ExecuteReader())
@@ -102,7 +102,7 @@ namespace NEvilES.DataStore
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
-                    @"SELECT Version, Category FROM Events WHERE StreamId=@StreamId ORDER BY Id DESC";
+                    @"SELECT version, category FROM events WHERE StreamId=@StreamId ORDER BY id DESC";
                 CreateParam(cmd, "@StreamId", DbType.Guid, id);
 
                 using (var reader = cmd.ExecuteReader())
@@ -151,7 +151,7 @@ namespace NEvilES.DataStore
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
-                    @"INSERT INTO Events(category,streamid,transactionid,metadata,bodytype,body,who,_when,version,appversion)
+                    @"INSERT INTO events(category,streamid,transactionid,metadata,bodytype,body,who,_when,version,appversion)
                     VALUES(@Category, @StreamId, @TransactionId, @MetaData, @BodyType, @Body, @Who, @When, @Version, @AppVersion)";
                 var category = CreateParam(cmd, "@Category", DbType.String, 500);
                 var streamId = CreateParam(cmd, "@StreamId", DbType.Guid);
@@ -214,11 +214,11 @@ namespace NEvilES.DataStore
                 cmd.CommandType = CommandType.Text;
                 if (from == 0 && to == 0)
                 {
-                    cmd.CommandText = "SELECT StreamId, MetaData, BodyType, Body, Who, _When, Version FROM Events ORDER BY Id";
+                    cmd.CommandText = "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events ORDER BY id";
                 }
                 else
                 {
-                    cmd.CommandText = "SELECT StreamId, MetaData, BodyType, Body, Who, _When, Version FROM Events WHERE Id BETWEEN @from AND @to ORDER BY Id";
+                    cmd.CommandText = "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events WHERE id BETWEEN @from AND @to ORDER BY id";
                     CreateParam(cmd, "@from", DbType.Int32, from);
                     CreateParam(cmd, "@to", DbType.Int32, to);
                 }
