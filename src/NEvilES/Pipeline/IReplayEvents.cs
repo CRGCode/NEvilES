@@ -12,6 +12,7 @@ namespace NEvilES.Pipeline
     public interface IReadFromReadModel
     {
         T Get<T>(Guid id) where T : IHaveIdentity;
+        IEnumerable<T> Query<T>(Func<T,bool> p);
     }
 
     public interface IWriteReadModel

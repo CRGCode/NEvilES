@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using GTD.Common;
 using NEvilES.Pipeline;
 
@@ -29,6 +31,11 @@ namespace GTD.ReadModel
             return (T)data[id];
         }
 
+        public IEnumerable<T> Query<T>(Func<T,bool> p)
+        {
+            return data.Values.Where(x => x.GetType() == typeof(T)).Cast<T>().Where(p);
+        }
+
         public void Clear()
         {
             data.Clear();
@@ -38,6 +45,5 @@ namespace GTD.ReadModel
         {
             return data.Count;
         }
-
     }
 }
