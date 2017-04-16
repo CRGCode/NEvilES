@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using Autofac;
 using GTD.Common;
 using GTD.Domain;
@@ -35,6 +37,7 @@ namespace GTD.SeedData
                 ReplayEvents.Replay(container.Resolve<IFactory>(), scope.Resolve<IAccessDataStore>());
             }
             var reader = (InMemoryReadModel)container.Resolve<IReadFromReadModel>();
+            var client1 = reader.Query<ReadModel.Client>(x => x.Name == "FBI").ToArray();
             Console.WriteLine("Read Model Document Count {0}", reader.Count());
             Console.WriteLine("Done - Hit any key!");
             Console.ReadKey();
@@ -75,7 +78,7 @@ namespace GTD.SeedData
 
                 processor.Process(new Request.CommentAdded {StreamId = request.StreamId, Text = "System test comment"});
             }
-            var reader = container.Resolve<IReadFromReadModel>();
+            var reader = (InMemoryReadModel)container.Resolve<IReadFromReadModel>();
             var client = reader.Get<ReadModel.Client>(id);
             Console.WriteLine("Id {0} - {1}", id, client.Name);
         }
