@@ -49,11 +49,11 @@ namespace NEvilES.DataStore
 
                 using (var reader = cmd.ExecuteReader())
                 {
-                    if (reader.Read())
+                    while (reader.Read())
                     {
                         var item = new EventDb
                         {
-                            Id = (int) reader.GetInt64(0),
+                            Id = reader.GetInt64(0),
                             Category = reader.GetString(1),
                             StreamId = reader.GetGuid(2),
                             TransactionId = reader.GetGuid(3),
@@ -82,7 +82,7 @@ namespace NEvilES.DataStore
             {
                 var message =
                     (IEvent)
-                    JsonConvert.DeserializeObject(eventDb.Body, eventTypeLookupStrategy.Resolve(eventDb.BodyType));
+                    JsonConvert.DeserializeObject(eventDb.Body, eventTypeLookupStrategy.Resolve(eventDb.BodyType), SerializerSettings);
                 message.StreamId = eventDb.StreamId;
                 aggregate.ApplyEvent(message);
             }
@@ -142,7 +142,7 @@ namespace NEvilES.DataStore
                     $"The aggregate {aggregate.GetType().FullName} has tried to be saved will an empty id");
             }
 
-            var eventDatas = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
+            var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
             var count = 0;
 
             var metadata = string.Empty;
@@ -165,10 +165,10 @@ namespace NEvilES.DataStore
                 var appVersion = CreateParam(cmd, "@AppVersion", DbType.String, 20);
                 cmd.Prepare();
 
-                foreach (var eventData in eventDatas)
+                foreach (var eventData in uncommittedEvents)
                 {
                     streamId.Value = aggregate.Id;
-                    version.Value = aggregate.Version - eventDatas.Length + count + 1;
+                    version.Value = aggregate.Version - uncommittedEvents.Length + count + 1;
                     transactionId.Value = commandContext.Transaction.Id;
                     appVersion.Value = commandContext.AppVersion;
                     at.Value = DateTime.UtcNow;
@@ -184,7 +184,7 @@ namespace NEvilES.DataStore
             }
 
             aggregate.ClearUncommittedEvents();
-            return new AggregateCommit(aggregate.Id, commandContext.By.GuidId, metadata, eventDatas);
+            return new AggregateCommit(aggregate.Id, commandContext.By.GuidId, metadata, uncommittedEvents);
         }
 
         private static IDbDataParameter CreateParam(IDbCommand cmd, string name, DbType type, object value = null)

@@ -76,7 +76,7 @@ namespace NEvilES.Tests.Sample
 
                 if (c.Person.LastName.Equals("God") && c.ExtraEventInfo != "")
                 {
-                    throw new DomainAggregateException(this, "No thanks, the God's allowed!");
+                    throw new DomainAggregateException(this, "No thanks, no God's allowed!");
                 }
 
                 RaiseEvent(new Created(c.StreamId, c.Person));
@@ -87,7 +87,7 @@ namespace NEvilES.Tests.Sample
                 GuardFromEmptyOrNulls(c.Name);
                 if (c.Name.Equals("God"))
                 {
-                    throw new DomainAggregateException(this, "No thanks, the God's allowed!");
+                    throw new DomainAggregateException(this, "No thanks, no God's allowed!");
                 }
 
                 const int limit = 20;
