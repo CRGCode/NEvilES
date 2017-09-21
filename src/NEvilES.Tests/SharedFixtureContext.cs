@@ -53,6 +53,7 @@ namespace NEvilES.Tests
                 x.For<ICommandProcessor>().Use<PipelineProcessor>();
                 x.For<IEventTypeLookupStrategy>().Add(lookup).Singleton();
                 x.For<IRepository>().Use<InMemoryEventStore>();
+                // x.For<IRepository>().Use<DatabaseEventStore>();
                 x.For<IReadModel>().Use<TestReadModel>();
 
                 x.For<IConnectionString>().Use(s => new ConnectionString(configuration.GetConnectionString(connString))).Singleton();
@@ -90,11 +91,11 @@ DECLARE @FILENAME AS VARCHAR(255)
 
 SET @FILENAME = CONVERT(VARCHAR(255), SERVERPROPERTY('instancedefaultdatapath')) + '{0}';
 
-EXEC ('CREATE DATABASE [{0}] ON PRIMARY 
-	(NAME = [{0}], 
-	FILENAME =''' + @FILENAME + ''', 
-	SIZE = 25MB, 
-	MAXSIZE = 50MB, 
+EXEC ('CREATE DATABASE [{0}] ON PRIMARY
+	(NAME = [{0}],
+	FILENAME =''' + @FILENAME + ''',
+	SIZE = 25MB,
+	MAXSIZE = 50MB,
 	FILEGROWTH = 5MB )')
 ", connString.Keys["Database"]);
 

@@ -17,7 +17,7 @@ namespace NEvilES.Tests
         {
             if (aggregate.Id == Guid.Empty)
             {
-                throw new Exception($"The aggregate {aggregate.GetType().FullName} has tried to be saved will an empty id");
+                throw new Exception($"The aggregate {aggregate.GetType().FullName} has tried to be saved with an empty id");
             }
 
             if (!aggregates.ContainsKey(aggregate.Id))

@@ -21,7 +21,7 @@ namespace NEvilES.Pipeline
         void Update<T>(T item) where T : class, IHaveIdentity;
     }
 
-    public static class ReplayEvents 
+    public static class ReplayEvents
     {
         public static void Replay(IFactory factory, IAccessDataStore reader,  int from = 0, int to = 0)
         {

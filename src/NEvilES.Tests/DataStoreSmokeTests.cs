@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using NEvilES.DataStore;
@@ -55,7 +56,7 @@ namespace NEvilES.Tests
             Assert.Equal(expected.UpdatedEvents.Length, 1);
         }
 
-         [Fact]
+        [Fact]
         public void Save_Events_Stateless()
         {
             var streamId = Guid.NewGuid();
@@ -69,9 +70,34 @@ namespace NEvilES.Tests
             Assert.Equal(expected.UpdatedEvents.Length, 2);
         }
 
-        //[Fact]
-        //public void CommandWithDifferentEventHandlerOnAggregateWithException()
-        //{
+
+
+        [Fact]
+        public void CheckAggregateApplysEvent()
+        {
+
+            var streamId = Guid.NewGuid();
+
+            var user1 = Guid.NewGuid();
+            var user2 = Guid.NewGuid();
+            var user3 = Guid.NewGuid();
+
+
+            var agg = new ChatRoom.Aggregate();
+            agg.Handle(new ChatRoom.Create() { StreamId = streamId, Name = "Bobs Chat", InitialUsers = new HashSet<Guid> { user1 } });
+            agg.Handle(new ChatRoom.IncludeUserInRoom() {StreamId = streamId, UserId = user2});
+            agg.Handle(new ChatRoom.IncludeUserInRoom() {StreamId = streamId, UserId = user3});
+
+            var expected = repository.Save(agg);
+            Assert.NotNull(expected);
+            Assert.Equal(expected.StreamId, streamId);
+            Assert.Equal(expected.UpdatedEvents.Length, 3);
+            Assert.Equal(agg.Version,3);
+        }
+
+        // [Fact]
+        // public void CommandWithDifferentEventHandlerOnAggregateWithException()
+        // {
         //    var streamId = Guid.NewGuid();
         //    Assert.Throws<DomainAggregateException>(() =>
         //        _commandProcessor.Process(new Employee.Create
@@ -79,6 +105,6 @@ namespace NEvilES.Tests
         //            StreamId = streamId,
         //            Person = new PersonalDetails("John", "God")
         //        }));
-        //}
+        // }
     }
 }
