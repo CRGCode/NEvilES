@@ -19,7 +19,7 @@ namespace NEvilES.DataStore
             DefaultValueHandling = DefaultValueHandling.Populate,
             NullValueHandling = NullValueHandling.Ignore,
             TypeNameHandling = TypeNameHandling.Auto,
-            Converters = new JsonConverter[] {new StringEnumConverter()}
+            Converters = new JsonConverter[] { new StringEnumConverter() }
         };
 
         public DatabaseEventStore(IDbTransaction transaction, IEventTypeLookupStrategy eventTypeLookupStrategy,
@@ -32,7 +32,7 @@ namespace NEvilES.DataStore
 
         public TAggregate Get<TAggregate>(Guid id) where TAggregate : IAggregate
         {
-            return (TAggregate) Get(typeof(TAggregate), id);
+            return (TAggregate)Get(typeof(TAggregate), id);
         }
 
         public IAggregate Get(Type type, Guid id)
@@ -71,12 +71,12 @@ namespace NEvilES.DataStore
             }
             if (events.Count == 0)
             {
-                var emptyAggregate = (IAggregate) Activator.CreateInstance(type, true);
-                ((AggregateBase) emptyAggregate).SetState(id);
+                var emptyAggregate = (IAggregate)Activator.CreateInstance(type, true);
+                ((AggregateBase)emptyAggregate).SetState(id);
                 return emptyAggregate;
             }
 
-            var aggregate = (IAggregate) Activator.CreateInstance(eventTypeLookupStrategy.Resolve(events[0].Category));
+            var aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(events[0].Category));
 
             foreach (var eventDb in events.OrderBy(x => x.Version))
             {
@@ -86,7 +86,7 @@ namespace NEvilES.DataStore
                 message.StreamId = eventDb.StreamId;
                 aggregate.ApplyEvent(message);
             }
-            ((AggregateBase) aggregate).SetState(id);
+            ((AggregateBase)aggregate).SetState(id);
 
             return aggregate;
         }
@@ -123,13 +123,13 @@ namespace NEvilES.DataStore
                         $"Attempt to get stateless instance of a non-constructable aggregate with stream: {id}");
                 }
 
-                aggregate = (IAggregate) Activator.CreateInstance(type, true);
+                aggregate = (IAggregate)Activator.CreateInstance(type, true);
             }
             else
             {
-                aggregate = (IAggregate) Activator.CreateInstance(eventTypeLookupStrategy.Resolve(category));
+                aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(category));
             }
-            ((AggregateBase) aggregate).SetState(id, version ?? 0);
+            ((AggregateBase)aggregate).SetState(id, version ?? 0);
 
             return aggregate;
         }
@@ -206,7 +206,7 @@ namespace NEvilES.DataStore
             return param;
         }
 
-        public IEnumerable<AggregateCommit> Read(int from = 0, int to = 0)
+        public IEnumerable<AggregateCommit> Read(Int64 from = 0, Int64 to = 0)
         {
             using (var cmd = transaction.Connection.CreateCommand())
             {
@@ -219,25 +219,66 @@ namespace NEvilES.DataStore
                 else
                 {
                     cmd.CommandText = "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events WHERE id BETWEEN @from AND @to ORDER BY id";
-                    CreateParam(cmd, "@from", DbType.Int32, from);
-                    CreateParam(cmd, "@to", DbType.Int32, to);
+                    CreateParam(cmd, "@from", DbType.Int64, from);
+                    CreateParam(cmd, "@to", DbType.Int64, to);
                 }
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var streamId = reader.GetGuid(0);
-                        var metadata = reader.GetString(1);
-                        var type = eventTypeLookupStrategy.Resolve(reader.GetString(2));
-                        var @event = (IEvent)JsonConvert.DeserializeObject(reader.GetString(3), type); @event.StreamId = streamId;
-                        var who = reader.GetGuid(4);
-                        var when = reader.GetDateTime(5);
-                        var version = reader.GetInt32(6);
 
-                        var eventData = (IEventData)new EventData(type, @event, when, version);
-                        yield return new AggregateCommit(streamId, who, metadata, new[] { eventData });
-                    }
+                return ReadToAggregateCommits(cmd);
+            }
+        }
+
+        private IEventData ReadToIEventData(Guid streamId, IDataReader reader)
+        {
+
+            var type = eventTypeLookupStrategy.Resolve(reader.GetString(2));
+            var @event = (IEvent)JsonConvert.DeserializeObject(reader.GetString(3), type); @event.StreamId = streamId;
+
+            var when = reader.GetDateTime(5);
+            var version = reader.GetInt32(6);
+
+            var eventData = (IEventData)new EventData(type, @event, when, version);
+            return eventData;
+        }
+
+        private IEnumerable<AggregateCommit> ReadToAggregateCommits(IDbCommand cmd)
+        {
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var streamId = reader.GetGuid(0);
+                    var metadata = reader.GetString(1);
+                    var who = reader.GetGuid(4);
+
+                    var eventData = ReadToIEventData(streamId, reader);
+                    yield return new AggregateCommit(streamId, who, metadata, new[] { eventData });
                 }
+            }
+        }
+
+        public IEnumerable<AggregateCommit> Read(Guid streamId)
+        {
+            using (var cmd = transaction.Connection.CreateCommand())
+            {
+                cmd.Transaction = transaction;
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events WHERE streamid = @streamid order by id";
+                CreateParam(cmd, "@streamid", DbType.Guid, streamId);
+
+                return ReadToAggregateCommits(cmd);
+            }
+        }
+        public IEnumerable<AggregateCommit> ReadLatestLimit(Guid streamId, int limit = 50)
+        {
+            using (var cmd = transaction.Connection.CreateCommand())
+            {
+                cmd.Transaction = transaction;
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events WHERE streamid = @streamid order by id DESC limit @limit";
+                CreateParam(cmd, "@streamid", DbType.Guid, streamId);
+                CreateParam(cmd, "@limit", DbType.Int32, limit);
+
+                return ReadToAggregateCommits(cmd);
             }
         }
     }
