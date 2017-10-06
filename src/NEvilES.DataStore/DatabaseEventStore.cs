@@ -8,7 +8,7 @@ using NEvilES.Pipeline;
 
 namespace NEvilES.DataStore
 {
-    public class DatabaseEventStore : IRepository, IAccessDataStore
+    public class DatabaseEventStore : IRepository, IAggregateHistory
     {
         private readonly IDbTransaction transaction;
         private readonly IEventTypeLookupStrategy eventTypeLookupStrategy;
@@ -35,7 +35,8 @@ namespace NEvilES.DataStore
             return (TAggregate)Get(typeof(TAggregate), id);
         }
 
-        public IAggregate Get(Type type, Guid id)
+        public IAggregate Get(Type type, Guid id) => Get(type, id, null);
+        public IAggregate Get(Type type, Guid id, Int64? version)
         {
             var events = new List<EventDb>();
             using (var cmd = transaction.Connection.CreateCommand())
@@ -44,7 +45,14 @@ namespace NEvilES.DataStore
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
                     @"SELECT id, category, streamid, transactionid, metadata, bodytype, body, who, _when
-, version, appversion FROM events WHERE streamid=@StreamId ORDER BY id";
+, version, appversion FROM events WHERE streamid=@StreamId";
+                if (version.HasValue)
+                {
+                    cmd.CommandText += " and version <= @Version";
+                    CreateParam(cmd, "@Version", DbType.Int64, version);
+                }
+
+                cmd.CommandText += " ORDER BY id";
                 CreateParam(cmd, "@StreamId", DbType.Guid, id);
 
                 using (var reader = cmd.ExecuteReader())
@@ -268,7 +276,7 @@ namespace NEvilES.DataStore
                 return ReadToAggregateCommits(cmd);
             }
         }
-        public IEnumerable<AggregateCommit> ReadLatestLimit(Guid streamId, int limit = 50)
+        public IEnumerable<AggregateCommit> ReadNewestLimit(Guid streamId, int limit = 50)
         {
             using (var cmd = transaction.Connection.CreateCommand())
             {
@@ -276,10 +284,15 @@ namespace NEvilES.DataStore
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events WHERE streamid = @streamid order by id DESC limit @limit";
                 CreateParam(cmd, "@streamid", DbType.Guid, streamId);
-                CreateParam(cmd, "@limit", DbType.Int32, limit);
+                CreateParam(cmd, "@limit", DbType.Int32, null, limit);
 
                 return ReadToAggregateCommits(cmd);
             }
+        }
+
+        public TAggregate GetVersion<TAggregate>(Guid id, Int64 version) where TAggregate : IAggregate
+        {
+            return (TAggregate)Get(typeof(TAggregate), id, version);
         }
     }
 }

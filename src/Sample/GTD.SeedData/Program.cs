@@ -34,7 +34,7 @@ namespace GTD.SeedData
 
             using (var scope = container.BeginLifetimeScope())
             {
-                ReplayEvents.Replay(container.Resolve<IFactory>(), scope.Resolve<IAccessDataStore>());
+                ReplayEvents.Replay(container.Resolve<IFactory>(), scope.Resolve<IAggregateHistory>());
             }
             var reader = (InMemoryReadModel)container.Resolve<IReadFromReadModel>();
             var client1 = reader.Query<ReadModel.Client>(x => x.Name == "FBI").ToArray();
