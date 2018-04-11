@@ -85,14 +85,14 @@ namespace NEvilES.Tests
 
             var agg = new ChatRoom.Aggregate();
             agg.Handle(new ChatRoom.Create() { StreamId = streamId, Name = "Bobs Chat", InitialUsers = new HashSet<Guid> { user1 } });
-            agg.Handle(new ChatRoom.IncludeUserInRoom() {StreamId = streamId, UserId = user2});
-            agg.Handle(new ChatRoom.IncludeUserInRoom() {StreamId = streamId, UserId = user3});
+            agg.Handle(new ChatRoom.IncludeUserInRoom() { StreamId = streamId, UserId = user2 });
+            agg.Handle(new ChatRoom.IncludeUserInRoom() { StreamId = streamId, UserId = user3 });
 
             var expected = repository.Save(agg);
             Assert.NotNull(expected);
-            Assert.Equal(expected.StreamId, streamId);
-            Assert.Equal(expected.UpdatedEvents.Length, 3);
-            Assert.Equal(agg.Version,3);
+            Assert.Equal(streamId, expected.StreamId);
+            Assert.Equal(3, expected.UpdatedEvents.Length);
+            Assert.Equal(3, agg.Version);
         }
 
         // [Fact]

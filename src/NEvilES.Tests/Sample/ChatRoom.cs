@@ -76,6 +76,7 @@ namespace NEvilES.Tests.Sample
 
             private void Apply(Created e)
             {
+                Id = e.StreamId;
                 Name = e.Name;
                 UsersInRoom = e.InitialUsers;
             }
