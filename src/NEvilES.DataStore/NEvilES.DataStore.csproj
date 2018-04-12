@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard1.5</TargetFrameworks>
+    <TargetFrameworks>netstandard1.5</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>NEvilES.DataStore</AssemblyName>
     <PackageId>NEvilES.DataStore</PackageId>
     <Description>.Net Evil Event Sourcing Data Store</Description>
     <VersionPrefix>0.0.1</VersionPrefix>
+    <Version>1.0.2-alpha4</Version>
     <Authors>Craig Gardiner</Authors>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -22,12 +23,6 @@
     <ProjectReference Include="../NEvilES/NEvilES.csproj" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <ProjectReference Include="../NEvilES/NEvilES.csproj" />
-    <Reference Include="System.Data" />
-    <Reference Include="System" />
   </ItemGroup>
 
 </Project>

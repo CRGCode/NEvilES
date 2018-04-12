@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace NEvilES
-{ 
+{
     public class InMemoryEventStore : IRepository
     {
         private class EventDb
@@ -102,7 +102,7 @@ namespace NEvilES
         {
             if (aggregate.Id == Guid.Empty)
             {
-                throw new Exception($"The aggregate {aggregate.GetType().FullName} has tried to be saved will an empty id");
+                throw new Exception($"The aggregate {aggregate.GetType().FullName} has tried to be saved with an empty id");
             }
 
             var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();

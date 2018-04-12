@@ -21,9 +21,9 @@ namespace NEvilES.Pipeline
         void Update<T>(T item) where T : class, IHaveIdentity;
     }
 
-    public static class ReplayEvents 
+    public static class ReplayEvents
     {
-        public static void Replay(IFactory factory, IAccessDataStore reader,  int from = 0, int to = 0)
+        public static void Replay(IFactory factory, IAggregateHistory reader,  Int64 from = 0, Int64 to = 0)
         {
             foreach (var commit in reader.Read(from,to))
             {
@@ -32,8 +32,12 @@ namespace NEvilES.Pipeline
         }
     }
 
-    public interface IAccessDataStore
+    public interface IAggregateHistory
     {
-        IEnumerable<AggregateCommit> Read(int from = 0, int to = 0);
+        IEnumerable<AggregateCommit> Read(Int64 from = 0, Int64 to = 0);
+        IEnumerable<AggregateCommit> Read(Guid streamId);
+        IEnumerable<AggregateCommit> ReadNewestLimit(Guid streamId, int limit = 50);
+        TAggregate GetVersion<TAggregate>(Guid id, Int64 version) where TAggregate : IAggregate;
+
     }
 }

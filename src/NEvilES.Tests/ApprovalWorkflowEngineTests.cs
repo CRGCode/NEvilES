@@ -26,7 +26,7 @@ namespace NEvilES.Tests
         }
 
         private static readonly Type ApproverType = typeof(ApprovalWorkflowEngine);
-        
+
         public object GetCommandUsingReflection(ApprovalWorkflowEngine approver, Approval.InnerCommand innerCommand)
         {
             var method = ApproverType.GetTypeInfo().GetMethod("UnwrapCommand");

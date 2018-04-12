@@ -18,7 +18,7 @@ namespace NEvilES.Pipeline
             this.commandContext = commandContext;
         }
 
-        public CommandResult Process(TCommand command)
+        public virtual CommandResult Process(TCommand command)
         {
             var result = Execute(command);
 
@@ -75,7 +75,7 @@ namespace NEvilES.Pipeline
                 {
                     commandHandler.Handle(command);
                 }
-                // Version using reflection 
+                // Version using reflection
                 //foreach (var commandHandler in commandHandlers)
                 //{
                 //    var method = commandHandler.GetType().GetMethod("Handle");
