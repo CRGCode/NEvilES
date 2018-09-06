@@ -1,4 +1,5 @@
 ﻿using System;
+using NEvilES.Abstractions;
 
 namespace NEvilES.Tests.Sample
 {
@@ -12,7 +13,7 @@ namespace NEvilES.Tests.Sample
 
         public class Created : Create, IEvent
         {
-            
+
         }
 
         public class Refunded : IEvent
@@ -48,7 +49,7 @@ namespace NEvilES.Tests.Sample
             {
                 if (validate.Dispatch(command).IsValid)
                 {
-                    
+
                 }
                 Raise<Created>(command);
             }

@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Pipeline
 {
@@ -10,15 +13,15 @@ namespace NEvilES.Pipeline
         where TCommand : IMessage
     {
         private readonly IFactory factory;
-        private readonly CommandContext commandContext;
+        private readonly ICommandContext commandContext;
 
-        public CommandProcessor(IFactory factory, CommandContext commandContext)
+        public CommandProcessor(IFactory factory, ICommandContext commandContext)
         {
             this.factory = factory;
             this.commandContext = commandContext;
         }
 
-        public virtual CommandResult Process(TCommand command)
+        public virtual ICommandResult Process(TCommand command)
         {
             var result = Execute(command);
 
@@ -26,12 +29,12 @@ namespace NEvilES.Pipeline
             return commandContext.Result.Add(projectResults);
         }
 
-        public CommandResult Execute<T>(T command) where  T : IMessage
+        public ICommandResult Execute<T>(T command) where T : IMessage
         {
             var commandResult = new CommandResult();
             var commandType = command.GetType();
             var streamId = command.StreamId;
-            var repo = (IRepository) factory.Get(typeof(IRepository));
+            var repo = (IRepository)factory.Get(typeof(IRepository));
 
             if (command is ICommand)
             {
@@ -49,7 +52,7 @@ namespace NEvilES.Pipeline
 
                     var handler = aggHandler.Handlers[commandType];
                     var parameters = handler.GetParameters();
-                    var deps = new object[] {command}.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
+                    var deps = new object[] { command }.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
 
                     try
                     {
@@ -88,8 +91,8 @@ namespace NEvilES.Pipeline
                 var singleAggHandler = factory.TryGet(type);
 
                 var agg = repo.GetStateless(singleAggHandler?.GetType(), streamId);
-                // TODO don't like the cast below of command to IEvent
-                agg.RaiseStateless((IEvent) command);
+                // // TODO don't like the cast below of command to IEvent
+                agg.RaiseStateless((IEvent)command);
                 var commit = repo.Save(agg);
                 commandResult.Append(commit);
             }
@@ -99,7 +102,7 @@ namespace NEvilES.Pipeline
 
     public static class ReadModelProjectorHelper
     {
-        public static CommandResult Project(CommandResult commandResult, IFactory factory, CommandContext commandContext)
+        public static ICommandResult Project(ICommandResult commandResult, IFactory factory, ICommandContext commandContext)
         {
             if (!commandResult.UpdatedAggregates.Any())
             {
@@ -121,7 +124,7 @@ namespace NEvilES.Pipeline
                         try
                         {
 #endif
-                            ((dynamic)projector).Project((dynamic)message.Event, data);
+                        ((dynamic)projector).Project((dynamic)message.Event, data);
 #if !DEBUG
                         }
                         catch (Exception e)
@@ -140,7 +143,7 @@ namespace NEvilES.Pipeline
                         try
                         {
 #endif
-                        ProjectorResult result = ((dynamic)projector).Project((dynamic)message.Event, data);
+                        IProjectorResult result = ((dynamic)projector).Project((dynamic)message.Event, data);
                         commandResult.ReadModelItems.AddRange(result.Items);
 #if !DEBUG
                         }
@@ -157,14 +160,6 @@ namespace NEvilES.Pipeline
         }
     }
 
-
-    public class CommandHandlerException : Exception
-    {
-        public CommandHandlerException(Exception exception, string message, params object[] args)
-            : base(string.Format(message, args), exception)
-        {
-        }
-    }
 
     public class ProjectorException : Exception
     {

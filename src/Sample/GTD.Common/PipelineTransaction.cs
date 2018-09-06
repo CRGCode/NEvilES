@@ -1,11 +1,12 @@
 using System;
 using System.Data;
 using NEvilES;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 
 namespace GTD.Common
 {
-    public class PipelineTransaction : CommandContext.TransactionBase, IDisposable
+    public class PipelineTransaction : TransactionBase, IDisposable
     {
         private readonly IDbConnection connection;
         private readonly IDbTransaction transaction;

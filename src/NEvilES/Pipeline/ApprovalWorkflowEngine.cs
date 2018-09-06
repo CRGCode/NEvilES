@@ -1,12 +1,14 @@
 using System;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 using Newtonsoft.Json;
 
 namespace NEvilES.Pipeline
 {
     public interface IApprovalWorkflowEngine
     {
-        CommandResult Initiate<TCommand>(TCommand command) where TCommand : IMessage;
-        CommandResult Transition(Guid id, string toState);
+        ICommandResult Initiate<TCommand>(TCommand command) where TCommand : IMessage;
+        ICommandResult Transition(Guid id, string toState);
     }
 
     public class ApprovalWorkflowEngine : IApprovalWorkflowEngine
@@ -20,7 +22,7 @@ namespace NEvilES.Pipeline
             _repository = repository;
         }
 
-        public CommandResult Initiate<TCommand>(TCommand command) where TCommand : IMessage
+        public ICommandResult Initiate<TCommand>(TCommand command) where TCommand : IMessage
         {
             return _commandProcessor.Process(new Approval.Create(CombGuid.NewGuid(), Approval.InnerCommand.Wrap(command)));
         }
@@ -33,7 +35,7 @@ namespace NEvilES.Pipeline
         }
 
         const string ApprovalEntryPoint = "Approved";
-        public CommandResult Transition(Guid id, string toState)
+        public ICommandResult Transition(Guid id, string toState)
         {
             //var newState = _secRequestWorkflowProvider.Fire(toState);
             var newState = toState;

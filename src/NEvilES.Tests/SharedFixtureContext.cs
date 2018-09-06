@@ -4,7 +4,10 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore;
+using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 using NEvilES.Tests.Sample;
 using NEvilES.Tests.Sample.ReadModel;
@@ -57,7 +60,7 @@ namespace NEvilES.Tests
                 x.For<IReadModel>().Use<TestReadModel>();
 
                 x.For<IConnectionString>().Use(s => new ConnectionString(configuration.GetConnectionString(connString))).Singleton();
-                x.For<CommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
+                x.For<ICommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
                 x.For<IDbConnection>().Use("Connection", s => new SqlConnection(s.GetInstance<IConnectionString>().Data));
                 x.For<IDbTransaction>().Use("Transaction", s => s.GetInstance<IDbConnection>().BeginTransaction());
             });

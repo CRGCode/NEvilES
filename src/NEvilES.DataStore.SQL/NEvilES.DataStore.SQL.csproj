@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.5;netstandard2.0</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <AssemblyName>NEvilES.DataStore</AssemblyName>
+    <PackageId>NEvilES.DataStore</PackageId>
+    <Description>.Net Evil Event Sourcing Data Store</Description>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <Version>1.1.0-alpha2</Version>
+    <Authors>Craig Gardiner;Elijah Bate</Authors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../NEvilES/NEvilES.csproj" />
+    <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.1" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+    <PackageReference Include="System.Linq" Version="4.3.0" />
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>

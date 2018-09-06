@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GTD.Common;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 
 namespace GTD.ReadModel
@@ -42,19 +43,19 @@ namespace GTD.ReadModel
                 this.writer = writer;
             }
 
-            public void Project(Domain.Client.Created message, ProjectorData data)
+            public void Project(Domain.Client.Created message, IProjectorData data)
             {
                 writer.Insert(new Client(message.StreamId, message.Name));
             }
 
-            public void Project(Domain.Client.UserNotificationAdded message, ProjectorData data)
+            public void Project(Domain.Client.UserNotificationAdded message, IProjectorData data)
             {
                 var client = reader.Get<Client>(message.StreamId);
                 client.NotificationEndPoints.Add(new NotificationEndPoint(message.EmailAddress));
                 writer.Update(client);
             }
 
-            public void Project(Domain.Client.UserNotificationRemoved message, ProjectorData data)
+            public void Project(Domain.Client.UserNotificationRemoved message, IProjectorData data)
             {
                 var client = reader.Get<Client>(message.StreamId);
                 client.NotificationEndPoints.Remove(client.NotificationEndPoints.First(x => x.EmailAddress == message.EmailAddress));

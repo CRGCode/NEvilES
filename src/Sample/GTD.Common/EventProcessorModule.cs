@@ -1,7 +1,10 @@
 using System.Reflection;
 using Autofac;
 using NEvilES;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore;
+using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 
 namespace GTD.Common
@@ -34,13 +37,13 @@ namespace GTD.Common
             builder.RegisterType<SecurityContext>().As<ISecurityContext>().InstancePerLifetimeScope();
             builder.RegisterType<DatabaseEventStore>().AsImplementedInterfaces().InstancePerLifetimeScope();
             builder.RegisterType<Factory>().As<IFactory>().InstancePerLifetimeScope();
-            builder.RegisterType<PipelineTransaction>().As<CommandContext.ITransaction>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<PipelineTransaction>().As<ITransaction>().AsSelf().InstancePerLifetimeScope();
 
             builder.Register(c =>
             {
-                var transaction = c.Resolve<CommandContext.ITransaction>();
-                var user = c.ResolveNamed<CommandContext.IUser>("user");
-                var impersonatedBy = c.ResolveOptionalNamed<CommandContext.IUser>("impersonator");
+                var transaction = c.Resolve<ITransaction>();
+                var user = c.ResolveNamed<IUser>("user");
+                var impersonatedBy = c.ResolveOptionalNamed<IUser>("impersonator");
                 return new CommandContext(user, transaction, impersonatedBy, version);
             }).As<CommandContext>().InstancePerLifetimeScope();
         }

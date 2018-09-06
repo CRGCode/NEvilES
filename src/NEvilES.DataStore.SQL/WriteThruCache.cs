@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NEvilES.DataStore
+namespace NEvilES.DataStore.SQL
 {
     // https://arbel.net/2013/02/03/best-practices-for-using-concurrentdictionary/
     // http://www.c-sharpcorner.com/UploadFile/ff2f08/anonymous-types-in-C-Sharp/

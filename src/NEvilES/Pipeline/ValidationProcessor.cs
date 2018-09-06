@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security;
+using System.Threading.Tasks;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Pipeline
 {
-    public class ValidationProcessor<T> : IProcessPipelineStage<T>
+     public class ValidationProcessor<T> : IProcessPipelineStage<T>
         where T : IMessage
     {
         private readonly IFactory factory;
@@ -17,7 +20,7 @@ namespace NEvilES.Pipeline
             this.innerCommand = innerCommand;
         }
 
-        public CommandResult Process(T command)
+        public ICommandResult Process(T command)
         {
             var validators = factory.GetAll(typeof(INeedExternalValidation<T>)).Cast<INeedExternalValidation<T>>().ToArray();
             if (!validators.Any())

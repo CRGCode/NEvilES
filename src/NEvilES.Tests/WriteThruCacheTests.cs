@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NEvilES.DataStore;
+using NEvilES.DataStore.SQL;
 
 namespace NEvilES.Tests
 {
@@ -114,7 +115,7 @@ namespace NEvilES.Tests
         }
     }
 
-    public class User 
+    public class User
     {
         public User(int userId, UserStatus status)
         {

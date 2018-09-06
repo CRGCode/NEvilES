@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using GTD.Common;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 
 namespace GTD.ReadModel
@@ -44,6 +45,16 @@ namespace GTD.ReadModel
         public int Count()
         {
             return data.Count;
+        }
+
+        void IWriteReadModel.Save<T>(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IWriteReadModel.Delete<T>(T item)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NEvilES.Abstractions;
 
 namespace NEvilES.Tests
 {
@@ -13,7 +14,7 @@ namespace NEvilES.Tests
             aggregates = new Dictionary<Guid, IAggregate>();
         }
 
-        public AggregateCommit Save(IAggregate aggregate)
+        public IAggregateCommit Save(IAggregate aggregate)
         {
             if (aggregate.Id == Guid.Empty)
             {

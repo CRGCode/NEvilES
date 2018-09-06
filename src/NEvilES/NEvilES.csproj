@@ -1,25 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>netstandard1.5</TargetFrameworks>
+        <TargetFrameworks>netstandard1.5;netstandard2.0</TargetFrameworks>
         <DebugType>portable</DebugType>
         <AssemblyName>NEvilES</AssemblyName>
         <PackageId>NEvilES</PackageId>
         <Description>.Net Evil Event Sourcing Core</Description>
         <VersionPrefix>0.0.1</VersionPrefix>
-        <Authors>Craig Gardiner</Authors>
-        <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-        <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-        <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-        <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-        <Version>1.0.2-alpha4</Version>
+        <Authors>Craig Gardiner;Elijah Bate</Authors>
+        <Version>1.1.0-alpha2</Version>
         <PackageProjectUrl>github.com/CRGCode/NEvilES</PackageProjectUrl>
         <RepositoryUrl>github.com/CRGCode/NEvilES</RepositoryUrl>
         <PackageTags>event-sourcing event-store cqrs</PackageTags>
     </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" />
+    </ItemGroup>
+
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="Newtonsoft.Json" Version="10.0.1" />
+    </ItemGroup>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
         <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>

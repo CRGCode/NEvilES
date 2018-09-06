@@ -1,4 +1,5 @@
 using System;
+using NEvilES.Abstractions;
 
 namespace NEvilES.Tests.Sample
 {
@@ -30,7 +31,7 @@ namespace NEvilES.Tests.Sample
         {
             public void Handle(PayBonus command)
             {
-                //RaiseEvent<PaidBonus>(command);                
+                //RaiseEvent<PaidBonus>(command);
                 Raise<PaidBonus>(command);
             }
 

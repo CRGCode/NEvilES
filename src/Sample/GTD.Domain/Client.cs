@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NEvilES;
+using NEvilES.Abstractions;
 
 namespace GTD.Domain
 {
@@ -72,7 +73,7 @@ namespace GTD.Domain
         {
             public CommandValidationResult Dispatch(NewClient command)
             {
-                // Check ReadModel 
+                // Check ReadModel
                 return new CommandValidationResult(true);
             }
         }

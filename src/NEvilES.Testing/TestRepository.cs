@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NEvilES.Abstractions;
 
 namespace NEvilES.Testing
 {
@@ -35,7 +36,7 @@ namespace NEvilES.Testing
 
     public class Given<T> : Given where T : AggregateBase
     {
-        public Given(Guid streamId, Type type, params IEvent[] events) 
+        public Given(Guid streamId, Type type, params IEvent[] events)
             : base(streamId, type, events)
         {
         }
@@ -63,7 +64,7 @@ namespace NEvilES.Testing
 
         public TestRepository() : this(new Dictionary<Guid, Given>())
         {
-            
+
         }
 
         public TestRepository(Dictionary<Guid, Given> existingEvents)
@@ -117,6 +118,11 @@ namespace NEvilES.Testing
         public IAggregate GetStateless(Type type, Guid id)
         {
             return null;
+        }
+
+        IAggregateCommit IRepository.Save(IAggregate aggregate)
+        {
+            throw new NotImplementedException();
         }
     }
 }

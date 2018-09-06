@@ -9,6 +9,7 @@ using Xunit;
 using Xunit.Abstractions;
 using NEvilES.Pipeline;
 using NEvilES.Tests.Sample;
+using NEvilES.Abstractions;
 
 namespace NEvilES.Tests
 {

@@ -14,7 +14,7 @@
         <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     </PropertyGroup>
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
-        <ProjectReference Include="..\NEvilES.DataStore\NEvilES.DataStore.csproj" />
+        <ProjectReference Include="..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
         <PackageReference Include="xunit" Version="2.2.0" />
     </ItemGroup>
     <ItemGroup>

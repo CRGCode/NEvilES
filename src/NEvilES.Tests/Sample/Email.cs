@@ -1,4 +1,5 @@
 using System;
+using NEvilES.Abstractions;
 
 namespace NEvilES.Tests.Sample
 {

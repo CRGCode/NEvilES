@@ -1,20 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Pipeline
 {
-    public interface IProject<in T> where T : IEvent
-    {
-        void Project(T message, ProjectorData data);
-    }
-
-    public interface IProjectWithResult<in T> where T : IEvent
-    {
-        ProjectorResult Project(T message, ProjectorData data);
-    }
-
-    public class ProjectorResult
+    public class ProjectorResult : IProjectorResult
     {
         public object[] Items { get; private set; }
 
@@ -23,14 +14,14 @@ namespace NEvilES.Pipeline
             Items = updatedObjects.ToArray();
         }
 
-        public ProjectorResult(params object[] updatedObjects) : this((IEnumerable <object>)updatedObjects)
+        public ProjectorResult(params object[] updatedObjects) : this((IEnumerable<object>)updatedObjects)
         {
         }
     }
 
-    public class ProjectorData
+    public class ProjectorData : IProjectorData
     {
-        public ProjectorData(Guid streamId, CommandContext commandContext, Type type, object @event, DateTime timeStamp, int version)
+        public ProjectorData(Guid streamId, ICommandContext commandContext, Type type, object @event, DateTime timeStamp, int version)
         {
             StreamId = streamId;
             CommandContext = commandContext;
@@ -41,8 +32,8 @@ namespace NEvilES.Pipeline
         }
 
         public Guid StreamId { get; private set; }
-        public CommandContext CommandContext { get; set; }
-        public CommandContext.IUser By => CommandContext.By;
+        public ICommandContext CommandContext { get; set; }
+        public IUser By => CommandContext.By;
         public Type Type { get; private set; }
         public object Event { get; private set; }
         public DateTime TimeStamp { get; private set; }

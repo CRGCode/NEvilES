@@ -5,8 +5,10 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NEvilES.Pipeline;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 
-namespace NEvilES.DataStore
+namespace NEvilES.DataStore.SQL
 {
     public class DatabaseEventStore : IRepository, IAggregateHistory
     {
@@ -65,7 +67,7 @@ namespace NEvilES.DataStore
                             Category = reader.GetString(1),
                             StreamId = reader.GetGuid(2),
                             TransactionId = reader.GetGuid(3),
-                            Metadata = reader.GetString(4),
+                            // Metadata = "",
                             BodyType = reader.GetString(5),
                             Body = reader.GetString(6),
                             Who = reader.GetGuid(7),
@@ -142,7 +144,7 @@ namespace NEvilES.DataStore
             return aggregate;
         }
 
-        public AggregateCommit Save(IAggregate aggregate)
+        public IAggregateCommit Save(IAggregate aggregate)
         {
             if (aggregate.Id == Guid.Empty)
             {
@@ -184,7 +186,7 @@ namespace NEvilES.DataStore
                     category.Value = aggregate.GetType().FullName;
                     bodyType.Value = eventData.Type.FullName;
                     by.Value = commandContext.ImpersonatorBy?.GuidId ?? commandContext.By.GuidId;
-                    metaData.Value = metadata;
+                    metaData.Value = "";
 
                     cmd.ExecuteNonQuery();
                     count++;
@@ -214,7 +216,7 @@ namespace NEvilES.DataStore
             return param;
         }
 
-        public IEnumerable<AggregateCommit> Read(Int64 from = 0, Int64 to = 0)
+        public IEnumerable<IAggregateCommit> Read(Int64 from = 0, Int64 to = 0)
         {
             using (var cmd = transaction.Connection.CreateCommand())
             {
@@ -248,7 +250,7 @@ namespace NEvilES.DataStore
             return eventData;
         }
 
-        private IEnumerable<AggregateCommit> ReadToAggregateCommits(IDbCommand cmd)
+        private IEnumerable<IAggregateCommit> ReadToAggregateCommits(IDbCommand cmd)
         {
             using (var reader = cmd.ExecuteReader())
             {
@@ -264,7 +266,7 @@ namespace NEvilES.DataStore
             }
         }
 
-        public IEnumerable<AggregateCommit> Read(Guid streamId)
+        public IEnumerable<IAggregateCommit> Read(Guid streamId)
         {
             using (var cmd = transaction.Connection.CreateCommand())
             {
@@ -276,7 +278,7 @@ namespace NEvilES.DataStore
                 return ReadToAggregateCommits(cmd);
             }
         }
-        public IEnumerable<AggregateCommit> ReadNewestLimit(Guid streamId, int limit = 50)
+        public IEnumerable<IAggregateCommit> ReadNewestLimit(Guid streamId, int limit = 50)
         {
             using (var cmd = transaction.Connection.CreateCommand())
             {

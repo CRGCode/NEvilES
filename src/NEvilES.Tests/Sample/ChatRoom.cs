@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NEvilES.Abstractions;
 
 namespace NEvilES.Tests.Sample
 {

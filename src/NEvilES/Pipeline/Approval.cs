@@ -1,4 +1,5 @@
 using System;
+using NEvilES.Abstractions;
 
 namespace NEvilES.Pipeline
 {
@@ -15,7 +16,7 @@ namespace NEvilES.Pipeline
                 return new InnerCommand(typeof(T), command, command.StreamId);
             }
 
-            public InnerCommand(Type type, object command, Guid commandStreamId) 
+            public InnerCommand(Type type, object command, Guid commandStreamId)
             {
                 Type = type;
                 Command = command;

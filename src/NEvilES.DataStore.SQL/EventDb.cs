@@ -1,8 +1,9 @@
 ﻿using System;
+using NEvilES.Abstractions.DataStore;
 
-namespace NEvilES.DataStore
+namespace NEvilES.DataStore.SQL
 {
-    public class EventDb
+    public class EventDb : IEventRow
     {
         public Int64 Id { get; set; }
         public string Category { get; set; }
@@ -16,6 +17,6 @@ namespace NEvilES.DataStore
         public int Version { get; set; }
 
         //Do we really need this?
-        public string Metadata { get; set; }
+        // public string Metadata { get; set; }
     }
 }

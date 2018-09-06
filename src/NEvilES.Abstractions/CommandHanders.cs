@@ -1,16 +1,18 @@
-// ReSharper disable UnusedMember.Global
-// ReSharper disable UnusedMemberInSuper.Global
-// ReSharper disable UnusedTypeParameter
-// ReSharper disable TypeParameterCanBeVariant
+using System.Threading.Tasks;
 
-namespace NEvilES
+namespace NEvilES.Abstractions
 {
     public interface IProcessCommand<T> where T : ICommand
     {
         void Handle(T command);
     }
 
-    public interface IHandleStatelessEvent<T> where T : IEvent {}
+    public interface IProcessCommandAsync<T> where T : ICommand
+    {
+        Task HandleAsync(T command);
+    }
+
+    public interface IHandleStatelessEvent<T> where T : IEvent { }
 
     public interface IHandleAggregateCommand<T> : IHandleAggregateCommandMarker<T> where T : ICommand
     {

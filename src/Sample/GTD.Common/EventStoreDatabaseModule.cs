@@ -1,7 +1,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using Autofac;
-using NEvilES.DataStore;
+using NEvilES.DataStore.SQL;
 using Module = Autofac.Module;
 
 namespace GTD.Common
@@ -52,11 +52,11 @@ DECLARE @FILENAME AS VARCHAR(255)
 
 SET @FILENAME = CONVERT(VARCHAR(255), SERVERPROPERTY('instancedefaultdatapath')) + '{0}';
 
-EXEC ('CREATE DATABASE [{0}] ON PRIMARY 
-	(NAME = [{0}], 
-	FILENAME =''' + @FILENAME + ''', 
-	SIZE = 25MB, 
-	MAXSIZE = 50MB, 
+EXEC ('CREATE DATABASE [{0}] ON PRIMARY
+	(NAME = [{0}],
+	FILENAME =''' + @FILENAME + ''',
+	SIZE = 25MB,
+	MAXSIZE = 50MB,
 	FILEGROWTH = 5MB )')
 ", connString.Keys["Database"]);
 

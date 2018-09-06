@@ -1,3 +1,3 @@
 @echo off
-	dotnet restore .\src\NEvilES.sln
-	dotnet build .\src\NEvilES.sln -c Release
+	dotnet restore .\NEvilES.sln
+	dotnet build .\NEvilES.sln -c Release

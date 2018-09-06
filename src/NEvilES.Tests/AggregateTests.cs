@@ -4,6 +4,7 @@ using Xunit;
 
 namespace NEvilES.Tests
 {
+    using NEvilES.Abstractions;
     using Sample;
 
     public class AggregateTests

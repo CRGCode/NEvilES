@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using NEvilES.Abstractions;
 
 namespace NEvilES.Testing
 {
@@ -28,7 +29,7 @@ namespace NEvilES.Testing
 
                 if (largestConstructor == null)
                     return;
-                
+
                 var parameters = largestConstructor.GetParameters();
                 var props = @event.GetProperties(BindingFlags.Public | BindingFlags.Instance);
                 foreach (var param in parameters)

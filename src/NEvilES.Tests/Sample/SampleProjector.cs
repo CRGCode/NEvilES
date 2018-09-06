@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 
 namespace NEvilES.Tests.Sample
 {
-    public class SampleProjector : 
-        IProjectWithResult<Person.Created>, 
+    public class SampleProjector :
+        IProjectWithResult<Person.Created>,
         IProjectWithResult<Person.NameCorrectedV2>
     {
         private readonly IReadModel db;
@@ -15,13 +16,13 @@ namespace NEvilES.Tests.Sample
             this.db = db;
         }
 
-        public ProjectorResult Project(Person.Created message, ProjectorData data)
+        public IProjectorResult Project(Person.Created message, IProjectorData data)
         {
             db.People.Add(message.StreamId, message.Person);
             return new ProjectorResult(message.Person);
         }
 
-        public ProjectorResult Project(Person.NameCorrectedV2 message, ProjectorData data)
+        public IProjectorResult Project(Person.NameCorrectedV2 message, IProjectorData data)
         {
             var person = db.People[message.StreamId];
             person.FirstName = message.FirstName;
@@ -41,17 +42,17 @@ namespace NEvilES.Tests.Sample
         IProject<Employee.PaidBonus>,
         IProject<Customer.SendEmail>
     {
-        public void Project(Person.Created message, ProjectorData data)
+        public void Project(Person.Created message, IProjectorData data)
         {
             // do something....
         }
 
-        public void Project(Employee.PaidBonus message, ProjectorData data)
+        public void Project(Employee.PaidBonus message, IProjectorData data)
         {
             data.CommandContext.Result.ReadModelItems.Add(message.Amount);
         }
 
-        public void Project(Customer.SendEmail message, ProjectorData data)
+        public void Project(Customer.SendEmail message, IProjectorData data)
         {
             data.CommandContext.Result.ReadModelItems.Add(message.Text);
         }
