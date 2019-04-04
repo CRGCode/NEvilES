@@ -54,6 +54,8 @@ namespace NEvilES.Tests
 
                 x.For<IApprovalWorkflowEngine>().Use<ApprovalWorkflowEngine>();
                 x.For<ICommandProcessor>().Use<PipelineProcessor>();
+                x.For<ISecurityContext>().Use<SecurityContext>();
+                x.For<ICommandProcessor>().Use<PipelineProcessor>();
                 x.For<IEventTypeLookupStrategy>().Add(lookup).Singleton();
                 x.For<IRepository>().Use<InMemoryEventStore>();
                 // x.For<IRepository>().Use<DatabaseEventStore>();

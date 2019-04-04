@@ -25,7 +25,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{46D734C0-32A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Abstractions", "src\NEvilES.Abstractions\NEvilES.Abstractions.csproj", "{3AC8CB1E-D411-4BF5-BD6A-D3A7C570EF00}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Extensions.DependencyInjection", "src\NEvilES.Extensions.DependecyInjection\NEvilES.Extensions.DependencyInjection.csproj", "{F86C8DBA-C566-4B35-A2C7-19DFDD6C7DEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Extensions.DependencyInjection", "src\NEvilES.Extensions.DependencyInjection\NEvilES.Extensions.DependencyInjection.csproj", "{F86C8DBA-C566-4B35-A2C7-19DFDD6C7DEA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvilES.DataStore.LiteDb", "src\NEvilES.DataStore.LiteDb\NEvilES.DataStore.LiteDb.csproj", "{A35B886A-D470-4D79-BCE5-2EF1B63F680F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvilES.DataStore.DynamoDB", "src\NEvilES.DataStore.DynamoDB\NEvilES.DataStore.DynamoDB.csproj", "{A7DE8C14-40FA-4942-BC44-F70B120E50AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -157,6 +161,30 @@ Global
 		{F86C8DBA-C566-4B35-A2C7-19DFDD6C7DEA}.Release|x64.Build.0 = Release|Any CPU
 		{F86C8DBA-C566-4B35-A2C7-19DFDD6C7DEA}.Release|x86.ActiveCfg = Release|Any CPU
 		{F86C8DBA-C566-4B35-A2C7-19DFDD6C7DEA}.Release|x86.Build.0 = Release|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Debug|x64.Build.0 = Debug|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Debug|x86.Build.0 = Debug|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Release|x64.ActiveCfg = Release|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Release|x64.Build.0 = Release|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Release|x86.ActiveCfg = Release|Any CPU
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F}.Release|x86.Build.0 = Release|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Debug|x64.Build.0 = Debug|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Debug|x86.Build.0 = Debug|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Release|x64.ActiveCfg = Release|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Release|x64.Build.0 = Release|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Release|x86.ActiveCfg = Release|Any CPU
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -172,6 +200,8 @@ Global
 		{A6949BB0-FD83-434E-93DA-FF7517B5E54A} = {08722C2B-08B2-4615-8BAF-25EDC0C497BD}
 		{3AC8CB1E-D411-4BF5-BD6A-D3A7C570EF00} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
 		{F86C8DBA-C566-4B35-A2C7-19DFDD6C7DEA} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
+		{A35B886A-D470-4D79-BCE5-2EF1B63F680F} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
+		{A7DE8C14-40FA-4942-BC44-F70B120E50AC} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {572E074A-7E1F-4483-9F6B-7B7711E4BA92}
