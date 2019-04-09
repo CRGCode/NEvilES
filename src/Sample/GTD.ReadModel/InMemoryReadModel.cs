@@ -27,12 +27,12 @@ namespace GTD.ReadModel
             data[item.Id] = item;
         }
 
-        public T Get<T>(Guid id) where T : IHaveIdentity
+        public T Get<T>(Guid id) where T : class, IHaveIdentity
         {
             return (T)data[id];
         }
 
-        public IEnumerable<T> Query<T>(Func<T,bool> p)
+        public IEnumerable<T> Query<T>(Func<T,bool> p) where T : class, IHaveIdentity
         {
             return data.Values.Where(x => x.GetType() == typeof(T)).Cast<T>().Where(p);
         }
