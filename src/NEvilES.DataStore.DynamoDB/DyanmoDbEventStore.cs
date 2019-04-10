@@ -99,93 +99,56 @@ namespace NEvilES.DataStore.DynamoDB
 
         public async Task<IAggregate> GetStatelessAsync(Type type, Guid id)
         {
-            // IAggregate aggregate;
+            IAggregate aggregate;
 
-            // int? version = null;
-            // string category = null;
+            int? version = null;
+            string category = null;
 
-            // // _context.
-            // // using (var cmd = transaction.Connection.CreateCommand())
-            // // {
-            // //     cmd.Transaction = transaction;
-            // //     cmd.CommandType = CommandType.Text;
-            // //     cmd.CommandText =
-            // //         @"SELECT version, category FROM events WHERE StreamId=@StreamId ORDER BY id DESC";
-            // //     CreateParam(cmd, "@StreamId", DbType.Guid, id);
+            var expression = new Expression()
+            {
+                ExpressionStatement = $"{nameof(DynamoDBEventTable.StreamId)} = :sId  AND {nameof(DynamoDBEventTable.Version)} >= :v",
+                ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>{
+                    {":sId",id.ToString()},
+                    {":v",  0}
+                }
+            };
 
-            // //     using (var reader = cmd.ExecuteReader())
-            // //     {
-            // //         if (reader.Read())
-            // //         {
-            // //             version = reader.GetInt32(0);
-            // //             category = reader.GetString(1);
-            // //         }
-            // //     }
-            // // }
+            var query = _context.FromQueryAsync<DynamoDBEventTable>(new QueryOperationConfig()
+            {
+                ConsistentRead = true,
+                KeyExpression = expression,
+                Limit = 1,
+                BackwardSearch = true
+                // Sca
+            });
 
-            // var expression = new Expression()
-            // {
-            //     ExpressionStatement = $"{nameof(EventTableModel.StreamId)} = :sId",
-            //     ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>{
-            //         {":sId",""},
-            //         {":v",  version.Value}
-            //     }
-            // };
+            var events = await query.GetRemainingAsync();
 
-            // if (version.HasValue && version.Value > 0)
-            // {
-            //     expression.ExpressionStatement += $" AND {nameof(EventTableModel.Version)} <= :v";
-            // }
-            // else
-            // {
-            //     expression.ExpressionStatement += $" AND {nameof(EventTableModel.Version)} >= :v";
-            // }
+            if (events.Count > 0)
+            {
+                var firstEvent = events.FirstOrDefault();
 
-            // var query = _context.FromQueryAsync<EventDb>(new QueryOperationConfig()
-            // {
-            //     ConsistentRead = true,
-            //     KeyExpression = expression
-            // });
+                category = firstEvent.Category;
+                version = firstEvent.Version;
+            }
 
-            // var events = await query.GetNextSetAsync();
+            if (category == null)
+            {
+                if (type == null)
+                {
+                    throw new Exception(
+                        $"Attempt to get stateless instance of a non-constructable aggregate with stream: {id}");
+                }
 
-            // if (events.Count == 0)
-            // {
-            //     var emptyAggregate = (IAggregate)Activator.CreateInstance(type, true);
-            //     ((AggregateBase)emptyAggregate).SetState(id);
-            //     return emptyAggregate;
-            // }
+                aggregate = (IAggregate)Activator.CreateInstance(type, true);
+            }
+            else
+            {
+                aggregate = (IAggregate)Activator.CreateInstance(_eventTypeLookupStrategy.Resolve(category));
+            }
+            ((AggregateBase)aggregate).SetState(id, version ?? 0);
 
-            // var aggregate = (IAggregate)Activator.CreateInstance(_eventTypeLookupStrategy.Resolve(events[0].Category));
-
-            // foreach (var eventDb in events.OrderBy(x => x.Version))
-            // {
-            //     var message =
-            //         (IEvent)
-            //         JsonConvert.DeserializeObject(eventDb.Body, _eventTypeLookupStrategy.Resolve(eventDb.BodyType), SerializerSettings);
-            //     message.StreamId = eventDb.StreamId;
-            //     aggregate.ApplyEvent(message);
-            // }
-
-
-            // if (category == null)
-            // {
-            //     if (type == null)
-            //     {
-            //         throw new Exception(
-            //             $"Attempt to get stateless instance of a non-constructable aggregate with stream: {id}");
-            //     }
-
-            //     aggregate = (IAggregate)Activator.CreateInstance(type, true);
-            // }
-            // else
-            // {
-            //     aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(category));
-            // }
-            // ((AggregateBase)aggregate).SetState(id, version ?? 0);
-
-            // return aggregate;
-            return null;
+            return aggregate;
         }
 
         private TransactWriteItem GetDynamoDbTransactItem(IAggregate aggregate, int version, string metadata, IEventData eventData)
@@ -248,10 +211,12 @@ namespace NEvilES.DataStore.DynamoDB
 
                     foreach (var eventData in uncommittedEvents.Skip(count).Take(10))
                     {
+                        //Todo: check actual event version, as it should be correct
                         int eventVersion = (aggregate.Version - uncommittedEvents.Length + count + 1);
                         items.Add(GetDynamoDbTransactItem(aggregate, eventVersion, metadata, eventData));
                         count++;
                     }
+
 
                     var abc = await _dynamoDbClient.TransactWriteItemsAsync(new Amazon.DynamoDBv2.Model.TransactWriteItemsRequest
                     {
