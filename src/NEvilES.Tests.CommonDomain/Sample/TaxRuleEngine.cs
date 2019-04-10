@@ -1,4 +1,4 @@
-namespace NEvilES.Tests.Sample
+namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class TaxRuleEngine
     {

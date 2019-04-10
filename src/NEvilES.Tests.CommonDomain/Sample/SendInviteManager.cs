@@ -2,7 +2,7 @@ using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 
-namespace NEvilES.Tests.Sample
+namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class SendInviteManager : IProcessCommand<Person.SendInvite>
     {

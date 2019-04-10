@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using NEvilES.Abstractions;
 
-namespace NEvilES.Tests.Sample
+namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class ChatRoom
     {

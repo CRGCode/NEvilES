@@ -6,7 +6,7 @@ using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore;
 using NEvilES.Pipeline;
-using NEvilES.Tests.Sample;
+using NEvilES.Tests.CommonDomain.Sample;
 using StructureMap;
 using Xunit;
 using Xunit.Abstractions;

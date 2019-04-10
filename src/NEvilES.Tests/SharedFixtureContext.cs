@@ -9,8 +9,8 @@ using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore;
 using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
-using NEvilES.Tests.Sample;
-using NEvilES.Tests.Sample.ReadModel;
+using NEvilES.Tests.CommonDomain.Sample;
+using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 using StructureMap;
 
 namespace NEvilES.Tests

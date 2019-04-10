@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NEvilES.Tests.Sample.ReadModel
+namespace NEvilES.Tests.CommonDomain.Sample.ReadModel
 {
     public class TestReadModel : IReadModel
     {

@@ -113,13 +113,14 @@ namespace NEvilES.DataStore.DynamoDB
                 }
             };
 
+
             var query = _context.FromQueryAsync<DynamoDBEventTable>(new QueryOperationConfig()
             {
                 ConsistentRead = true,
                 KeyExpression = expression,
                 Limit = 1,
                 BackwardSearch = true
-                // Sca
+                //  Sca
             });
 
             var events = await query.GetRemainingAsync();

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 
-namespace NEvilES.Tests.Sample
+namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class SampleProjector :
         IProjectWithResult<Person.Created>,

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace NEvilES.Tests
 {
-    using Sample;
+    using NEvilES.Tests.CommonDomain.Sample;
 
     public class BDD_StyleTests : BaseAggregateTest<Customer.Aggregate>
     {

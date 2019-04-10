@@ -90,27 +90,21 @@ namespace NEvilES.DataStore.LiteDb
             var metadata = string.Empty;
             try
             {
+                var col = _db.GetCollection<LiteDbEventTable>("eventstore");
+                col.EnsureIndex(x => x.StreamId, false);
 
-                // while (count < uncommittedEvents.Length)
-                // {
-                    // var items = new List<TransactWriteItem>();
-
-                    // foreach (var eventData in uncommittedEvents.Skip(count).Take(10))
-                    // {
-                    //     int eventVersion = (aggregate.Version - uncommittedEvents.Length + count + 1);
-                    //     // items.Add(GetDynamoDbTransactItem(aggregate, eventVersion, metadata, eventData));
-                    //     count++;
-                    // }
-
-                    var col = _db.GetCollection<LiteDbEventTable>("eventstore");
-
-
-                    // var abc = await _dynamoDbClient.TransactWriteItemsAsync(new Amazon.DynamoDBv2.Model.TransactWriteItemsRequest
-                    // {
-                    //     TransactItems = items
-                    // });
-
-                // }
+                col.InsertBulk(uncommittedEvents.Select(x => new LiteDbEventTable
+                {
+                    StreamId = aggregate.Id,
+                    Version = x.Version,
+                    TransactionId = _commandContext.Transaction.Id,
+                    AppVersion = _commandContext.AppVersion,
+                    When = x.TimeStamp,
+                    Body = JsonConvert.SerializeObject(x.Event, SerializerSettings),
+                    Category = aggregate.GetType().FullName,
+                    Who = _commandContext.ImpersonatorBy?.GuidId ?? _commandContext.By.GuidId,
+                    BodyType = x.Type.FullName
+                }));
             }
             catch (Exception e)
             {

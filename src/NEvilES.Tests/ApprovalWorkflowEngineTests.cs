@@ -8,8 +8,8 @@ using StructureMap;
 using Xunit;
 using Xunit.Abstractions;
 using NEvilES.Pipeline;
-using NEvilES.Tests.Sample;
 using NEvilES.Abstractions;
+using NEvilES.Tests.CommonDomain.Sample;
 
 namespace NEvilES.Tests
 {
