@@ -8,6 +8,7 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using NEvilES;
 using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -19,7 +20,7 @@ namespace NEvilES.DataStore.DynamoDB
         private readonly IDynamoDBContext _context;
         private readonly IAmazonDynamoDB _dynamoDbClient;
         private readonly IEventTypeLookupStrategy _eventTypeLookupStrategy;
-        private readonly CommandContext _commandContext;
+        private readonly ICommandContext _commandContext;
         private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
             DefaultValueHandling = DefaultValueHandling.Populate,
@@ -31,7 +32,7 @@ namespace NEvilES.DataStore.DynamoDB
         public DynamoDBEventStore(
             IAmazonDynamoDB dynamoDbClient,
             IEventTypeLookupStrategy eventTypeLookupStrategy,
-            CommandContext commandContext
+            ICommandContext commandContext
         )
         {
             _dynamoDbClient = dynamoDbClient;

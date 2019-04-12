@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvilES.DataStore.DynamoDB"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvilES.Tests.CommonDomain", "src\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj", "{16BB3F5F-202E-42FF-8E7B-4F59F59FEEDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvilES.DataStore.DynamoDB.Tests", "src\NEvilES.DataStore.DynamoDB.Tests\NEvilES.DataStore.DynamoDB.Tests.csproj", "{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -199,6 +201,18 @@ Global
 		{16BB3F5F-202E-42FF-8E7B-4F59F59FEEDD}.Release|x64.Build.0 = Release|Any CPU
 		{16BB3F5F-202E-42FF-8E7B-4F59F59FEEDD}.Release|x86.ActiveCfg = Release|Any CPU
 		{16BB3F5F-202E-42FF-8E7B-4F59F59FEEDD}.Release|x86.Build.0 = Release|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Debug|x64.Build.0 = Debug|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Debug|x86.Build.0 = Debug|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Release|x64.ActiveCfg = Release|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Release|x64.Build.0 = Release|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Release|x86.ActiveCfg = Release|Any CPU
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -217,6 +231,7 @@ Global
 		{A35B886A-D470-4D79-BCE5-2EF1B63F680F} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
 		{A7DE8C14-40FA-4942-BC44-F70B120E50AC} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
 		{16BB3F5F-202E-42FF-8E7B-4F59F59FEEDD} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
+		{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {572E074A-7E1F-4483-9F6B-7B7711E4BA92}
