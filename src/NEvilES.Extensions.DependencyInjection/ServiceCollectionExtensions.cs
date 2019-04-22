@@ -125,7 +125,6 @@ namespace NEvilES.Extensions.DependecyInjection
             {
                 lookup.ScanAssemblyOfType(t);
             }
-            services.AddSingleton<IFactory, ServiceProviderFactory>();
 
 
             services
@@ -148,6 +147,7 @@ namespace NEvilES.Extensions.DependecyInjection
             services.AddScoped<ISecurityContext, SecurityContext>();
             services.AddScoped(typeof(IAsyncRepository), typeof(TRepository));
             services.AddSingleton<IEventTypeLookupStrategy>(lookup);
+            services.AddScoped<IFactory, ServiceProviderFactory>();
 
 
 
