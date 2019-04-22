@@ -17,6 +17,6 @@ namespace NEvilES.Abstractions
         Task<IAggregate> GetAsync(Type type, Guid id);
         Task<IAggregate> GetAsync(Type type, Guid id, Int64? version);
         Task<IAggregate> GetStatelessAsync(Type type, Guid id);
-        Task<BaseAggregateCommit> SaveAsync(IAggregate aggregate);
+        Task<IAggregateCommit> SaveAsync(IAggregate aggregate);
     }
 }

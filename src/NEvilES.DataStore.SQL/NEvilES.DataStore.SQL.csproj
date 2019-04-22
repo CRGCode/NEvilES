@@ -7,7 +7,7 @@
     <PackageId>NEvilES.DataStore</PackageId>
     <Description>.Net Evil Event Sourcing Data Store</Description>
     <VersionPrefix>0.0.1</VersionPrefix>
-    <Version>1.1.0-alpha3</Version>
+    <Version>1.1.0-alpha5</Version>
     <Authors>Craig Gardiner;Elijah Bate</Authors>
   </PropertyGroup>
   <ItemGroup>

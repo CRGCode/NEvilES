@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NEvilES.Abstractions;
 
 namespace NEvilES.Testing
@@ -57,7 +58,7 @@ namespace NEvilES.Testing
         }
     }
 
-    public class TestRepository : IRepository
+    public class TestRepository : IRepository, IAsyncRepository
     {
         private readonly Dictionary<Guid, IAggregate> aggregates;
         private readonly Dictionary<Guid, Given> given;
@@ -77,6 +78,17 @@ namespace NEvilES.Testing
         {
             return (TAggregate)Get(typeof(TAggregate), id);
         }
+
+        public async Task<TAggregate> GetAsync<TAggregate>(Guid id) where TAggregate : IAggregate
+            => (TAggregate)(await (GetAsync(typeof(TAggregate), id)));
+
+        public Task<IAggregate> GetAsync(Type type, Guid id)
+            => GetAsync(type, id,null);
+
+        public Task<IAggregate> GetAsync(Type type, Guid id, long? version)
+            => Task.FromResult(Get(type,id));
+
+
 
         public IAggregate Get(Type type, Guid id)
         {
@@ -100,8 +112,11 @@ namespace NEvilES.Testing
             ((AggregateBase)aggregate).SetState(id);
             return aggregate;
         }
+      
+        public Task<IAggregateCommit> SaveAsync(IAggregate aggregate)
+            => Task.FromResult(Save(aggregate));
 
-        public AggregateCommit Save(IAggregate aggregate)
+        public IAggregateCommit Save(IAggregate aggregate)
         {
             aggregates[aggregate.Id] = aggregate;
             return new AggregateCommit(aggregate.Id, Guid.Empty, "", aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray());
@@ -120,7 +135,7 @@ namespace NEvilES.Testing
             return null;
         }
 
-        IAggregateCommit IRepository.Save(IAggregate aggregate)
+        public Task<IAggregate> GetStatelessAsync(Type type, Guid id)
         {
             throw new NotImplementedException();
         }

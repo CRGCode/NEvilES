@@ -135,7 +135,7 @@ namespace NEvilES.Pipeline.Async
 #endif
                     }
 
-                    projectorType = typeof(IProjectWithResult<>).MakeGenericType(message.Type);
+                    projectorType = typeof(IProjectWithResultAsync<>).MakeGenericType(message.Type);
                     projectors = factory.GetAll(projectorType);
 
                     foreach (var projector in projectors)
