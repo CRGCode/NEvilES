@@ -60,6 +60,7 @@ namespace NEvilES.Tests
                 x.For<IRepository>().Use<InMemoryEventStore>();
                 // x.For<IRepository>().Use<DatabaseEventStore>();
                 x.For<IReadModel>().Use<TestReadModel>();
+                x.For<IFactory>().Use<Factory>();
 
                 x.For<IConnectionString>().Use(s => new ConnectionString(configuration.GetConnectionString(connString))).Singleton();
                 x.For<ICommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
