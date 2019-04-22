@@ -192,7 +192,7 @@ namespace NEvilES.DataStore.DynamoDB
             return item;
         }
 
-        public async Task<BaseAggregateCommit> SaveAsync(IAggregate aggregate)
+        public async Task<IAggregateCommit> SaveAsync(IAggregate aggregate)
         {
             if (aggregate.Id == Guid.Empty)
             {

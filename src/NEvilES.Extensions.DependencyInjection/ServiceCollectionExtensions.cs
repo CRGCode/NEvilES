@@ -136,8 +136,8 @@ namespace NEvilES.Extensions.DependecyInjection
 
             services.RegisterTypesFrom(opts.ReadModelAssemblyTypes)
                 .ConnectImplementingType(typeof(IProject<>))
-                .ConnectImplementingType(typeof(IProjectAsync<>));
-                .ConnectImplementingType(typeof(IProjectWithResult<>));
+                .ConnectImplementingType(typeof(IProjectAsync<>))
+                .ConnectImplementingType(typeof(IProjectWithResult<>))
                 .ConnectImplementingType(typeof(IProjectWithResultAsync<>));
 
 
