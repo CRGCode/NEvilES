@@ -16,7 +16,7 @@ test_script:
 after_test:
 - cmd: dotnet pack .\src\NEvilES\NEvilES.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 - cmd: dotnet pack .\src\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
-- cmd: dotnet pack .\src\NEvilES.DataStore.DyanmoDB\NEvilES.DataStore.DyanmoDB.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack .\src\NEvilES.DataStore.DynamoDB\NEvilES.DataStore.DynamoDB.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 - cmd: dotnet pack .\src\NEvilES.DataStore.LiteDb\NEvilES.DataStore.LiteDb.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 - cmd: dotnet pack .\src\NEvilES.Testing\NEvilES.Testing.csproj -c Release -o ..\..\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 artifacts:
