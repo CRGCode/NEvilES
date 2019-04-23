@@ -39,6 +39,7 @@ namespace NEvilES.Tests
                 x.Scan(s =>
                 {
                     s.AssemblyContainingType<Person.Created>();
+                    s.AssemblyContainingType<Approval.Create>();
                     s.AssemblyContainingType<ICommandProcessor>();
 
                     s.ConnectImplementationsToTypesClosing(typeof(IProcessCommand<>));
