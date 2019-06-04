@@ -12,4 +12,10 @@ namespace NEvilES.DataStore.DynamoDB
         }
     }
 
+
+    public class TableConstants
+    {
+        public static string EVENT_TABLE_NAME = "eventstore";
+    }
+
 }

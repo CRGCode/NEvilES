@@ -5,11 +5,13 @@ using NEvilES.DataStore.DynamoDB.Converters;
 namespace NEvilES.DataStore.DynamoDB
 {
     [DynamoDBTable("eventstore")]
-    public class DynamoDBEventTable
+    public class DynamoDBEvent
     {
 
         [DynamoDBHashKey]
         public Guid StreamId { get; set; }
+
+        [DynamoDBGlobalSecondaryIndexHashKey("CommitedAt-Version-Index")]
         public ulong CommmitedAt { get; set; }
         public string Category { get; set; }
         public Guid TransactionId { get; set; }
@@ -22,6 +24,7 @@ namespace NEvilES.DataStore.DynamoDB
         public DateTimeOffset When { get; set; }
 
         [DynamoDBRangeKey]
+        [DynamoDBGlobalSecondaryIndexRangeKey("CommitedAt-Version-Index")]
         public int Version { get; set; }
 
         //Do we really need this?
