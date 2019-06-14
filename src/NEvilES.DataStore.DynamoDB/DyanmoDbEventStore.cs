@@ -124,7 +124,7 @@ namespace NEvilES.DataStore.DynamoDB
                 BackwardSearch = true
             });
 
-            var events = await query.GetRemainingAsync();
+            var events = await query.GetNextSetAsync();
 
             if (events.Count > 0)
             {
