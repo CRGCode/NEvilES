@@ -196,7 +196,7 @@ namespace NEvilES.DataStore.DynamoDB
 
         public async Task<IAggregateCommit> SaveAsync(IAggregate aggregate)
         {
-            if(aggregate.Id == Guid.Empty)
+            if (aggregate.Id == Guid.Empty)
             {
                 throw new Exception(
                     $"The aggregate {aggregate.GetType().FullName} has tried to be saved with an empty id");
@@ -229,10 +229,14 @@ namespace NEvilES.DataStore.DynamoDB
 
                 }
             }
+            catch (AmazonDynamoDBException)
+            {
+                throw new AggregateOutOfDate((AggregateBase)aggregate,
+                                   $"The aggregate {aggregate.GetType().FullName} has tried to save events to an old version of an aggregate");
+            }
             catch (Exception e)
             {
-                throw new Exception(
-                    $"The aggregate {aggregate.GetType().FullName} has tried to save events to an old version of an aggregate");
+                throw new Exception($"The aggregate {aggregate.GetType().FullName} has tried to save events to an old version of an aggregate");
             }
 
             aggregate.ClearUncommittedEvents();
