@@ -42,14 +42,14 @@ namespace NEvilES.DataStore.DynamoDB
             _commandContext = commandContext;
         }
 
-        public async Task<TAggregate> GetAsync<TAggregate>(Guid id) where TAggregate : IAggregate
+        public virtual async Task<TAggregate> GetAsync<TAggregate>(Guid id) where TAggregate : IAggregate
         {
             IAggregate aggregate = await GetAsync(typeof(TAggregate), id);
             return (TAggregate)aggregate;
         }
-        public Task<IAggregate> GetAsync(Type type, Guid id) => GetAsync(type, id, null);
+        public virtual Task<IAggregate> GetAsync(Type type, Guid id) => GetAsync(type, id, null);
 
-        public async Task<IAggregate> GetAsync(Type type, Guid id, Int64? version)
+        public virtual async Task<IAggregate> GetAsync(Type type, Guid id, Int64? version)
         {
             var expression = new Expression()
             {
@@ -99,7 +99,7 @@ namespace NEvilES.DataStore.DynamoDB
             return aggregate;
         }
 
-        public async Task<IAggregate> GetStatelessAsync(Type type, Guid id)
+        public virtual async Task<IAggregate> GetStatelessAsync(Type type, Guid id)
         {
             IAggregate aggregate;
 
@@ -194,7 +194,7 @@ namespace NEvilES.DataStore.DynamoDB
             return item;
         }
 
-        public async Task<IAggregateCommit> SaveAsync(IAggregate aggregate)
+        public virtual async Task<IAggregateCommit> SaveAsync(IAggregate aggregate)
         {
             if (aggregate.Id == Guid.Empty)
             {
@@ -311,7 +311,7 @@ namespace NEvilES.DataStore.DynamoDB
 
         }
 
-        public async Task<IEnumerable<IAggregateCommit>> ReadAsync(Guid streamId)
+        public virtual async Task<IEnumerable<IAggregateCommit>> ReadAsync(Guid streamId)
         {
             var expression = new Expression()
             {
@@ -335,7 +335,7 @@ namespace NEvilES.DataStore.DynamoDB
             return ReadToAggregateCommits(events);
 
         }
-        public async Task<IEnumerable<IAggregateCommit>> ReadNewestLimitAsync(Guid streamId, int limit = 50)
+        public virtual async Task<IEnumerable<IAggregateCommit>> ReadNewestLimitAsync(Guid streamId, int limit = 50)
         {
             var expression = new Expression()
             {
@@ -359,7 +359,7 @@ namespace NEvilES.DataStore.DynamoDB
 
         }
 
-        public async Task<TAggregate> GetVersionAsync<TAggregate>(Guid id, Int64 version) where TAggregate : IAggregate
+        public virtual async Task<TAggregate> GetVersionAsync<TAggregate>(Guid id, Int64 version) where TAggregate : IAggregate
         {
             IAggregate aggregate = await GetAsync(typeof(TAggregate), id, version);
             return (TAggregate)aggregate;
