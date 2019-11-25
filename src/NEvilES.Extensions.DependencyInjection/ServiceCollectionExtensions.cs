@@ -59,9 +59,12 @@ namespace NEvilES.Extensions.DependecyInjection
         }
 
         public static IRegisteredTypesBuilder RegisterTypesFrom(this IServiceCollection services, params Type[] assemblyType)
-            => RegisterTypesFrom(services, assemblyType);
+            => _RegisterTypesFrom(services, assemblyType);
 
         public static IRegisteredTypesBuilder RegisterTypesFrom(this IServiceCollection services, IEnumerable<Type> assemblyType)
+           => _RegisterTypesFrom(services, assemblyType);
+
+        private static IRegisteredTypesBuilder _RegisterTypesFrom(this IServiceCollection services, IEnumerable<Type> assemblyType)
         {
             List<Assembly> assemblies = new List<Assembly>();
             lock (_types)
