@@ -4,10 +4,13 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore;
+using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
-using NEvilES.Tests.Sample;
-using NEvilES.Tests.Sample.ReadModel;
+using NEvilES.Tests.CommonDomain.Sample;
+using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 using StructureMap;
 
 namespace NEvilES.Tests
@@ -36,6 +39,7 @@ namespace NEvilES.Tests
                 x.Scan(s =>
                 {
                     s.AssemblyContainingType<Person.Created>();
+                    s.AssemblyContainingType<Approval.Create>();
                     s.AssemblyContainingType<ICommandProcessor>();
 
                     s.ConnectImplementationsToTypesClosing(typeof(IProcessCommand<>));
@@ -51,13 +55,16 @@ namespace NEvilES.Tests
 
                 x.For<IApprovalWorkflowEngine>().Use<ApprovalWorkflowEngine>();
                 x.For<ICommandProcessor>().Use<PipelineProcessor>();
+                x.For<ISecurityContext>().Use<SecurityContext>();
+                x.For<ICommandProcessor>().Use<PipelineProcessor>();
                 x.For<IEventTypeLookupStrategy>().Add(lookup).Singleton();
                 x.For<IRepository>().Use<InMemoryEventStore>();
                 // x.For<IRepository>().Use<DatabaseEventStore>();
                 x.For<IReadModel>().Use<TestReadModel>();
+                x.For<IFactory>().Use<Factory>();
 
                 x.For<IConnectionString>().Use(s => new ConnectionString(configuration.GetConnectionString(connString))).Singleton();
-                x.For<CommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
+                x.For<ICommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
                 x.For<IDbConnection>().Use("Connection", s => new SqlConnection(s.GetInstance<IConnectionString>().Data));
                 x.For<IDbTransaction>().Use("Transaction", s => s.GetInstance<IDbConnection>().BeginTransaction());
             });

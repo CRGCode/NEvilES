@@ -1,10 +1,10 @@
 using System;
 using NEvilES.Testing;
 using Xunit;
+using NEvilES.Tests.CommonDomain.Sample;
 
 namespace NEvilES.Tests
 {
-    using Sample;
 
     public class BDD_StyleTests : BaseAggregateTest<Customer.Aggregate>
     {
@@ -15,7 +15,7 @@ namespace NEvilES.Tests
             var cmd = new Customer.Create() { StreamId = streamId, Name = "Testing" };
             Test(Given(),
                 When(x => x.Handle(cmd, new Customer.Validate())),
-                Then(new Customer.Created{StreamId = streamId, Name = cmd.Name}));
+                Then(new Customer.Created { StreamId = streamId, Name = cmd.Name }));
         }
 
         //[Fact]

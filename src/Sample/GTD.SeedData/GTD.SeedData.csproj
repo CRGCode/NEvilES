@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NEvilES.DataStore\NEvilES.DataStore.csproj" />
+    <ProjectReference Include="..\..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
     <ProjectReference Include="..\..\NEvilES\NEvilES.csproj" />
     <ProjectReference Include="..\GTD.Common\GTD.Common.csproj" />
     <ProjectReference Include="..\GTD.Domain\GTD.Domain.csproj" />

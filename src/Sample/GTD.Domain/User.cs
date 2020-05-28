@@ -1,5 +1,6 @@
 using System;
 using NEvilES;
+using NEvilES.Abstractions;
 
 namespace GTD.Domain
 {
@@ -75,7 +76,7 @@ namespace GTD.Domain
 
             private CommandValidationResult Validate(Details commandDetails)
             {
-                // Check ReadModel 
+                // Check ReadModel
                 return new CommandValidationResult(true);
             }
         }

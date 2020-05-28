@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using GTD.Common;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 
 namespace GTD.ReadModel
@@ -26,12 +27,12 @@ namespace GTD.ReadModel
             data[item.Id] = item;
         }
 
-        public T Get<T>(Guid id) where T : IHaveIdentity
+        public T Get<T>(Guid id) where T : class, IHaveIdentity
         {
             return (T)data[id];
         }
 
-        public IEnumerable<T> Query<T>(Func<T,bool> p)
+        public IEnumerable<T> Query<T>(Func<T,bool> p) where T : class, IHaveIdentity
         {
             return data.Values.Where(x => x.GetType() == typeof(T)).Cast<T>().Where(p);
         }
@@ -44,6 +45,16 @@ namespace GTD.ReadModel
         public int Count()
         {
             return data.Count;
+        }
+
+        void IWriteReadModel.Save<T>(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IWriteReadModel.Delete<T>(T item)
+        {
+            throw new NotImplementedException();
         }
     }
 }

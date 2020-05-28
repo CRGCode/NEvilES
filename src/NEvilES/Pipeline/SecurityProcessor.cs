@@ -1,12 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Pipeline
 {
-    public interface ISecurityContext
-    {
-        bool CheckSecurity();
-    }
-
     public class SecurityContext : ISecurityContext
     {
         public bool CheckSecurity()
@@ -15,7 +13,7 @@ namespace NEvilES.Pipeline
         }
     }
 
-    public class SecurityProcessor<TCommand> : IProcessPipelineStage<TCommand>
+     public class SecurityProcessor<TCommand> : IProcessPipelineStage<TCommand>
         where TCommand : IMessage
     {
         private readonly ISecurityContext securityContext;
@@ -27,7 +25,7 @@ namespace NEvilES.Pipeline
             this.innerCommand = innerCommand;
         }
 
-        public CommandResult Process(TCommand command)
+        public ICommandResult Process(TCommand command)
         {
             if (!securityContext.CheckSecurity())
             {

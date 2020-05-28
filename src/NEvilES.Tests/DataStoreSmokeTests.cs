@@ -2,16 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore;
 using NEvilES.Pipeline;
-using NEvilES.Tests.Sample;
+using NEvilES.Tests.CommonDomain.Sample;
 using StructureMap;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace NEvilES.Tests
 {
-    public class Transaction : CommandContext.ITransaction
+    public class Transaction : ITransaction
     {
         public Guid Id { get; }
         public Transaction(Guid id)

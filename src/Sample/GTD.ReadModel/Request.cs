@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GTD.Common;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 
 namespace GTD.ReadModel
@@ -48,12 +49,12 @@ namespace GTD.ReadModel
                 this.writer = writer;
             }
 
-            public void Project(Domain.Request.Created message, ProjectorData data)
+            public void Project(Domain.Request.Created message, IProjectorData data)
             {
                 writer.Insert(new Request(message));
             }
 
-            public void Project(Domain.Request.CommentAdded message, ProjectorData data)
+            public void Project(Domain.Request.CommentAdded message, IProjectorData data)
             {
                 var request = reader.Get<Request>(message.StreamId);
                 request.Comments.Add(new Comment(message));

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NEvilES.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -98,7 +99,7 @@ namespace NEvilES
             return aggregate;
         }
 
-        public AggregateCommit Save(IAggregate aggregate)
+        public IAggregateCommit Save(IAggregate aggregate)
         {
             if (aggregate.Id == Guid.Empty)
             {

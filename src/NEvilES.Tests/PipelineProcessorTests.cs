@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
-using NEvilES.Tests.Sample;
+using NEvilES.Tests.CommonDomain    .Sample;
 using StructureMap;
 using Xunit;
 

@@ -7,7 +7,10 @@ using GTD.Common;
 using GTD.Domain;
 using GTD.ReadModel;
 using NEvilES;
+using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore;
+using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 using Client = GTD.Domain.Client;
 using Request = GTD.Domain.Request;
@@ -19,7 +22,7 @@ namespace GTD.SeedData
         static void Main(string[] args)
         {
             var builder = new ContainerBuilder();
-            builder.RegisterInstance(new CommandContext.User(Guid.NewGuid())).Named<CommandContext.IUser>("user");
+            builder.RegisterInstance(new CommandContext.User(Guid.NewGuid())).Named<IUser>("user");
             builder.RegisterInstance(new InMemoryReadModel()).AsImplementedInterfaces();
             builder.RegisterInstance<IEventTypeLookupStrategy>(new EventTypeLookupStrategy());
 

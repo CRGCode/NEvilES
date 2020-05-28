@@ -2,15 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NEvilES.Abstractions;
 
 namespace NEvilES
 {
-    public interface IEventTypeLookupStrategy
-    {
-        IEventTypeLookupStrategy ScanAssemblyOfType(Type type);
-        Type Resolve(string name);
-    }
-
     public class EventTypeLookupStrategy : IEventTypeLookupStrategy
     {
         private static readonly Type EventType = typeof(IMessage);

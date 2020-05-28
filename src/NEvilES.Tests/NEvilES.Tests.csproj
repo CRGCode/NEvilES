@@ -22,8 +22,10 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.1" />
         <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
         <ProjectReference Include="..\NEvilES.Testing\NEvilES.Testing.csproj" />
-        <ProjectReference Include="..\NEvilES.DataStore\NEvilES.DataStore.csproj" />
+        <ProjectReference Include="..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
         <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
+        <ProjectReference Include="..\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj" />
+        <ProjectReference Include="..\NEvilES.Abstractions\NEvilES.Abstractions.csproj" />
         <PackageReference Include="StructureMap" Version="4.4.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
         <PackageReference Include="xunit" Version="2.3.0" />

@@ -1,10 +1,12 @@
 using System;
+using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Pipeline
 {
-    public class CommandContext
+
+    public class CommandContext : ICommandContext
     {
-        public static CommandContext Null()
+        public static ICommandContext Null()
         {
             return new CommandContext(User.NullUser(), null, User.NullUser(), null);
         }
@@ -22,7 +24,7 @@ namespace NEvilES.Pipeline
         public ITransaction Transaction { get; set; }
         public IUser ImpersonatorBy { get; set; }
         public string AppVersion { get; set; }
-        public CommandResult Result { get; set; }
+        public ICommandResult Result { get; set; }
 
         public class User : IUser
         {
@@ -46,19 +48,6 @@ namespace NEvilES.Pipeline
             public int? UserId { get; set; }
         }
 
-        public interface IUser
-        {
-            Guid GuidId { get; }
-        }
 
-        public abstract class TransactionBase : ITransaction
-        {
-            public Guid Id { get; protected set; }
-        }
-
-        public interface ITransaction
-        {
-            Guid Id { get; }
-        }
     }
 }

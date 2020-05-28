@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.1.0-alpha7</Version>
+  </PropertyGroup>
+  <ItemGroup>
+       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
+       <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
+  </ItemGroup>
+</Project>
