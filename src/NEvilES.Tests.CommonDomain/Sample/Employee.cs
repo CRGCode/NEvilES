@@ -29,23 +29,25 @@ namespace NEvilES.Tests.CommonDomain.Sample
             IHandleAggregateCommand<PayBonus>,
             IHandleAggregateCommand<PayPerson, TaxRuleEngine>
         {
-            public void Handle(PayBonus command)
+            public ICommandResponse Handle(PayBonus command)
             {
                 //RaiseEvent<PaidBonus>(command);
                 Raise<PaidBonus>(command);
+                return new CommandCompleted(command.StreamId,nameof(PayBonus));
             }
 
-            public void Handle(PayPerson c, TaxRuleEngine taxCalculator)
+            public ICommandResponse Handle(PayPerson c, TaxRuleEngine taxCalculator)
             {
                 // Use the RuleEngine to do something....
                 c.Tax = taxCalculator.Calculate(c.NetAmount);
 
                 RaiseStateless<PaidPerson>(c);
+                return new CommandCompleted(c.StreamId,nameof(PayPerson));
             }
 
-            public void Handle(Create command)
+            public ICommandResponse Handle(Create command)
             {
-                base.Handle(command);
+                return base.Handle(command);
             }
 
             //---------------------------------------------------------------------

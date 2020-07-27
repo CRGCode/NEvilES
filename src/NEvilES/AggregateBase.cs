@@ -108,7 +108,7 @@ namespace NEvilES
                 return;
 
             var applyMethods = new Dictionary<Type, Action<IAggregate, object>>();
-            foreach (var apply in GetMethods(aggregateType,"Apply"))
+            foreach (var apply in GetApplyMethods(aggregateType,"Apply"))
             {
                 var applyMethod = apply.MethodInfo;
 
@@ -120,7 +120,7 @@ namespace NEvilES
                 applyMethods.Add(apply.Type, (a, m) => applyMethod.Invoke(a, new[] {m}));
             }
 
-            var handlerMethods = GetMethods(aggregateType,"Handle").ToDictionary(x => x.Type, x => x.MethodInfo);
+            var handlerMethods = GetHandleMethods(aggregateType,"Handle").ToDictionary(x => x.Type, x => x.MethodInfo);
 
             AggregateTypes[aggregateType] = new AggregateMethodCache
             {
@@ -129,13 +129,28 @@ namespace NEvilES
             };
         }
 
-        private static IEnumerable<TypeToMethod> GetMethods(Type type, string name)
+        private static IEnumerable<TypeToMethod> GetApplyMethods(Type type, string name)
         {
             do
             {
                 var methods = type.GetTypeInfo().DeclaredMethods;
                 foreach (var m in methods
                     .Where(m => m.Name == name && m.GetParameters().Length >= 1 && m.ReturnType == typeof(void)))
+                {
+                    yield return new TypeToMethod(m.GetParameters().First().ParameterType, m);
+                }
+
+                type = type.GetTypeInfo().BaseType;
+            } while (type != null);
+        }
+
+        private static IEnumerable<TypeToMethod> GetHandleMethods(Type type, string name)
+        {
+            do
+            {
+                var methods = type.GetTypeInfo().DeclaredMethods;
+                foreach (var m in methods
+                    .Where(m => m.Name == name && m.GetParameters().Length >= 1 && m.ReturnType == typeof(ICommandResponse)))
                 {
                     yield return new TypeToMethod(m.GetParameters().First().ParameterType, m);
                 }

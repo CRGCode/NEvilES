@@ -1,4 +1,4 @@
-using System;
+    using System;
 using System.Collections.Generic;
 using NEvilES;
 using NEvilES.Abstractions;
@@ -57,24 +57,29 @@ namespace GTD.Domain
             IHandleAggregateCommand<InvolveUserInProject>,
             IHandleAggregateCommand<RemoveUserFromProject>
         {
-            public void Handle(NewProject command, UniqueNameValidator uniqueNameValidator)
+            public ICommandResponse Handle(NewProject command, UniqueNameValidator uniqueNameValidator)
             {
                 if (uniqueNameValidator.Dispatch(command).IsValid)
+                {
                     RaiseEvent<Created>(command);
+                }
+                return new CommandCompleted(command.StreamId,nameof(RemoveUserFromProject));
             }
 
-            public void Handle(InvolveUserInProject command)
+            public ICommandResponse Handle(InvolveUserInProject command)
             {
                 if (notifications.Contains(command.NotificationEndpoint))
                     throw new DomainAggregateException(this, "Endpoint already added!");
                 RaiseEvent<UserInvolvedInProject>(command);
+                return new CommandCompleted(command.StreamId,nameof(RemoveUserFromProject));
             }
 
-            public void Handle(RemoveUserFromProject command)
+            public ICommandResponse Handle(RemoveUserFromProject command)
             {
                 if (!notifications.Contains(command.NotificationEndpoint))
                     throw new DomainAggregateException(this, "Can't remove Endpoint that doesn't exist!");
                 RaiseEvent<UserRemovedFromProject>(command);
+                return new CommandCompleted(command.StreamId,nameof(RemoveUserFromProject));
             }
 
             //-------------------------------------------------------------------

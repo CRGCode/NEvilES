@@ -52,19 +52,22 @@ namespace NEvilES.Tests.CommonDomain.Sample
             IHandleAggregateCommand<RemoveUserFromRoom>
 
         {
-            public void Handle(Create command)
+            public ICommandResponse Handle(Create command)
             {
                 Raise<Created>(command);
+                return new CommandCompleted(command.StreamId,nameof(Create));
             }
 
-            public void Handle(IncludeUserInRoom command)
+            public ICommandResponse Handle(IncludeUserInRoom command)
             {
                 Raise<UserIncludedInRoom>(command);
+                return new CommandCompleted(command.StreamId,nameof(IncludeUserInRoom));
             }
 
-            public void Handle(RemoveUserFromRoom command)
+            public ICommandResponse Handle(RemoveUserFromRoom command)
             {
                 Raise<UserRemovedFromRoom>(command);
+                return new CommandCompleted(command.StreamId,nameof(RemoveUserFromRoom));
             }
 
 

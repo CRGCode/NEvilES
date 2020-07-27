@@ -45,13 +45,14 @@ namespace NEvilES.Tests.CommonDomain.Sample
             IHandleStatelessEvent<SendEmail>,
             IHandleStatelessEvent<Refunded>
         {
-            public void Handle(Create command, Validate validate)
+            public ICommandResponse Handle(Create command, Validate validate)
             {
                 if (validate.Dispatch(command).IsValid)
                 {
 
                 }
                 Raise<Created>(command);
+                return new CommandCompleted(command.StreamId,nameof(Create));
             }
 
             //---------------------------------------------------------------------

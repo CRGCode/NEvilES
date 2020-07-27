@@ -30,24 +30,30 @@ namespace GTD.Domain
             IHandleAggregateCommand<AddUserNotification>,
             IHandleAggregateCommand<RemoveUserNotification>
         {
-            public void Handle(NewClient command, UniqueNameValidator uniqueNameValidator)
+            public ICommandResponse Handle(NewClient command, UniqueNameValidator uniqueNameValidator)
             {
                 if (uniqueNameValidator.Dispatch(command).IsValid)
+                {
                     RaiseEvent<Created>(command);
+                    return new CommandCompleted(command.StreamId,nameof(NewClient));
+                }
+                return new CommandRejectedWithError<string>(command.StreamId,nameof(NewClient),"");
             }
 
-            public void Handle(AddUserNotification command)
+            public ICommandResponse Handle(AddUserNotification command)
             {
                 if (notifications.Contains(command.EmailAddress))
                     throw new DomainAggregateException(this, "User already added!");
                 RaiseEvent<UserNotificationAdded>(command);
+                return new CommandCompleted(command.StreamId, nameof(AddUserNotification));
             }
 
-            public void Handle(RemoveUserNotification command)
+            public ICommandResponse Handle(RemoveUserNotification command)
             {
                 if (!notifications.Contains(command.EmailAddress))
                     throw new DomainAggregateException(this, "Can't remove User that doesn't exist!");
                 RaiseEvent<UserNotificationRemoved>(command);
+                return new CommandCompleted(command.StreamId, nameof(RemoveUserNotification));
             }
 
             //-------------------------------------------------------------------

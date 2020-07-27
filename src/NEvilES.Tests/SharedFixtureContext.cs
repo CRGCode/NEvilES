@@ -69,18 +69,18 @@ namespace NEvilES.Tests
                 x.For<IDbTransaction>().Use("Transaction", s => s.GetInstance<IDbConnection>().BeginTransaction());
             });
 
-            if (runOnce)
-            {
-                runOnce = false;
-                TestLocalDbExists(Container.GetInstance<IConnectionString>());
-            }
+            // if (runOnce)
+            // {
+            //     runOnce = false;
+            //     TestLocalDbExists(Container.GetInstance<IConnectionString>());
+            // }
         }
 
         public Container Container { get; private set; }
 
         public static void TestLocalDbExists(IConnectionString connString)
         {
-            using (var connection = new SqlConnection(string.Format(@"Server={0};Database=Master;Integrated Security=true;", connString.Keys["Server"])))
+            using (var connection = new SqlConnection(string.Format(@"Server={0};Database=Master;", connString.Keys["Server"])))
             {
                 connection.Open();
 

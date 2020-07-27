@@ -45,24 +45,34 @@ namespace GTD.Domain
             IHandleAggregateCommand<Accept>,
             IHandleAggregateCommand<Cancel>
         {
-            public void Handle(NewRequest command, UniqueValidator uniqueValidator)
+            public ICommandResponse Handle(NewRequest command, UniqueValidator uniqueValidator)
             {
                 if (uniqueValidator.Dispatch(command).IsValid)
+                {
                     Raise<Created>(command);
+                    return new CommandCompleted(command.StreamId, nameof(NewRequest));
+                }
+
+                return new CommandRejectedWithError<string>(command.StreamId, nameof(NewRequest), "Can't accept a cancelled request");
             }
 
-            public void Handle(Accept command)
+            public ICommandResponse Handle(Accept command)
             {
                 if (state == RequestState.Cancelled)
-                    throw new DomainAggregateException(this, "Can't accept a cancelled request");
+                    return new CommandRejectedWithError<string>(command.StreamId, nameof(Accept), "Can't accept a cancelled request");
+                // throw new DomainAggregateException(this, "Can't accept a cancelled request");
                 RaiseEvent<Accepted>(command);
+                return new CommandCompleted(command.StreamId, nameof(Accept));
             }
 
-            public void Handle(Cancel command)
+            public ICommandResponse Handle(Cancel command)
             {
                 if (state == RequestState.Cancelled)
-                    throw new DomainAggregateException(this, "Request already cancelled");
+                    return new CommandRejectedWithError<string>(command.StreamId, nameof(Cancel), "Request already cancelled");
+                // throw new DomainAggregateException(this, "Request already cancelled");
                 RaiseEvent<Cancelled>(command);
+
+                return new CommandCompleted(command.StreamId, nameof(Cancel));
             }
 
             //-------------------------------------------------------------------

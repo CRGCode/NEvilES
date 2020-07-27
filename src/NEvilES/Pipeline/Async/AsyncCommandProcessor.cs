@@ -27,15 +27,17 @@ namespace NEvilES.Pipeline.Async
             var result = await ExecuteAsync(command);
 
             var projectResults = await ReadModelProjectorHelperAsync.ProjectAsync(result, factory, commandContext);
-            return commandContext.Result.Add(projectResults);
+            var cmdR = (CommandResult)commandContext.Result.Add(projectResults);
+            cmdR.SetCommandResponse(result.Response);
+            return cmdR;
         }
 
-        public async Task<CommandResult> ExecuteAsync<T>(T command) where  T : IMessage
+        public async Task<CommandResult> ExecuteAsync<T>(T command) where T : IMessage
         {
             var commandResult = new CommandResult();
             var commandType = command.GetType();
             var streamId = command.StreamId;
-            var repo = (IAsyncRepository) factory.Get(typeof(IAsyncRepository));
+            var repo = (IAsyncRepository)factory.Get(typeof(IAsyncRepository));
 
             if (command is ICommand)
             {
@@ -53,11 +55,18 @@ namespace NEvilES.Pipeline.Async
 
                     var handler = aggHandler.Handlers[commandType];
                     var parameters = handler.GetParameters();
-                    var deps = new object[] {command}.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
+                    var deps = new object[] { command }.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
 
                     try
                     {
-                        handler.Invoke(agg, deps);
+                        var res = handler.Invoke(agg, deps);
+                        commandResult.SetCommandResponse((ICommandResponse)res);
+
+                        if (res.GetType() == typeof(CommandRejectedWithError<>) || res is CommandNoActionRequired)
+                        {
+                            return commandResult;
+                        }
+
                     }
                     catch (TargetInvocationException e) when (e.InnerException != null)
                     {
@@ -93,7 +102,7 @@ namespace NEvilES.Pipeline.Async
 
                 var agg = await repo.GetStatelessAsync(singleAggHandler?.GetType(), streamId);
                 // // TODO don't like the cast below of command to IEvent
-                agg.RaiseStateless((IEvent) command);
+                agg.RaiseStateless((IEvent)command);
                 var commit = await repo.SaveAsync(agg);
                 commandResult.Append(commit);
             }
@@ -125,7 +134,7 @@ namespace NEvilES.Pipeline.Async
                         try
                         {
 #endif
-                            await ((dynamic)projector).ProjectAsync((dynamic)message.Event, data);
+                        await ((dynamic)projector).ProjectAsync((dynamic)message.Event, data);
 #if !DEBUG
                         }
                         catch (Exception e)

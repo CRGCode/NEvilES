@@ -34,7 +34,7 @@ namespace GTD.Common
 
         public static void TestLocalDbExists(IConnectionString connString)
         {
-            using (var connection = new SqlConnection(string.Format(@"Server={0};Database=Master;Integrated Security=true;", connString.Keys["Server"])))
+            using (var connection = new SqlConnection(string.Format(@"Server={0};Database=Master;", connString.Keys["Server"])))
             {
                 connection.Open();
 

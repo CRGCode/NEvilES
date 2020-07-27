@@ -7,6 +7,7 @@ namespace NEvilES.Abstractions.Pipeline
         List<IAggregateCommit> UpdatedAggregates { get; }
         List<object> ReadModelItems { get; }
 
+        ICommandResponse Response { get; }
         ICommandResult Append(IAggregateCommit commit);
         ICommandResult Append(IEnumerable<IAggregateCommit> commits);
         ICommandResult Add(ICommandResult result);

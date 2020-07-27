@@ -41,16 +41,24 @@ namespace GTD.Domain
             IHandleAggregateCommand<NewUser, UniqueNameValidator>,
             IHandleAggregateCommand<CorrectUserDetails, UniqueNameValidator>
         {
-            public void Handle(NewUser command, UniqueNameValidator uniqueNameValidator)
+            public ICommandResponse Handle(NewUser command, UniqueNameValidator uniqueNameValidator)
             {
                 if (uniqueNameValidator.Dispatch(command).IsValid)
+                {
                     RaiseEvent<Created>(command);
+                    return new CommandCompleted(command.StreamId, nameof(NewUser));
+                }
+                return new CommandRejectedWithError<string>(command.StreamId, nameof(NewUser),"");
             }
 
-            public void Handle(CorrectUserDetails command, UniqueNameValidator uniqueNameValidator)
+            public ICommandResponse Handle(CorrectUserDetails command, UniqueNameValidator uniqueNameValidator)
             {
                 if (uniqueNameValidator.Dispatch(command).IsValid)
+                {
                     RaiseEvent<UserDetailsCorrected>(command);
+                    return new CommandCompleted(command.StreamId, nameof(CorrectUserDetails));
+                }
+                return new CommandRejectedWithError<string>(command.StreamId, nameof(CorrectUserDetails),"");
             }
 
             //-------------------------------------------------------------------

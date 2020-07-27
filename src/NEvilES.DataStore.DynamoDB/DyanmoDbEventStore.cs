@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
@@ -29,6 +30,7 @@ namespace NEvilES.DataStore.DynamoDB
             TypeNameHandling = TypeNameHandling.Auto,
             Converters = new JsonConverter[] { new StringEnumConverter() }
         };
+        private string _tableName = TableConstants.EVENT_TABLE_NAME;
 
         public DynamoDBEventStore(
             IAmazonDynamoDB dynamoDbClient,
@@ -40,6 +42,11 @@ namespace NEvilES.DataStore.DynamoDB
             _context = new DynamoDBContext(_dynamoDbClient);
             _eventTypeLookupStrategy = eventTypeLookupStrategy;
             _commandContext = commandContext;
+
+            if (AWSConfigsDynamoDB.Context.TableAliases.TryGetValue(_tableName, out string name))
+            {
+                _tableName = name;
+            }
         }
 
         public virtual async Task<TAggregate> GetAsync<TAggregate>(Guid id) where TAggregate : IAggregate
@@ -53,7 +60,7 @@ namespace NEvilES.DataStore.DynamoDB
         {
             var expression = new Expression()
             {
-                ExpressionStatement = $"{nameof(DynamoDBEvent.StreamId)} = :sId",
+                ExpressionStatement = $"{nameof(DynamoDBEventTable.StreamId)} = :sId",
                 ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>{
                     {":sId",id.ToString()},
                     {":v",  version.HasValue ? version.Value : 0}
@@ -62,14 +69,14 @@ namespace NEvilES.DataStore.DynamoDB
 
             if (version.HasValue && version.Value > 0)
             {
-                expression.ExpressionStatement += $" AND {nameof(DynamoDBEvent.Version)} <= :v";
+                expression.ExpressionStatement += $" AND {nameof(DynamoDBEventTable.Version)} <= :v";
             }
             else
             {
-                expression.ExpressionStatement += $" AND {nameof(DynamoDBEvent.Version)} >= :v";
+                expression.ExpressionStatement += $" AND {nameof(DynamoDBEventTable.Version)} >= :v";
             }
 
-            var query = _context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
+            var query = _context.FromQueryAsync<DynamoDBEventTable>(new QueryOperationConfig()
             {
                 ConsistentRead = true,
                 KeyExpression = expression
@@ -108,7 +115,7 @@ namespace NEvilES.DataStore.DynamoDB
 
             var expression = new Expression()
             {
-                ExpressionStatement = $"{nameof(DynamoDBEvent.StreamId)} = :sId  AND {nameof(DynamoDBEvent.Version)} >= :v",
+                ExpressionStatement = $"{nameof(DynamoDBEventTable.StreamId)} = :sId  AND {nameof(DynamoDBEventTable.Version)} >= :v",
                 ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>{
                     {":sId",id.ToString()},
                     {":v",  0}
@@ -116,7 +123,7 @@ namespace NEvilES.DataStore.DynamoDB
             };
 
 
-            var query = _context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
+            var query = _context.FromQueryAsync<DynamoDBEventTable>(new QueryOperationConfig()
             {
                 ConsistentRead = true,
                 KeyExpression = expression,
@@ -155,6 +162,8 @@ namespace NEvilES.DataStore.DynamoDB
 
         private TransactWriteItem GetDynamoDbTransactItem(IAggregate aggregate, int version, string metadata, IEventData eventData)
         {
+
+
             var _when = DateTimeOffset.Now;
             // TimeSpan t = _when.UtcDateTime - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -164,28 +173,28 @@ namespace NEvilES.DataStore.DynamoDB
             {
                 Put = new Amazon.DynamoDBv2.Model.Put
                 {
-                    ConditionExpression = $"attribute_not_exists({nameof(DynamoDBEvent.Version)})",
-                    TableName = TableConstants.EVENT_TABLE_NAME,
+                    ConditionExpression = $"attribute_not_exists({nameof(DynamoDBEventTable.Version)})",
+                    TableName = _tableName,
 
                     Item = new Dictionary<string, Amazon.DynamoDBv2.Model.AttributeValue> {
-                        { nameof(DynamoDBEvent.StreamId), new AttributeValue(aggregate.Id.ToString()) },
-                        { nameof(DynamoDBEvent.Version), new AttributeValue
+                        { nameof(DynamoDBEventTable.StreamId), new AttributeValue(aggregate.Id.ToString()) },
+                        { nameof(DynamoDBEventTable.Version), new AttributeValue
                             {
                                 N = (version).ToString()
                             }
                         },
-                        {nameof(DynamoDBEvent.CommmitedAt), new AttributeValue
+                        {nameof(DynamoDBEventTable.CommmitedAt), new AttributeValue
                             {
                                 N = _whenTimeStamp.ToString()
                             }
                         },
-                        {nameof(DynamoDBEvent.TransactionId), new AttributeValue(_commandContext.Transaction.Id.ToString()) },
-                        {nameof(DynamoDBEvent.AppVersion),  new AttributeValue(_commandContext.AppVersion)},
-                        {nameof(DynamoDBEvent.When), new AttributeValue(_when.ToString("o"))},
-                        {nameof(DynamoDBEvent.Body),  new AttributeValue(JsonConvert.SerializeObject(eventData.Event, SerializerSettings))},
-                        {nameof(DynamoDBEvent.Category), new AttributeValue(aggregate.GetType().FullName)},
-                        {nameof(DynamoDBEvent.BodyType), new AttributeValue(eventData.Type.FullName)},
-                        {nameof(DynamoDBEvent.Who), new AttributeValue( (_commandContext.ImpersonatorBy?.GuidId ?? _commandContext.By.GuidId).ToString())},
+                        {nameof(DynamoDBEventTable.TransactionId), new AttributeValue(_commandContext.Transaction.Id.ToString()) },
+                        {nameof(DynamoDBEventTable.AppVersion),  new AttributeValue(_commandContext.AppVersion)},
+                        {nameof(DynamoDBEventTable.When), new AttributeValue(_when.ToString("o"))},
+                        {nameof(DynamoDBEventTable.Body),  new AttributeValue(JsonConvert.SerializeObject(eventData.Event, SerializerSettings))},
+                        {nameof(DynamoDBEventTable.Category), new AttributeValue(aggregate.GetType().FullName)},
+                        {nameof(DynamoDBEventTable.BodyType), new AttributeValue(eventData.Type.FullName)},
+                        {nameof(DynamoDBEventTable.Who), new AttributeValue( (_commandContext.ImpersonatorBy?.GuidId ?? _commandContext.By.GuidId).ToString())},
                         // {"metaData", new AttributeValue(metadata)},
                     }
                 }
@@ -252,7 +261,7 @@ namespace NEvilES.DataStore.DynamoDB
         {
             var expression = new Expression()
             {
-                ExpressionStatement = $"{nameof(Version)} >= :v AND {nameof(DynamoDBEvent.CommmitedAt)} >= :cmit",
+                ExpressionStatement = $"{nameof(Version)} >= :v AND {nameof(DynamoDBEventTable.CommmitedAt)} >= :cmit",
                 ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>{
                     {":cmit",  from > 0 ? from : 0},
                     {":v",  0}
@@ -264,11 +273,11 @@ namespace NEvilES.DataStore.DynamoDB
 
             if (to > 0)
             {
-                expression.ExpressionStatement += $" AND {nameof(DynamoDBEvent.CommmitedAt)} <= :cmitTo";
+                expression.ExpressionStatement += $" AND {nameof(DynamoDBEventTable.CommmitedAt)} <= :cmitTo";
                 expression.ExpressionAttributeValues.Add(":cmitTo", to);
             }
 
-            var scan = _context.FromScanAsync<DynamoDBEvent>(new ScanOperationConfig
+            var scan = _context.FromScanAsync<DynamoDBEventTable>(new ScanOperationConfig
             {
                 FilterExpression = expression
             });
@@ -284,7 +293,7 @@ namespace NEvilES.DataStore.DynamoDB
             return ReadToAggregateCommits(await scan.GetRemainingAsync());
         }
 
-        private IEventData ReadToIEventData(Guid streamId, DynamoDBEvent row)
+        private IEventData ReadToIEventData(Guid streamId, DynamoDBEventTable row)
         {
 
             var type = _eventTypeLookupStrategy.Resolve(row.BodyType);
@@ -298,7 +307,7 @@ namespace NEvilES.DataStore.DynamoDB
             return eventData;
         }
 
-        private IEnumerable<IAggregateCommit> ReadToAggregateCommits(IEnumerable<DynamoDBEvent> rows)
+        private IEnumerable<IAggregateCommit> ReadToAggregateCommits(IEnumerable<DynamoDBEventTable> rows)
         {
 
             foreach (var row in rows)
@@ -315,14 +324,14 @@ namespace NEvilES.DataStore.DynamoDB
         {
             var expression = new Expression()
             {
-                ExpressionStatement = $"{nameof(DynamoDBEvent.StreamId)} = :sId AND {nameof(DynamoDBEvent.Version)} >= :v",
+                ExpressionStatement = $"{nameof(DynamoDBEventTable.StreamId)} = :sId AND {nameof(DynamoDBEventTable.Version)} >= :v",
                 ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>{
                     {":sId",streamId.ToString()},
                     {":v",  0}
                 }
             };
 
-            var query = _context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
+            var query = _context.FromQueryAsync<DynamoDBEventTable>(new QueryOperationConfig()
             {
                 ConsistentRead = true,
                 KeyExpression = expression
@@ -339,14 +348,14 @@ namespace NEvilES.DataStore.DynamoDB
         {
             var expression = new Expression()
             {
-                ExpressionStatement = $"{nameof(DynamoDBEvent.StreamId)} = :sId  AND {nameof(DynamoDBEvent.Version)} >= :v",
+                ExpressionStatement = $"{nameof(DynamoDBEventTable.StreamId)} = :sId  AND {nameof(DynamoDBEventTable.Version)} >= :v",
                 ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>{
                     {":sId",streamId.ToString()},
                     {":v",  0}
                 }
             };
 
-            var query = _context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
+            var query = _context.FromQueryAsync<DynamoDBEventTable>(new QueryOperationConfig()
             {
                 ConsistentRead = true,
                 KeyExpression = expression,

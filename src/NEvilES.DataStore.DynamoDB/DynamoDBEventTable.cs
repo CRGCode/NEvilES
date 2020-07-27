@@ -5,9 +5,8 @@ using NEvilES.DataStore.DynamoDB.Converters;
 namespace NEvilES.DataStore.DynamoDB
 {
     [DynamoDBTable("eventstore")]
-    public class DynamoDBEvent
+    public class DynamoDBEventTable
     {
-
         [DynamoDBHashKey]
         public Guid StreamId { get; set; }
 

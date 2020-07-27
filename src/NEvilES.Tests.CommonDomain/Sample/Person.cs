@@ -71,7 +71,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
         {
             public string Name { get; private set; }
 
-            protected void Handle(Create c)
+            protected ICommandResponse Handle(Create c)
             {
                 GuardFromEmptyOrNulls(c.Person.FirstName, c.Person.FirstName);
 
@@ -81,9 +81,10 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 }
 
                 RaiseEvent(new Created(c.StreamId, c.Person));
+                return new CommandCompleted(c.StreamId,nameof(Create));
             }
 
-            public void Handle(CorrectName c)
+            public ICommandResponse Handle(CorrectName c)
             {
                 GuardFromEmptyOrNulls(c.Name);
                 if (c.Name.Equals("God"))
@@ -106,6 +107,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 };
 
                 RaiseEvent(e);
+                return new CommandCompleted(c.StreamId,nameof(CorrectName));
             }
 
             //---------------------------------------------------------------------

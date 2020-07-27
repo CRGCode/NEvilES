@@ -81,14 +81,18 @@ namespace NEvilES.Pipeline
             IHandleAggregateCommand<Create>,
             IHandleAggregateCommand<ChangeState>
         {
-            public void Handle(Create c)
+            public ICommandResponse Handle(Create c)
             {
                 RaiseEvent(new Created(c));
+
+                return new CommandCompleted(c.StreamId, nameof(Create));
             }
 
-            public void Handle(ChangeState c)
+            public ICommandResponse Handle(ChangeState c)
             {
                 RaiseStateless(new StateChanged(c.StreamId, c.NewState));
+
+                return new CommandCompleted(c.StreamId, nameof(ChangeState));
             }
 
             public InnerCommand GetInnerCommand()

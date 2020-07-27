@@ -10,9 +10,7 @@ namespace NEvilES.Abstractions.Pipeline
         IUser ImpersonatorBy { get; set; }
         string AppVersion { get; set; }
         ICommandResult Result { get; set; }
-
     }
-
 
     public interface IUser
     {
