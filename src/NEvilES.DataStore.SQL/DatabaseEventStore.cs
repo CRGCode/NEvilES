@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NEvilES.Pipeline;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
+using NEvilES.Abstractions.Pipeline.Async;
 
 namespace NEvilES.DataStore.SQL
 {
-    public class DatabaseEventStore : IRepository, IAggregateHistory
+    public class DatabaseEventStore : IRepository, IAggregateHistory, IAsyncRepository, IAsyncAggregateHistory
     {
         private readonly IDbTransaction transaction;
         private readonly IEventTypeLookupStrategy eventTypeLookupStrategy;
@@ -296,5 +298,34 @@ namespace NEvilES.DataStore.SQL
         {
             return (TAggregate)Get(typeof(TAggregate), id, version);
         }
+
+
+        public Task<TAggregate> GetAsync<TAggregate>(Guid id) where TAggregate : IAggregate
+            => Task.FromResult((TAggregate)Get(typeof(TAggregate), id));
+
+        public Task<IAggregate> GetAsync(Type type, Guid id)
+             => Task.FromResult(Get(type, id));
+
+        public Task<IAggregate> GetAsync(Type type, Guid id, long? version)
+            => Task.FromResult(Get(type, id, version));
+
+        public Task<IAggregate> GetStatelessAsync(Type type, Guid id)
+            => Task.FromResult(GetStateless(type, id));
+
+        public Task<IAggregateCommit> SaveAsync(IAggregate aggregate)
+            => Task.FromResult(Save(aggregate));
+
+        public Task<IEnumerable<IAggregateCommit>> ReadAsync(long from = 0, long to = 0)
+            => Task.FromResult(Read(from, to));
+
+        public Task<IEnumerable<IAggregateCommit>> ReadAsync(Guid streamId)
+            => Task.FromResult(Read(streamId));
+
+        public Task<IEnumerable<IAggregateCommit>> ReadNewestLimitAsync(Guid streamId, int limit = 50)
+            => Task.FromResult(ReadNewestLimit(streamId, limit));
+
+        public Task<TAggregate> GetVersionAsync<TAggregate>(Guid id, long version) where TAggregate : IAggregate
+            => Task.FromResult(GetVersion<TAggregate>(id, version));
+
     }
 }

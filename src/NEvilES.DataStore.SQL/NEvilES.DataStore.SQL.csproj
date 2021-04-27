@@ -5,12 +5,14 @@
     <DebugType>portable</DebugType>
     <Description>.Net Evil Event Sourcing Data Store</Description>
     <VersionPrefix>0.0.1</VersionPrefix>
-    <Version>1.1.1-alpha5</Version>
+    <Version>1.1.1-alpha6</Version>
     <Authors>Craig Gardiner;Elijah Bate</Authors>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../NEvilES/NEvilES.csproj" />
-    <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" />
+    <!-- <ProjectReference Include="../NEvilES/NEvilES.csproj" /> -->
+    <!-- <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" /> -->
+    <PackageReference Include="NEvilES" Version="1.1.0-alpha5" />
+    <PackageReference Include="NEvilES.Abstractions" Version="1.1.0-alpha5" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
