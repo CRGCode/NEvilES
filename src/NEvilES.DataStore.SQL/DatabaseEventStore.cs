@@ -16,7 +16,7 @@ namespace NEvilES.DataStore.SQL
     {
         private readonly IDbTransaction transaction;
         private readonly IEventTypeLookupStrategy eventTypeLookupStrategy;
-        private readonly CommandContext commandContext;
+        private readonly ICommandContext commandContext;
 
         private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
@@ -26,8 +26,10 @@ namespace NEvilES.DataStore.SQL
             Converters = new JsonConverter[] { new StringEnumConverter() }
         };
 
-        public DatabaseEventStore(IDbTransaction transaction, IEventTypeLookupStrategy eventTypeLookupStrategy,
-            CommandContext commandContext)
+        public DatabaseEventStore(
+            IDbTransaction transaction, 
+            IEventTypeLookupStrategy eventTypeLookupStrategy,
+            ICommandContext commandContext)
         {
             this.transaction = transaction;
             this.eventTypeLookupStrategy = eventTypeLookupStrategy;
