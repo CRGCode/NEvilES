@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
 using System.Threading.Tasks;
-using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Abstractions.Pipeline.Async;
 using NEvilES.Pipeline.Async;

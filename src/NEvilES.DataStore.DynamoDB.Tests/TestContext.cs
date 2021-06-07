@@ -1,8 +1,7 @@
 using System;
 using Amazon.DynamoDBv2;
 using Microsoft.Extensions.DependencyInjection;
-using NEvilES.Abstractions.Pipeline.Async;
-using NEvilES.Extensions.DependecyInjection;
+using NEvilES.Extensions.DependencyInjection;
 
 namespace NEvilES.DataStore.DynamoDB.Tests
 {
@@ -17,7 +16,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             IServiceCollection services = new ServiceCollection();
 
 
-            services.AddEventStore<DynamoDBEventStore, DynamoDBTransaction>(opts =>
+            services.AddEventStoreAsync<DynamoDBEventStore, DynamoDBTransaction>(opts =>
              {
                  opts.DomainAssemblyTypes = new[]
                  {

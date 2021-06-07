@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GTD.Common;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Pipeline;
 
 namespace GTD.ReadModel
 {

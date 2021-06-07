@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using NEvilES.DataStore;
 using NEvilES.DataStore.SQL;
 
 namespace NEvilES.Tests

@@ -1,6 +1,4 @@
-using NEvilES;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Pipeline;
 
 namespace NEvilES.DataStore.DynamoDB
 {

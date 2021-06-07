@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.10
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31105.61
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES", "src\NEvilES\NEvilES.csproj", "{0C014101-EA0A-49B6-AB6B-590B37779F38}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Testing", "src\NEvilES.Testing\NEvilES.Testing.csproj", "{55244748-6BF2-4A49-8F5C-5F660C66D63C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Tests", "src\NEvilES.Tests\NEvilES.Tests.csproj", "{11B04DDE-378F-46BC-A3BA-2ADCDE4A5699}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GTD.Common", "src\Sample\GTD.Common\GTD.Common.csproj", "{AF9B1DAE-4741-4893-A7ED-B237567A92E5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{08722C2B-08B2-4615-8BAF-25EDC0C497BD}"
 EndProject
@@ -27,13 +25,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Abstractions", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Extensions.DependencyInjection", "src\NEvilES.Extensions.DependencyInjection\NEvilES.Extensions.DependencyInjection.csproj", "{F86C8DBA-C566-4B35-A2C7-19DFDD6C7DEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvilES.DataStore.LiteDb", "src\NEvilES.DataStore.LiteDb\NEvilES.DataStore.LiteDb.csproj", "{A35B886A-D470-4D79-BCE5-2EF1B63F680F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.DataStore.LiteDb", "src\NEvilES.DataStore.LiteDb\NEvilES.DataStore.LiteDb.csproj", "{A35B886A-D470-4D79-BCE5-2EF1B63F680F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvilES.DataStore.DynamoDB", "src\NEvilES.DataStore.DynamoDB\NEvilES.DataStore.DynamoDB.csproj", "{A7DE8C14-40FA-4942-BC44-F70B120E50AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.DataStore.DynamoDB", "src\NEvilES.DataStore.DynamoDB\NEvilES.DataStore.DynamoDB.csproj", "{A7DE8C14-40FA-4942-BC44-F70B120E50AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvilES.Tests.CommonDomain", "src\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj", "{16BB3F5F-202E-42FF-8E7B-4F59F59FEEDD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Tests.CommonDomain", "src\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj", "{16BB3F5F-202E-42FF-8E7B-4F59F59FEEDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEvilES.DataStore.DynamoDB.Tests", "src\NEvilES.DataStore.DynamoDB.Tests\NEvilES.DataStore.DynamoDB.Tests.csproj", "{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.DataStore.DynamoDB.Tests", "src\NEvilES.DataStore.DynamoDB.Tests\NEvilES.DataStore.DynamoDB.Tests.csproj", "{51F95C3C-7A2E-4AE4-A74F-32CF4E20AFDB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,18 +91,6 @@ Global
 		{11B04DDE-378F-46BC-A3BA-2ADCDE4A5699}.Release|x64.Build.0 = Release|Any CPU
 		{11B04DDE-378F-46BC-A3BA-2ADCDE4A5699}.Release|x86.ActiveCfg = Release|Any CPU
 		{11B04DDE-378F-46BC-A3BA-2ADCDE4A5699}.Release|x86.Build.0 = Release|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Debug|x64.Build.0 = Debug|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Debug|x86.Build.0 = Debug|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Release|x64.ActiveCfg = Release|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Release|x64.Build.0 = Release|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Release|x86.ActiveCfg = Release|Any CPU
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5}.Release|x86.Build.0 = Release|Any CPU
 		{71971C21-68F5-4D29-A044-7656271E5C06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71971C21-68F5-4D29-A044-7656271E5C06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71971C21-68F5-4D29-A044-7656271E5C06}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -222,7 +208,6 @@ Global
 		{2EE8059A-8B43-45B9-AA7C-BAB534986C1F} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
 		{55244748-6BF2-4A49-8F5C-5F660C66D63C} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
 		{11B04DDE-378F-46BC-A3BA-2ADCDE4A5699} = {46D734C0-32AE-4B02-9A16-2FE154B888BB}
-		{AF9B1DAE-4741-4893-A7ED-B237567A92E5} = {08722C2B-08B2-4615-8BAF-25EDC0C497BD}
 		{71971C21-68F5-4D29-A044-7656271E5C06} = {08722C2B-08B2-4615-8BAF-25EDC0C497BD}
 		{A04C028B-3D23-42FB-A5FD-8E65780BBFA5} = {08722C2B-08B2-4615-8BAF-25EDC0C497BD}
 		{A6949BB0-FD83-434E-93DA-FF7517B5E54A} = {08722C2B-08B2-4615-8BAF-25EDC0C497BD}

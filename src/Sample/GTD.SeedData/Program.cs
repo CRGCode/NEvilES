@@ -1,16 +1,14 @@
 ﻿using System;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using Autofac;
-using GTD.Common;
 using GTD.Domain;
 using GTD.ReadModel;
+using Microsoft.Extensions.DependencyInjection;
 using NEvilES;
-using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.DataStore;
 using NEvilES.DataStore.SQL;
+using NEvilES.Extensions.DependencyInjection;
 using NEvilES.Pipeline;
 using Client = GTD.Domain.Client;
 using Request = GTD.Domain.Request;
@@ -21,43 +19,68 @@ namespace GTD.SeedData
     {
         static void Main(string[] args)
         {
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(new CommandContext.User(Guid.NewGuid())).Named<IUser>("user");
-            builder.RegisterInstance(new InMemoryReadModel()).AsImplementedInterfaces();
-            builder.RegisterInstance<IEventTypeLookupStrategy>(new EventTypeLookupStrategy());
+            const string connString = "Server=AF-004;Database=ES_GTD;Trusted_Connection=True";
 
-            const string connString = "Server=(localdb)\\SQL2016;Database=ES_GTD;Trusted_Connection=True";
-            builder.RegisterModule(new EventStoreDatabaseModule(connString));
-            builder.RegisterModule(new EventProcessorModule(typeof(User).GetTypeInfo().Assembly, typeof(ReadModel.Client).GetTypeInfo().Assembly));
+            var services = new ServiceCollection()
+                .AddSingleton<IConnectionString>(c => new ConnectionString(connString))
+                .AddSingleton<IUser>(c => CommandContext.User.NullUser())
+                .AddScoped<IDbConnection>(c =>
+                {
+                    var conn = new SqlConnection(c.GetService<IConnectionString>().Data);
+                    conn.Open();
+                    return conn;
+                })
+                .AddScoped(c =>
+                {
+                    var conn = c.GetService<IDbConnection>();
+                    return conn.BeginTransaction();
+                })
+                .AddEventStore<DatabaseEventStore, PipelineTransaction>(opts =>
+                {
+                    opts.DomainAssemblyTypes = new[]
+                    {
+                        typeof(Client),
+                    };
 
-            var container = builder.Build();
-            container.Resolve<IEventTypeLookupStrategy>().ScanAssemblyOfType(typeof(Domain.Client));
+                    opts.GetUserContext = s => s.GetService<IUser>() ?? throw new Exception("No User Context");
 
-            //SeedData(connString, container);
+                    opts.ReadModelAssemblyTypes = new[]
+                    {
+                        typeof(ReadModel.Client)
+                    };
+                });
 
-            using (var scope = container.BeginLifetimeScope())
+            services.AddSingleton<InMemoryReadModel>();
+            services.AddSingleton<IReadFromReadModel>(s => s.GetRequiredService<InMemoryReadModel>());
+            services.AddSingleton<IWriteReadModel>(s => s.GetRequiredService<InMemoryReadModel>());
+
+            var container =  services.BuildServiceProvider();
+
+            SeedData(connString, container);
+
+            using (var scope = container.CreateScope())
             {
-                ReplayEvents.Replay(container.Resolve<IFactory>(), scope.Resolve<IAggregateHistory>());
+                ReplayEvents.Replay(container.GetService<IFactory>(), scope.ServiceProvider.GetRequiredService<IAggregateHistory>());
             }
-            var reader = (InMemoryReadModel)container.Resolve<IReadFromReadModel>();
+            var reader = (InMemoryReadModel)container.GetService<IReadFromReadModel>();
             var client1 = reader.Query<ReadModel.Client>(x => x.Name == "FBI").ToArray();
             Console.WriteLine("Read Model Document Count {0}", reader.Count());
             Console.WriteLine("Done - Hit any key!");
             Console.ReadKey();
         }
 
-        private static void SeedData(string connString, IContainer container)
+        private static void SeedData(string connString, IServiceProvider container)
         {
             Console.WriteLine("GTD seed data.......");
 
-            EventStoreDatabaseModule.TestLocalDbExists(new ConnectionString(connString));
+            TestLocalDbExists(new ConnectionString(connString));
 
             var id = CombGuid.NewGuid();
 
-            using (var scope = container.BeginLifetimeScope())
+            using (var scope = container.CreateScope())
             {
-                scope.Resolve<PipelineTransaction>();
-                var processor = scope.Resolve<ICommandProcessor>();
+                scope.ServiceProvider.GetService<PipelineTransaction>();  // What's this all about?
+                var processor = scope.ServiceProvider.GetService<ICommandProcessor>();
                 var craig = new User.NewUser { StreamId = CombGuid.NewGuid(), Details = new User.Details("craig@test.com", "xxx", "worker", "Craig Gardiner") };
                 processor.Process(craig);
                 var elijah = new User.NewUser { StreamId = CombGuid.NewGuid(), Details = new User.Details("elijah@test.com", "xxx", "worker", "Elijah Bates") };
@@ -92,9 +115,69 @@ namespace GTD.SeedData
 
                 processor.Process(new Request.CommentAdded { StreamId = request.StreamId, Text = "System test comment" });
             }
-            var reader = (InMemoryReadModel)container.Resolve<IReadFromReadModel>();
+            var reader = (InMemoryReadModel)container.GetService<IReadFromReadModel>();
             var client = reader.Get<ReadModel.Client>(id);
             Console.WriteLine("Id {0} - {1}", id, client.Name);
+        }
+
+        public static void TestLocalDbExists(IConnectionString connString)
+        {
+            using (var connection = new SqlConnection($@"Server={connString.Keys["Server"]};Database=Master;Integrated Security=true;"))
+            {
+                connection.Open();
+
+                var createDb = string.Format(@"
+IF EXISTS(SELECT * FROM sys.databases WHERE name='{0}')
+BEGIN
+	ALTER DATABASE [{0}]
+	SET SINGLE_USER
+	WITH ROLLBACK IMMEDIATE
+	DROP DATABASE [{0}]
+END
+
+DECLARE @FILENAME AS VARCHAR(255)
+
+SET @FILENAME = CONVERT(VARCHAR(255), SERVERPROPERTY('instancedefaultdatapath')) + '{0}';
+
+EXEC ('CREATE DATABASE [{0}] ON PRIMARY
+	(NAME = [{0}],
+	FILENAME =''' + @FILENAME + ''',
+	SIZE = 25MB,
+	MAXSIZE = 50MB,
+	FILEGROWTH = 5MB )')
+", connString.Keys["Database"]);
+
+                var command = connection.CreateCommand();
+                command.CommandText = createDb;
+                command.ExecuteNonQuery();
+            }
+
+            using (var connection = new SqlConnection(connString.Data))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+
+                command.CommandText = @"
+CREATE TABLE [dbo].[events](
+       [id] [bigint] IDENTITY(1,1) NOT NULL,
+       [category] [nvarchar](500) NOT NULL,
+       [streamid] [uniqueidentifier] NOT NULL,
+       [transactionid] [uniqueidentifier] NOT NULL,
+       [metadata] [nvarchar](max) NOT NULL,
+       [bodytype] [nvarchar](500) NOT NULL,
+       [body] [nvarchar](max) NOT NULL,
+       [who] [uniqueidentifier] NOT NULL,
+       [_when] [datetime] NOT NULL,
+       [version] [int] NOT NULL,
+       [appversion] [nvarchar](20) NOT NULL,
+PRIMARY KEY CLUSTERED
+(
+       [id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+";
+                command.ExecuteNonQuery();
+            }
         }
     }
 }

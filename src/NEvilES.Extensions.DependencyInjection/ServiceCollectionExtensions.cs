@@ -8,7 +8,7 @@ using NEvilES.Abstractions.Pipeline;
 using NEvilES.Abstractions.Pipeline.Async;
 using NEvilES.Pipeline;
 
-namespace NEvilES.Extensions.DependecyInjection
+namespace NEvilES.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
@@ -17,9 +17,10 @@ namespace NEvilES.Extensions.DependecyInjection
         {
             IRegisteredTypesBuilder ConnectImplementingType(Type interfaceType);
         }
+
         public class RegisteredTypesBuilder : IRegisteredTypesBuilder
         {
-            private IEnumerable<Type> _assemblyTypes;
+            private readonly IEnumerable<Type> _assemblyTypes;
             private IServiceCollection _services;
             public RegisteredTypesBuilder(IEnumerable<Type> assemblyTypes, IServiceCollection services)
             {
@@ -29,15 +30,15 @@ namespace NEvilES.Extensions.DependecyInjection
 
             public IRegisteredTypesBuilder ConnectImplementingType(Type interfaceType)
             {
-                string name = interfaceType.Name;
+                var name = interfaceType.Name;
                 foreach (var item in _assemblyTypes)
                 {
-                    var interfaces = item.GetInterfaces();
+                    var interfaces = item.GetInterfaces().ToArray();
                     if (item.IsAbstract || !item.IsClass || interfaces == null) continue;
 
-                    var matchingInterfaces = interfaces.Where(t => t.Name == name);
+                    var matchingInterfaces = interfaces.Where(t => t.Name == name).ToArray();
 
-                    if (matchingInterfaces.Count() == 0) continue;
+                    if (!matchingInterfaces.Any()) continue;
 
                     _services = ConnectImplementingTypes(_services, item, matchingInterfaces);
                 }
@@ -63,7 +64,7 @@ namespace NEvilES.Extensions.DependecyInjection
 
         public static IRegisteredTypesBuilder RegisterTypesFrom(this IServiceCollection services, IEnumerable<Type> assemblyType)
         {
-            List<Assembly> assemblies = new List<Assembly>();
+            var assemblies = new List<Assembly>();
             lock (_types)
             {
                 foreach (var type in assemblyType)
@@ -82,8 +83,7 @@ namespace NEvilES.Extensions.DependecyInjection
 
         public static IServiceCollection ConnectImplementingType(this IServiceCollection services, Type interfaceType)
         {
-
-            string name = interfaceType.Name;
+            var name = interfaceType.Name;
             var allTypes = _types.Values.SelectMany(x => x);
             foreach (var item in allTypes)
             {
@@ -102,20 +102,20 @@ namespace NEvilES.Extensions.DependecyInjection
             return services;
         }
 
-        public static IServiceCollection AddEventStore<TRepository, TTransaction, TDomainType, TReadModelType>(this IServiceCollection services)
+        public static IServiceCollection AddEventStoreAsync<TRepository, TTransaction, TDomainType, TReadModelType>(this IServiceCollection services)
             where TRepository : IAsyncRepository
             where TTransaction : ITransaction
         {
-            return services.AddEventStore<TRepository, TTransaction>(opts =>
+            return services.AddEventStoreAsync<TRepository, TTransaction>(opts =>
              {
                  opts.DomainAssemblyTypes = new List<Type>() { typeof(TDomainType) };
                  opts.ReadModelAssemblyTypes = new List<Type>() { typeof(TReadModelType) };
              });
         }
 
-        public static IServiceCollection AddEventStore<TRepository, TTransaction>(this IServiceCollection services, Action<EventStoreOptions> options)
-        where TRepository : IAsyncRepository
-        where TTransaction : ITransaction
+        public static IServiceCollection AddEventStoreAsync<TRepository, TTransaction>(this IServiceCollection services, Action<EventStoreOptions> options)
+            where TRepository : IAsyncRepository
+            where TTransaction : ITransaction
         {
             var opts = new EventStoreOptions();
             options(opts);
@@ -125,7 +125,6 @@ namespace NEvilES.Extensions.DependecyInjection
             {
                 lookup.ScanAssemblyOfType(t);
             }
-
 
             services
                 .RegisterTypesFrom(opts.DomainAssemblyTypes)
@@ -140,7 +139,6 @@ namespace NEvilES.Extensions.DependecyInjection
                 .ConnectImplementingType(typeof(IProjectWithResult<>))
                 .ConnectImplementingType(typeof(IProjectWithResultAsync<>));
 
-
             services.AddScoped<IUser>(opts.GetUserContext);
             services.AddScoped(typeof(ITransaction), typeof(TTransaction));
             services.AddScoped<ICommandContext>(s => new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
@@ -151,10 +149,49 @@ namespace NEvilES.Extensions.DependecyInjection
             services.AddSingleton<IEventTypeLookupStrategy>(lookup);
             services.AddScoped<IFactory, ServiceProviderFactory>();
 
+            return services;
+        }
 
+        public static IServiceCollection AddEventStore<TRepository, TTransaction>(this IServiceCollection services, Action<EventStoreOptions> options)
+            where TRepository : IRepository
+            where TTransaction : ITransaction
+        {
+            var opts = new EventStoreOptions();
+            options(opts);
+
+            var lookup = new EventTypeLookupStrategy();
+            foreach (var t in opts.DomainAssemblyTypes)
+            {
+                lookup.ScanAssemblyOfType(t);
+            }
+
+            services
+                .RegisterTypesFrom(opts.DomainAssemblyTypes)
+                .ConnectImplementingType(typeof(IProcessCommand<>))
+                .ConnectImplementingType(typeof(IHandleStatelessEvent<>))
+                .ConnectImplementingType(typeof(IHandleAggregateCommandMarker<>))
+                .ConnectImplementingType(typeof(INeedExternalValidation<>));
+
+            services.RegisterTypesFrom(opts.ReadModelAssemblyTypes)
+                .ConnectImplementingType(typeof(IProject<>))
+                .ConnectImplementingType(typeof(IProjectWithResult<>));
+
+            services.AddScoped(typeof(ITransaction), typeof(TTransaction));
+
+            //services.AddScoped(opts.GetUserContext);     // Move this out along with ICommandContext below
+            services.AddScoped<ICommandContext,CommandContext>(s => 
+                new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
+
+            services.AddScoped<ICommandProcessor, PipelineProcessor>();
+            services.AddScoped<ISecurityContext, SecurityContext>();
+            services.AddScoped(typeof(IRepository), typeof(TRepository));
+            services.AddScoped(typeof(IAggregateHistory), typeof(TRepository));
+            services.AddSingleton<IEventTypeLookupStrategy>(lookup);
+            services.AddScoped<IFactory, ServiceProviderFactory>();
 
             return services;
         }
+
     }
 
     public class EventStoreOptions

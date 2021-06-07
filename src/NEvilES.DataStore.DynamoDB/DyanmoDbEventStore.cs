@@ -6,11 +6,9 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
-using NEvilES;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Abstractions.Pipeline.Async;
-using NEvilES.Pipeline;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -229,7 +227,7 @@ namespace NEvilES.DataStore.DynamoDB
 
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw new Exception(
                     $"The aggregate {aggregate.GetType().FullName} has tried to save events to an old version of an aggregate");

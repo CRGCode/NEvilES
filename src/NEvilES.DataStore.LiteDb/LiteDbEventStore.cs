@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using LiteDB;
 using NEvilES.Abstractions;
@@ -35,7 +34,7 @@ namespace NEvilES.DataStore.LiteDb
 
         public TAggregate Get<TAggregate>(Guid id) where TAggregate : IAggregate
         {
-            IAggregate aggregate = Get(typeof(TAggregate), id);
+            var aggregate = Get(typeof(TAggregate), id);
             return (TAggregate)aggregate;
         }
 
@@ -85,7 +84,6 @@ namespace NEvilES.DataStore.LiteDb
             }
 
             var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
-            var count = 0;
 
             var metadata = string.Empty;
             try
@@ -106,7 +104,7 @@ namespace NEvilES.DataStore.LiteDb
                     BodyType = x.Type.FullName
                 }));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw new Exception(
                     $"The aggregate {aggregate.GetType().FullName} has tried to save events to an old version of an aggregate");
