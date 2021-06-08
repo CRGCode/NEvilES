@@ -1,13 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.DataStore;
-using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
-using StructureMap;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -42,7 +37,7 @@ namespace NEvilES.Tests
             var expected = repository.Get<Customer.Aggregate>(streamId);
             Assert.NotNull(expected);
             Assert.Equal(expected.Id, streamId);
-            Assert.Equal(expected.Version, 0);
+            Assert.Equal(0, expected.Version);
         }
 
         [Fact]
@@ -55,7 +50,7 @@ namespace NEvilES.Tests
             var expected = repository.Save(agg);
             Assert.NotNull(expected);
             Assert.Equal(expected.StreamId, streamId);
-            Assert.Equal(expected.UpdatedEvents.Length, 1);
+            Assert.Single(expected.UpdatedEvents);
         }
 
         [Fact]
@@ -69,7 +64,7 @@ namespace NEvilES.Tests
             var expected = repository.Save(agg);
             Assert.NotNull(expected);
             Assert.Equal(expected.StreamId, streamId);
-            Assert.Equal(expected.UpdatedEvents.Length, 2);
+            Assert.Equal(2, expected.UpdatedEvents.Length);
         }
 
 

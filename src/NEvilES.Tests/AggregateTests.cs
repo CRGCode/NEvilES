@@ -1,5 +1,3 @@
-using System;
-using NEvilES.Testing;
 using Xunit;
 
 namespace NEvilES.Tests
@@ -15,7 +13,7 @@ namespace NEvilES.Tests
             var agg = new Customer.Aggregate();
             agg.Raise<Customer.Created>(new Customer.Create());
             var iAgg = (IAggregate) agg;
-            Assert.Equal(iAgg.Version, 1);
+            Assert.Equal(1, iAgg.Version);
         }
     }
 }

@@ -110,7 +110,7 @@ namespace NEvilES.Testing
 
         private static void TestExpectedEvents(Guid id, IEnumerable<IMessage> events, IEnumerable<IEventData> actual)
         {
-            StringBuilder b = new StringBuilder();
+            var b = new StringBuilder();
             var check = actual.Select(x => new Result(false, x.Event)).ToArray();
             foreach (var c in check) { b.AppendLine($"\t{c.Value.GetType()}"); }
 

@@ -4,7 +4,6 @@ using System.Data;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using NEvilES.Pipeline;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 
@@ -14,7 +13,7 @@ namespace NEvilES.DataStore.SQL
     {
         private readonly IDbTransaction transaction;
         private readonly IEventTypeLookupStrategy eventTypeLookupStrategy;
-        private readonly CommandContext commandContext;
+        private readonly ICommandContext commandContext;
 
         private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
@@ -25,7 +24,7 @@ namespace NEvilES.DataStore.SQL
         };
 
         public DatabaseEventStore(IDbTransaction transaction, IEventTypeLookupStrategy eventTypeLookupStrategy,
-            CommandContext commandContext)
+            ICommandContext commandContext)
         {
             this.transaction = transaction;
             this.eventTypeLookupStrategy = eventTypeLookupStrategy;

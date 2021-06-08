@@ -25,7 +25,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             var expected = await repository.GetAsync<Customer.Aggregate>(streamId);
             Assert.NotNull(expected);
             Assert.Equal(expected.Id, streamId);
-            Assert.Equal(expected.Version, 0);
+            Assert.Equal(0, expected.Version);
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             var expected = await repository.SaveAsync(agg);
             Assert.NotNull(expected);
             Assert.Equal(expected.StreamId, streamId);
-            Assert.Equal(expected.UpdatedEvents.Length, 1);
+            Assert.Single(expected.UpdatedEvents);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             var expected = await repository.SaveAsync(agg);
             Assert.NotNull(expected);
             Assert.Equal(expected.StreamId, streamId);
-            Assert.Equal(expected.UpdatedEvents.Length, 2);
+            Assert.Equal(2, expected.UpdatedEvents.Length);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
 
             var res = await repository.SaveAsync(agg);
             Assert.Equal(res.StreamId, streamId);
-            Assert.Equal(res.UpdatedEvents.Length, 2);
+            Assert.Equal(2, res.UpdatedEvents.Length);
 
             var expected = await repository.GetStatelessAsync(typeof(Customer.Aggregate), streamId);
             Assert.NotNull(expected);

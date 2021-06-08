@@ -47,7 +47,5 @@ namespace NEvilES.Pipeline
             public Guid GuidId { get; private set; }
             public int? UserId { get; set; }
         }
-
-
     }
 }

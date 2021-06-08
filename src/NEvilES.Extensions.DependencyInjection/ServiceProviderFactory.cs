@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NEvilES.Pipeline;
 
-namespace NEvilES.Extensions.DependecyInjection
+namespace NEvilES.Extensions.DependencyInjection
 {
     public class ServiceProviderFactory : IFactory
     {
@@ -11,7 +11,7 @@ namespace NEvilES.Extensions.DependecyInjection
 
         public ServiceProviderFactory(IServiceProvider serviceProvider)
         {
-            this._serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
         }
 
         public object Get(Type type)
@@ -21,7 +21,7 @@ namespace NEvilES.Extensions.DependecyInjection
 
         public object TryGet(Type type)
         {
-            object instance = _serviceProvider.GetService(type);
+            var instance = _serviceProvider.GetService(type);
             return instance;
         }
 

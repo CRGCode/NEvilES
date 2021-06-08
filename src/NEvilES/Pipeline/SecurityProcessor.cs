@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 

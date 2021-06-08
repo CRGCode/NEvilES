@@ -98,7 +98,7 @@ namespace NEvilES.Tests
 
             var expected = approvalWorkflowEngine.Initiate(command);
 
-            Assert.Equal(1, expected.UpdatedAggregates.Count);
+            Assert.Single(expected.UpdatedAggregates);
             Assert.Equal(command, expected.FilterEvents<Approval.Created>().First().InnerCommand.Command);
         }
 

@@ -1,10 +1,8 @@
-using System;
+﻿using System;
 using System.Data;
-using NEvilES;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Pipeline;
 
-namespace GTD.Common
+namespace NEvilES.DataStore.SQL
 {
     public class PipelineTransaction : TransactionBase, IDisposable
     {

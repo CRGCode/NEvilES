@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,8 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
+    <ProjectReference Include="..\..\NEvilES.Extensions.DependencyInjection\NEvilES.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\NEvilES\NEvilES.csproj" />
-    <ProjectReference Include="..\GTD.Common\GTD.Common.csproj" />
     <ProjectReference Include="..\GTD.Domain\GTD.Domain.csproj" />
     <ProjectReference Include="..\GTD.ReadModel\GTD.ReadModel.csproj" />
   </ItemGroup>

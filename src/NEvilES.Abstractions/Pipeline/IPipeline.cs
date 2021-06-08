@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace NEvilES.Abstractions.Pipeline
 {
     public interface IProcessPipelineStage<T> where T : IMessage
