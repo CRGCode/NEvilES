@@ -8,6 +8,10 @@
     <Version>1.1.0-alpha5</Version>
     <Authors>Craig Gardiner;Elijah Bate</Authors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../NEvilES/NEvilES.csproj" />
     <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" />
