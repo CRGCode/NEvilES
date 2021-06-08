@@ -1,4 +1,4 @@
-version: 0.1.0-alpha{build}
+version: 0.1.1-alpha{build}
 image: Visual Studio 2019
 nuget:
   account_feed: true

@@ -110,9 +110,9 @@ ELSE
 
             using (var connection = OpenConnection())
             {
-                var createDb = string.Format(@"
+                var createTable = string.Format(@"
 IF NOT EXISTS (SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'Doc' )
-	EXEC sp_executesql 'CREATE SCHEMA Doc'
+	EXEC sp_executesql N'CREATE SCHEMA Doc'
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID('Doc.{0}') AND type in ('U'))
 CREATE TABLE Doc.{0}(
@@ -126,7 +126,7 @@ CREATE TABLE Doc.{0}(
 ", docName);
 
                 var command = connection.CreateCommand();
-                command.CommandText = createDb;
+                command.CommandText = createTable;
                 command.ExecuteNonQuery();
             }
             return docName;
