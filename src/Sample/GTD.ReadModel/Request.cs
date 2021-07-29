@@ -1,11 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using NEvilES.Abstractions.Pipeline;
+using Newtonsoft.Json;
 
 namespace GTD.ReadModel
 {
     public class Request : IHaveIdentity
     {
+        [JsonConstructor]
+        public Request(Guid id, Guid projectId, string shortName, string description, int priority, Comment[] comments)
+        {
+            Id = id;
+            ProjectId = projectId;
+            ShortName = shortName;
+            Description = description;
+            Priority = priority;
+            Comments = comments == null ? new List<Comment>() : new List<Comment>(comments);
+        }
+
         public Request(Domain.Request.Created c)
         {
             Id = c.StreamId;
@@ -13,7 +25,6 @@ namespace GTD.ReadModel
             ShortName = c.ShortName;
             Description = c.Description;
             Priority = c.Priority;
-            Comments = new List<Comment>();
         }
 
         public Guid Id { get; }
@@ -25,6 +36,12 @@ namespace GTD.ReadModel
 
         public class Comment
         {
+            public Comment(Guid id, string text)
+            {
+                Id = id;
+                Text = text;
+            }
+
             public Guid Id { get; }
             public string Text { get; set; }
             public Comment(Domain.Request.CommentAdded c)

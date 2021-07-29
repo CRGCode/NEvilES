@@ -50,21 +50,21 @@ namespace GTD.SeedData
                     };
                 });
 
-            services.AddSingleton<InMemoryReadModel>();
-            services.AddSingleton<IReadFromReadModel>(s => s.GetRequiredService<InMemoryReadModel>());
-            services.AddSingleton<IWriteReadModel>(s => s.GetRequiredService<InMemoryReadModel>());
+            services.AddSingleton<DocumentStore>();
+            services.AddSingleton<IReadFromReadModel>(s => s.GetRequiredService<DocumentStore>());
+            services.AddSingleton<IWriteReadModel>(s => s.GetRequiredService<DocumentStore>());
 
             var container =  services.BuildServiceProvider();
 
             SeedData(connString, container);
 
-            using (var scope = container.CreateScope())
-            {
-                ReplayEvents.Replay(container.GetService<IFactory>(), scope.ServiceProvider.GetRequiredService<IAggregateHistory>());
-            }
-            var reader = (InMemoryReadModel)container.GetService<IReadFromReadModel>();
-            var client1 = reader.Query<ReadModel.Client>(x => x.Name == "FBI").ToArray();
-            Console.WriteLine("Read Model Document Count {0}", reader.Count());
+            //using (var scope = container.CreateScope())
+            //{
+            //    ReplayEvents.Replay(container.GetService<IFactory>(), scope.ServiceProvider.GetRequiredService<IAggregateHistory>());
+            //}
+            //var reader = (InMemoryReadModel)container.GetService<IReadFromReadModel>();
+            //var client1 = reader.Query<ReadModel.Client>(x => x.Name == "FBI").ToArray();
+            //Console.WriteLine("Read Model Document Count {0}", reader.Count());
             Console.WriteLine("Done - Hit any key!");
             Console.ReadKey();
         }
@@ -115,7 +115,7 @@ namespace GTD.SeedData
 
                 processor.Process(new Request.CommentAdded { StreamId = request.StreamId, Text = "System test comment" });
             }
-            var reader = (InMemoryReadModel)container.GetService<IReadFromReadModel>();
+            var reader = container.GetService<IReadFromReadModel>();
             var client = reader.Get<ReadModel.Client>(id);
             Console.WriteLine("Id {0} - {1}", id, client.Name);
         }

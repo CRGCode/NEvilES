@@ -65,7 +65,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public string LastName { get; set; }
         }
 
-        public abstract class Aggregate : AggregateBase,
+        public class Aggregate : AggregateBase,
             IHandleStatelessEvent<StatelessBirthdateChanged>,
             IHandleAggregateCommand<CorrectName>
         {

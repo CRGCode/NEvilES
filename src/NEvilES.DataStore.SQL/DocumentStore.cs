@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using NEvilES.Abstractions.Pipeline;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace NEvilES.DataStore.SQL
 {
@@ -73,6 +74,16 @@ ELSE
             command.ExecuteNonQuery();
         }
 
+        public class CamelCaseContractResolver : DefaultContractResolver
+        {
+            protected override string ResolvePropertyName(string propertyName)
+            {
+                //Change the incoming property name into Title case
+                var name = string.Concat(propertyName[0].ToString().ToLower(), propertyName.Substring(1));
+                return base.ResolvePropertyName(name);
+            }
+        }
+
         public T Get<T>(Guid id) where T : class, IHaveIdentity
         {
             using var connection = OpenConnection();
@@ -84,7 +95,12 @@ ELSE
             command.CommandText = sql;
             var item = command.ExecuteScalar();
 
-            return item is DBNull ? default : JsonConvert.DeserializeObject<T>((string)item);
+            var serializerSetting = new JsonSerializerSettings()
+            {
+                ContractResolver = new CamelCaseContractResolver()
+            };
+
+            return item is DBNull ? default : JsonConvert.DeserializeObject<T>((string)item, serializerSetting);
         }
 
         public IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity

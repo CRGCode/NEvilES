@@ -13,11 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\NEvilES.Abstractions\NEvilES.Abstractions.csproj" />
-    <ProjectReference Include="..\src\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
-    <ProjectReference Include="..\src\NEvilES.Extensions.DependencyInjection\NEvilES.Extensions.DependencyInjection.csproj" />
-    <ProjectReference Include="..\src\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj" />
-    <ProjectReference Include="..\src\NEvilES\NEvilES.csproj" />
+    <ProjectReference Include="..\NEvilES.Abstractions\NEvilES.Abstractions.csproj" />
+    <ProjectReference Include="..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
+    <ProjectReference Include="..\NEvilES.Extensions.DependencyInjection\NEvilES.Extensions.DependencyInjection.csproj" />
+    <ProjectReference Include="..\NEvilES.Testing\NEvilES.Testing.csproj" />
+    <ProjectReference Include="..\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj" />
+    <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -47,9 +47,10 @@ namespace NEvilES.Tests.CommonDomain.Sample
         {
             public void Handle(Create command, Validate validate)
             {
-                if (validate.Dispatch(command).IsValid)
+                var commandValidationResult = validate.Dispatch(command);
+                if (!commandValidationResult.IsValid)
                 {
-
+                    throw new DomainAggregateException(this, $"Validation Failed - {commandValidationResult.Errors}");
                 }
                 Raise<Created>(command);
             }
@@ -65,7 +66,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
         {
             public CommandValidationResult Dispatch(Create command)
             {
-                return new CommandValidationResult(true);
+                return string.IsNullOrWhiteSpace(command.Name) ? new CommandValidationResult(false, "Name can't be blank") : new CommandValidationResult(true);
             }
         }
     }
