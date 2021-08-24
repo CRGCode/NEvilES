@@ -47,7 +47,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
             agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
-            agg.RaiseStateless(new Customer.Refunded(streamId, 800.80M));
+            agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
 
             var expected = await repository.SaveAsync(agg);
             Assert.NotNull(expected);
@@ -61,7 +61,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
             agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
-            agg.RaiseStateless(new Customer.Refunded(streamId, 800.80M));
+            agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
 
             var res = await repository.SaveAsync(agg);
             Assert.Equal(res.StreamId, streamId);
@@ -71,8 +71,6 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             Assert.NotNull(expected);
             Assert.Equal(2, expected.Version);
         }
-
-
 
         [Fact]
         public async Task CheckAggregateApplysEventAsync()
@@ -96,6 +94,5 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             Assert.Equal(3, expected.UpdatedEvents.Length);
             Assert.Equal(3, agg.Version);
         }
-
     }
 }

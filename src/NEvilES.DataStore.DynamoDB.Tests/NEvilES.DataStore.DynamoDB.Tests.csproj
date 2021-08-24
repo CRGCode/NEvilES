@@ -6,13 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
 
     <ProjectReference Include="..\NEvilES.Testing\NEvilES.Testing.csproj" />
     <ProjectReference Include="..\NEvilES.DataStore.DynamoDB\NEvilES.DataStore.DynamoDB.csproj" />
-    <ProjectReference Include="..\NEvilES.Extensions.DependencyInjection\NEvilES.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
     <ProjectReference Include="..\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj" />
     <ProjectReference Include="..\NEvilES.Abstractions\NEvilES.Abstractions.csproj" />

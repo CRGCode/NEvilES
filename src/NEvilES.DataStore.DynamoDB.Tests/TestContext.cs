@@ -1,7 +1,6 @@
 using System;
 using Amazon.DynamoDBv2;
 using Microsoft.Extensions.DependencyInjection;
-using NEvilES.Extensions.DependencyInjection;
 
 namespace NEvilES.DataStore.DynamoDB.Tests
 {

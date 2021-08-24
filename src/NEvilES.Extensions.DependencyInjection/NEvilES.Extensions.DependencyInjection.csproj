@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Version>1.1.0-alpha7</Version>
+    <Version>1.1.1</Version>
   </PropertyGroup>
   <ItemGroup>
-       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
+       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
        <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
   </ItemGroup>
 </Project>

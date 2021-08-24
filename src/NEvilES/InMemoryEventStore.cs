@@ -2,11 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace NEvilES
 {
+    public class Transaction : ITransaction
+    {
+        public Guid Id { get; }
+
+        public Transaction(Guid id)
+        {
+            Id = id;
+        }
+    }
+
     public class InMemoryEventStore : IRepository
     {
         private class EventDb
@@ -94,7 +105,7 @@ namespace NEvilES
             {
                 aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(eventDb.Category));
             }
-             ((AggregateBase)aggregate).SetState(id, eventDb?.Version ?? 0);
+            ((AggregateBase)aggregate).SetState(id, eventDb?.Version ?? 0);
 
             return aggregate;
         }

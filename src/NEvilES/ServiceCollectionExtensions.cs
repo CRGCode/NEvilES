@@ -8,11 +8,11 @@ using NEvilES.Abstractions.Pipeline;
 using NEvilES.Abstractions.Pipeline.Async;
 using NEvilES.Pipeline;
 
-namespace NEvilES.Extensions.DependencyInjection
+namespace NEvilES
 {
     public static class ServiceCollectionExtensions
     {
-        public static Dictionary<Assembly, Type[]> _types = new Dictionary<Assembly, Type[]>();
+        public static Dictionary<Assembly, Type[]> Types = new Dictionary<Assembly, Type[]>();
         public interface IRegisteredTypesBuilder
         {
             IRegisteredTypesBuilder ConnectImplementingType(Type interfaceType);
@@ -20,35 +20,35 @@ namespace NEvilES.Extensions.DependencyInjection
 
         public class RegisteredTypesBuilder : IRegisteredTypesBuilder
         {
-            private readonly IEnumerable<Type> _assemblyTypes;
-            private IServiceCollection _services;
+            private readonly IEnumerable<Type> assemblyTypes;
+            private IServiceCollection services;
             public RegisteredTypesBuilder(IEnumerable<Type> assemblyTypes, IServiceCollection services)
             {
-                _assemblyTypes = assemblyTypes;
-                _services = services;
+                this.assemblyTypes = assemblyTypes;
+                this.services = services;
             }
 
             public IRegisteredTypesBuilder ConnectImplementingType(Type interfaceType)
             {
                 var name = interfaceType.Name;
-                foreach (var item in _assemblyTypes)
+                foreach (var item in assemblyTypes)
                 {
                     var interfaces = item.GetInterfaces().ToArray();
-                    if (item.IsAbstract || !item.IsClass || interfaces == null) continue;
+                    if (item.IsAbstract || !item.IsClass) continue;
 
                     var matchingInterfaces = interfaces.Where(t => t.Name == name).ToArray();
 
                     if (!matchingInterfaces.Any()) continue;
 
-                    _services = ConnectImplementingTypes(_services, item, matchingInterfaces);
+                    services = ConnectImplementingTypes(services, item, matchingInterfaces);
                 }
 
                 return this;
             }
 
-            public IServiceCollection Build() => _services;
+            public IServiceCollection Build() => services;
 
-            private IServiceCollection ConnectImplementingTypes(IServiceCollection services, Type implementingType, IEnumerable<Type> interfaceTypes)
+            private static IServiceCollection ConnectImplementingTypes(IServiceCollection services, Type implementingType, IEnumerable<Type> interfaceTypes)
             {
                 services.AddScoped(implementingType);
                 foreach (var t in interfaceTypes)
@@ -65,26 +65,26 @@ namespace NEvilES.Extensions.DependencyInjection
         public static IRegisteredTypesBuilder RegisterTypesFrom(this IServiceCollection services, IEnumerable<Type> assemblyType)
         {
             var assemblies = new List<Assembly>();
-            lock (_types)
+            lock (Types)
             {
                 foreach (var type in assemblyType)
                 {
-                    if (!_types.ContainsKey(type.Assembly))
+                    if (!Types.ContainsKey(type.Assembly))
                     {
-                        _types.Add(type.Assembly, type.Assembly.GetTypes());
+                        Types.Add(type.Assembly, type.Assembly.GetTypes());
                     }
                     assemblies.Add(type.Assembly);
                 }
 
             }
 
-            return new RegisteredTypesBuilder(assemblies.SelectMany<Assembly, Type>(x => _types[x]), services);
+            return new RegisteredTypesBuilder(assemblies.SelectMany<Assembly, Type>(x => Types[x]), services);
         }
 
         public static IServiceCollection ConnectImplementingType(this IServiceCollection services, Type interfaceType)
         {
             var name = interfaceType.Name;
-            var allTypes = _types.Values.SelectMany(x => x);
+            var allTypes = Types.Values.SelectMany(x => x);
             foreach (var item in allTypes)
             {
                 var interfaces = item.GetInterfaces();
@@ -139,9 +139,10 @@ namespace NEvilES.Extensions.DependencyInjection
                 .ConnectImplementingType(typeof(IProjectWithResult<>))
                 .ConnectImplementingType(typeof(IProjectWithResultAsync<>));
 
-            services.AddScoped<IUser>(opts.GetUserContext);
+            services.AddScoped(opts.GetUserContext);
             services.AddScoped(typeof(ITransaction), typeof(TTransaction));
-            services.AddScoped<ICommandContext>(s => new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
+            //services.AddScoped<ICommandContext>(s => 
+            //    new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
 
             services.AddScoped<IAsyncCommandProcessor, AsyncPipelineProcessor>();
             services.AddScoped<ISecurityContext, SecurityContext>();
@@ -177,10 +178,8 @@ namespace NEvilES.Extensions.DependencyInjection
                 .ConnectImplementingType(typeof(IProjectWithResult<>));
 
             services.AddScoped(typeof(ITransaction), typeof(TTransaction));
-
-            //services.AddScoped(opts.GetUserContext);     // Move this out along with ICommandContext below
-            services.AddScoped<ICommandContext,CommandContext>(s => 
-                new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
+            //services.AddScoped<ICommandContext>(s => 
+            //    new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
 
             services.AddScoped<ICommandProcessor, PipelineProcessor>();
             services.AddScoped<ISecurityContext, SecurityContext>();

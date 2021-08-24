@@ -1,20 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data;
 using NEvilES.Abstractions.Pipeline;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace NEvilES.DataStore.SQL
 {
-    public class DocumentStore : IReadFromReadModel, IWriteReadModel
+    public class SQLDocumentRepository : IReadFromReadModel, IWriteReadModel
     {
-        private readonly IConnectionString connString;
+        private readonly IDbTransaction transaction;
         private readonly HashSet<string> docTypes;
 
-        public DocumentStore(IConnectionString connectionString)
+        public SQLDocumentRepository(IDbTransaction transaction)
         {
-            connString = connectionString;
+            this.transaction = transaction;
             docTypes = new HashSet<string>();
         }
 
@@ -22,12 +22,13 @@ namespace NEvilES.DataStore.SQL
         {
             var docName = CheckDocTypeExists<T>();
 
-            using var connection = OpenConnection();
+            var connection = transaction.Connection;
 
             object json = JsonConvert.SerializeObject(item);
             var sql = $"insert into Doc.{docName} values ('{item.Id}','{json}')";
-            var command = connection.CreateCommand();
-            command.CommandText = sql;
+
+            var command = CreateCommand<T>(connection, sql);
+
             command.ExecuteNonQuery();
         }
 
@@ -35,12 +36,13 @@ namespace NEvilES.DataStore.SQL
         {
             var docName = CheckDocTypeExists<T>();
 
-            using var connection = OpenConnection();
+            var connection = transaction.Connection;
 
             var json = JsonConvert.SerializeObject(item);
             var sql = $"update Doc.{docName} set Data = '{json}' where Id = '{item.Id}'";
-            var command = connection.CreateCommand();
-            command.CommandText = sql;
+
+            var command = CreateCommand<T>(connection, sql);
+
             command.ExecuteNonQuery();
         }
 
@@ -48,7 +50,7 @@ namespace NEvilES.DataStore.SQL
         {
             var docName = CheckDocTypeExists<T>();
 
-            using var connection = OpenConnection();
+            var connection = transaction.Connection;
 
             var json = JsonConvert.SerializeObject(item);
             var sql = @$"
@@ -57,20 +59,20 @@ IF EXISTS (SELECT 1 FROM Doc.{docName} WHERE Id = '{item.Id}')
 ELSE
 	insert into Doc.{docName} values ('{item.Id}','{json}')";
 
-            var command = connection.CreateCommand();
-            command.CommandText = sql;
+            var command = CreateCommand<T>(connection, sql);
+
             command.ExecuteNonQuery();
         }
 
         public void Delete<T>(T item) where T : class, IHaveIdentity
         {
-            using var connection = OpenConnection();
+            var connection = transaction.Connection;
 
             var docName = typeof(T).Name;
             var sql = $"delete from Doc.{docName} where Id = '{item.Id}'";
 
-            var command = connection.CreateCommand();
-            command.CommandText = sql;
+            var command = CreateCommand<T>(connection, sql);
+
             command.ExecuteNonQuery();
         }
 
@@ -86,13 +88,13 @@ ELSE
 
         public T Get<T>(Guid id) where T : class, IHaveIdentity
         {
-            using var connection = OpenConnection();
+            var connection = transaction.Connection;
 
             var docName = typeof(T).Name;
             var sql = $"select Data from Doc.{docName} where Id = '{id}'";
+            
+            var command = CreateCommand<T>(connection, sql);
 
-            var command = connection.CreateCommand();
-            command.CommandText = sql;
             var item = command.ExecuteScalar();
 
             var serializerSetting = new JsonSerializerSettings()
@@ -103,17 +105,42 @@ ELSE
             return item is DBNull ? default : JsonConvert.DeserializeObject<T>((string)item, serializerSetting);
         }
 
+        public IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity
+        {
+            var connection = transaction.Connection;
+
+            var docName = typeof(T).Name;
+            var sql = $"select Data from Doc.{docName}";
+
+            var serializerSetting = new JsonSerializerSettings()
+            {
+                ContractResolver = new CamelCaseContractResolver()
+            };
+
+            var command = CreateCommand<T>(connection, sql);
+
+            var reader = command.ExecuteReader();
+
+            var hasRows = reader.Read();
+
+            if (hasRows)
+            {
+                do
+                {
+                    var item = reader.GetString(0);
+                    yield return JsonConvert.DeserializeObject<T>(item, serializerSetting);
+                } while (reader.Read());
+            }
+            else
+            {
+                yield return default;
+            }
+        }
+
         public IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity
         {
             // layta mate
             return null;
-        }
-
-        private SqlConnection OpenConnection()
-        {
-            var connection = new SqlConnection($@"Server={connString.Keys["Server"]};Database={connString.Keys["Database"]};Integrated Security=true;");
-            connection.Open();
-            return connection;
         }
 
         private string CheckDocTypeExists<T>()
@@ -124,9 +151,8 @@ ELSE
 
             docTypes.Add(docName);
 
-            using (var connection = OpenConnection())
-            {
-                var createTable = string.Format(@"
+            var connection = transaction.Connection;
+            var createTable = string.Format(@"
 IF NOT EXISTS (SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'Doc' )
 	EXEC sp_executesql N'CREATE SCHEMA Doc'
 
@@ -137,15 +163,21 @@ CREATE TABLE Doc.{0}(
 	PRIMARY KEY CLUSTERED 
 (
 	Id ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 ", docName);
 
-                var command = connection.CreateCommand();
-                command.CommandText = createTable;
-                command.ExecuteNonQuery();
-            }
+            var command = CreateCommand<T>(connection, createTable);
+            command.ExecuteNonQuery();
             return docName;
+        }
+
+        private IDbCommand CreateCommand<T>(IDbConnection connection, string sql)
+        {
+            var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = sql;
+            return command;
         }
     }
 }

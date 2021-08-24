@@ -88,7 +88,7 @@ namespace NEvilES.Pipeline
 
             public void Handle(ChangeState c)
             {
-                RaiseStateless(new StateChanged(c.StreamId, c.NewState));
+                RaiseStatelessEvent(new StateChanged(c.StreamId, c.NewState));
             }
 
             public InnerCommand GetInnerCommand()

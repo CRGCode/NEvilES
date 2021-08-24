@@ -33,13 +33,22 @@ namespace NEvilES.Tests
         [Fact]
         public void CanCorrectName()
         {
-            // TODO this should fail, as we are testing on Customer not Person Aggregate!
             var streamId = Guid.NewGuid();
             Test(Given(
                     new Person.Created(streamId, new PersonalDetails("John", "Smith")),
                     new Person.NameCorrected { StreamId = streamId, Name = "CraigGardiner" }),
                 When(x => x.Handle(new Person.CorrectName { StreamId = streamId, Name = "Craig Gardiner" })),
                 Then(new Person.NameCorrectedV2 { StreamId = streamId, FirstName = "Craig", LastName = "Gardiner" }));
+        }
+
+        [Fact]
+        public void CanAddComment()
+        {
+            var streamId = Guid.NewGuid();
+            Test(Given(
+                    new Person.Created(streamId, new PersonalDetails("John", "Smith"))),
+                When(x => x.Handle(new Person.AddComment { StreamId = streamId, Comment = "Blah BLAH!!" })),
+                Then(new Person.CommentAdded { StreamId = streamId, Comment = "Blah BLAH!!" }));
         }
     }
 }

@@ -7,12 +7,12 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.5.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\NEvilES.DataStore.MSSQL\NEvilES.DataStore.MSSQL.csproj" />
     <ProjectReference Include="..\..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
-    <ProjectReference Include="..\..\NEvilES.Extensions.DependencyInjection\NEvilES.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\NEvilES\NEvilES.csproj" />
     <ProjectReference Include="..\GTD.Domain\GTD.Domain.csproj" />
     <ProjectReference Include="..\GTD.ReadModel\GTD.ReadModel.csproj" />

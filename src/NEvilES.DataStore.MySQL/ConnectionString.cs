@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NEvilES.DataStore.SQL
+namespace NEvilES.DataStore.Marten
 {
     public interface IConnectionString
     {

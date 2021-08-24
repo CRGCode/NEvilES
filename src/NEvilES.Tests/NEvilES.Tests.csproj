@@ -20,16 +20,19 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.1.1" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.1" />
-        <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
         <ProjectReference Include="..\NEvilES.Testing\NEvilES.Testing.csproj" />
         <ProjectReference Include="..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
         <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
         <ProjectReference Include="..\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj" />
         <ProjectReference Include="..\NEvilES.Abstractions\NEvilES.Abstractions.csproj" />
         <PackageReference Include="StructureMap" Version="4.4.2" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
-        <PackageReference Include="xunit" Version="2.3.0" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+        <PackageReference Include="xunit" Version="2.4.0" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
     <ItemGroup>
       <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />

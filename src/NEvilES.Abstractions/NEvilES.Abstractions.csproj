@@ -1,7 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1</TargetFrameworks>
-    <Version>1.1.0-alpha7</Version>
+	  <AssemblyName>NEvilES.Abstractions</AssemblyName>
+	  <PackageId>NEvilES.Abstractions</PackageId>
+	  <Description>.Net Evil Event Sourcing Core</Description>
+	  <VersionPrefix>0.0.1</VersionPrefix>
+	  <Authors>Craig Gardiner;Elijah Bate</Authors>
+	  <Version>1.1.21</Version>
+	  <PackageProjectUrl>github.com/CRGCode/NEvilES</PackageProjectUrl>
+	  <RepositoryUrl>github.com/CRGCode/NEvilES</RepositoryUrl>
+	  <PackageTags>event-sourcing event-store cqrs</PackageTags>
   </PropertyGroup>
 </Project>

@@ -5,9 +5,14 @@
     <DebugType>portable</DebugType>
     <Description>.Net Evil Event Sourcing Data Store</Description>
     <VersionPrefix>0.0.1</VersionPrefix>
-    <Version>1.1.2</Version>
+    <Version>1.1.15</Version>
     <Authors>Craig Gardiner;Elijah Bate</Authors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Marten" Version="4.0.0-rc.2" />
+    <PackageReference Include="Npgsql" Version="5.0.7" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../NEvilES/NEvilES.csproj" />
     <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" />

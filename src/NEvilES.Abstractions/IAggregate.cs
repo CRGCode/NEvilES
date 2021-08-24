@@ -14,7 +14,8 @@ namespace NEvilES.Abstractions
 
         void Raise<TEvent>(object command) where TEvent : class, IEvent, new();
         void RaiseEvent<T>(T evt) where T : IEvent;
-        void RaiseStateless<T>(T msg) where T : IEvent;
+        void RaiseStateless<TEvent>(object command) where TEvent : class, IEvent, new();
+        void RaiseStatelessEvent<T>(T evt) where T : IEvent;
     }
 
     public interface IStatelessAggregate

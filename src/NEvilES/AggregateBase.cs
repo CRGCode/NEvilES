@@ -102,9 +102,7 @@ namespace NEvilES
             if (aggregateType == null)
                 throw new ArgumentNullException(nameof(aggregateType));
 
-            AggregateMethodCache methodCache;
-
-            if (AggregateTypes.TryGetValue(aggregateType, out methodCache))
+            if (AggregateTypes.TryGetValue(aggregateType, out _))
                 return;
 
             var applyMethods = new Dictionary<Type, Action<IAggregate, object>>();
@@ -114,7 +112,7 @@ namespace NEvilES
 
                 if (applyMethods.ContainsKey(apply.Type))
                 {
-                    throw new Exception(string.Format("'{0}' has previously been registered. Please check for duplicate Apply methods for this type.", apply.Type.FullName));
+                    throw new Exception($"'{apply.Type.FullName}' has previously been registered. Please check for duplicate Apply methods for this type.");
                 }
 
                 applyMethods.Add(apply.Type, (a, m) => applyMethod.Invoke(a, new[] {m}));
@@ -165,13 +163,7 @@ namespace NEvilES
         {
             var evt = SimpleMapper.Map<TEvent>(command);
 
-            var type = typeof(TEvent);
-            if (!FindApplyHandler(type).Any())
-            {
-                throw new Exception(string.Format("You have forgotten to add private event method for '{0}' to aggregate '{1}'", type, GetType()));
-            }
-            ((IAggregate)this).ApplyEvent(evt);
-            uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
+            RaiseEvent(evt);
         }
 
         public virtual void RaiseEvent<T>(T evt) where T : IEvent
@@ -179,18 +171,25 @@ namespace NEvilES
             var type = typeof(T);
             if (!FindApplyHandler(type).Any())
             {
-                throw new Exception(string.Format("You have forgotten to add private event method for '{0}' to aggregate '{1}'", type, GetType()));
+                throw new Exception($"You have forgotten to add private event method for '{type}' to aggregate '{GetType()}'");
             }
             ((IAggregate) this).ApplyEvent(evt);
             uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
         }
 
-        public void RaiseStateless<T>(T msg) where T : IEvent
+        public void RaiseStateless<TEvent>(object command) where TEvent : class, IEvent, new()
+        {
+            var evt = SimpleMapper.Map<TEvent>(command);
+
+            RaiseStatelessEvent(evt);
+        }
+
+        public void RaiseStatelessEvent<T>(T msg) where T : IEvent
         {
             var type = msg.GetType();
             if (FindApplyHandler(type).Any())
             {
-                throw new Exception(string.Format("You can't RaiseStatelessEvent - There's a 'private void Apply({0} e)' method on this '{1}' aggregate!", type, GetType()));
+                throw new Exception($"You can't RaiseStatelessEvent - There's a 'private void Apply({type} e)' method on this '{GetType()}' aggregate!");
             }
             Version++;
             uncommittedEvents.Add(new EventData(type, msg, DateTime.UtcNow, Version));
@@ -214,8 +213,7 @@ namespace NEvilES
                 throw new DomainAggregateException(this, "{0} can't have null values", name);
             }
 
-            var s = o as string;
-            if (s != null && string.IsNullOrWhiteSpace(s))
+            if (o is string s && string.IsNullOrWhiteSpace(s))
             {
                 throw new DomainAggregateException(this, "{0} can't be empty or have null values", name);
             }
@@ -259,6 +257,17 @@ namespace NEvilES
             }
 
             return evt;
+        }
+    }
+
+    public class DomainAggregateException : Exception
+    {
+        public readonly AggregateBase Aggregate;
+
+        public DomainAggregateException(AggregateBase aggregate, string message, params object[] args)
+            : base(string.Format(message, args))
+        {
+            Aggregate = aggregate;
         }
     }
 }

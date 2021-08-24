@@ -6,7 +6,7 @@
         <PackageId>NEvilES.Testing</PackageId>
     </PropertyGroup>
     <ItemGroup>
-      <PackageReference Include="xunit" Version="2.2.0" />
+      <PackageReference Include="xunit" Version="2.4.0" />
       <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
     </ItemGroup>
 </Project>

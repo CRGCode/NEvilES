@@ -1,4 +1,5 @@
 ﻿using System;
+using NEvilES.Abstractions;
 using NEvilES.Abstractions.DataStore;
 
 namespace NEvilES.DataStore.SQL
@@ -19,4 +20,6 @@ namespace NEvilES.DataStore.SQL
         //Do we really need this?
         // public string Metadata { get; set; }
     }
+
+
 }

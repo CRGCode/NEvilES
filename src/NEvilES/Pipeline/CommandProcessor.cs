@@ -22,7 +22,7 @@ namespace NEvilES.Pipeline
         {
             var result = Execute(command);
 
-            var projectResults = ReadModelProjectorHelper.Project(result, factory, commandContext);
+            var projectResults = ReplayEvents.Project(result, factory, commandContext);
             return commandContext.Result.Add(projectResults);
         }
 
@@ -89,7 +89,7 @@ namespace NEvilES.Pipeline
 
                 var agg = repo.GetStateless(singleAggHandler?.GetType(), streamId);
                 // // TODO don't like the cast below of command to IEvent
-                agg.RaiseStateless((IEvent)command);
+                agg.RaiseStatelessEvent((IEvent)command);
                 var commit = repo.Save(agg);
                 commandResult.Append(commit);
             }
@@ -97,73 +97,5 @@ namespace NEvilES.Pipeline
         }
     }
 
-    public static class ReadModelProjectorHelper
-    {
-        public static ICommandResult Project(ICommandResult commandResult, IFactory factory, ICommandContext commandContext)
-        {
-            if (!commandResult.UpdatedAggregates.Any())
-            {
-                return commandResult;
-            }
-
-            foreach (var agg in commandResult.UpdatedAggregates)
-            {
-                foreach (var message in agg.UpdatedEvents.Cast<EventData>())
-                {
-                    var data = new ProjectorData(agg.StreamId, commandContext, message.Type, message.Event, message.TimeStamp, message.Version);
-                    var projectorType = typeof(IProject<>).MakeGenericType(message.Type);
-                    var projectors = factory.GetAll(projectorType);
-
-                    // TODO below looks like it needs some DRY attention
-                    foreach (var projector in projectors)
-                    {
-#if !DEBUG
-                        try
-                        {
-#endif
-                        ((dynamic)projector).Project((dynamic)message.Event, data);
-#if !DEBUG
-                        }
-                        catch (Exception e)
-                        {
-                            throw new ProjectorException(e, "Projector exception {0} - {1} StreamId {2}", projector.GetType().Name, message.Event, agg.StreamId);
-                        }
-#endif
-                    }
-
-                    projectorType = typeof(IProjectWithResult<>).MakeGenericType(message.Type);
-                    projectors = factory.GetAll(projectorType);
-
-                    foreach (var projector in projectors)
-                    {
-#if !DEBUG
-                        try
-                        {
-#endif
-                        IProjectorResult result = ((dynamic)projector).Project((dynamic)message.Event, data);
-                        commandResult.ReadModelItems.AddRange(result.Items);
-#if !DEBUG
-                        }
-                        catch (Exception e)
-                        {
-                            throw new ProjectorException(e, "Projector exception {0} - {1} StreamId {2}", projector.GetType().Name, message.Event, agg.StreamId);
-                        }
-#endif
-                    }
-
-                }
-            }
-            return commandResult;
-        }
-    }
-
-
-    public class ProjectorException : Exception
-    {
-        public ProjectorException(Exception exception, string message, params object[] args)
-            : base(string.Format(message, args), exception)
-        {
-        }
-    }
 }
 

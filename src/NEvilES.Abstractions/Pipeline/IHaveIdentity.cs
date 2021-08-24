@@ -11,6 +11,9 @@ namespace NEvilES.Abstractions.Pipeline
     public interface IReadFromReadModel
     {
         T Get<T>(Guid id) where T : class, IHaveIdentity;
+
+        IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity;
+
         IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity;
     }
 

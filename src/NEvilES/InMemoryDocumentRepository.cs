@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using NEvilES.Abstractions.Pipeline;
 
-namespace GTD.ReadModel
+namespace NEvilES
 {
-    public class InMemoryReadModel : IReadFromReadModel, IWriteReadModel
+    public class InMemoryDocumentRepository : IReadFromReadModel, IWriteReadModel
     {
         private readonly ConcurrentDictionary<Guid, object> data;
 
-        public InMemoryReadModel()
+        public InMemoryDocumentRepository()
         {
             data = new ConcurrentDictionary<Guid, object>();
         }
@@ -30,7 +30,12 @@ namespace GTD.ReadModel
             return (T)data[id];
         }
 
-        public IEnumerable<T> Query<T>(Func<T,bool> p) where T : class, IHaveIdentity
+        public IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity
+        {
+            return data.Values.Cast<T>();
+        }
+
+        public IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity
         {
             return data.Values.Where(x => x.GetType() == typeof(T)).Cast<T>().Where(p);
         }

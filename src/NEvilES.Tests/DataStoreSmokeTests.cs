@@ -1,22 +1,12 @@
 using System;
 using System.Collections.Generic;
 using NEvilES.Abstractions;
-using NEvilES.Abstractions.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace NEvilES.Tests
 {
-    public class Transaction : ITransaction
-    {
-        public Guid Id { get; }
-        public Transaction(Guid id)
-        {
-            Id = id;
-        }
-    }
-
     public class DataStoreSmokeTests : IClassFixture<SharedFixtureContext>
     {
         //This is use instead of Console.Write or Debug.Write
@@ -59,7 +49,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
             agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
-            agg.RaiseStateless(new Customer.Refunded(streamId, 800.80M));
+            agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
 
             var expected = repository.Save(agg);
             Assert.NotNull(expected);

@@ -65,9 +65,21 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public string LastName { get; set; }
         }
 
+        public class AddComment : CommentAdded, ICommand
+        {
+        }
+
+        public class CommentAdded : IEvent
+        {
+            public Guid StreamId { get; set; }
+
+            public string Comment { get; set; }
+        }
+
         public class Aggregate : AggregateBase,
             IHandleStatelessEvent<StatelessBirthdateChanged>,
-            IHandleAggregateCommand<CorrectName>
+            IHandleAggregateCommand<CorrectName>,
+            IHandleAggregateCommand<AddComment>
         {
             public string Name { get; private set; }
 
@@ -108,6 +120,11 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 RaiseEvent(e);
             }
 
+            public void Handle(AddComment command)
+            {
+                RaiseStateless<CommentAdded>(command);
+            }
+            
             //---------------------------------------------------------------------
             // ReSharper disable UnusedMember.Local
             private void Apply(Created ev)

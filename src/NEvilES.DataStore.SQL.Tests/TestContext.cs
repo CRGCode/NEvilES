@@ -2,8 +2,8 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
+using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Extensions.DependencyInjection;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
@@ -19,7 +19,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 .AddSingleton<IConnectionString>(c => new ConnectionString(connString))
                 .AddScoped<IDbConnection>(c =>
                 {
-                    var conn = new SqlConnection(c.GetService<IConnectionString>().Data);
+                    var conn = new SqlConnection(c.GetRequiredService<IConnectionString>().Data);
                     conn.Open();
                     return conn;
                 })
@@ -43,9 +43,9 @@ namespace NEvilES.DataStore.SQL.Tests
                     };
                 });
 
-            services.AddSingleton<DocumentStore>();
-            services.AddSingleton<IReadFromReadModel>(s => s.GetRequiredService<DocumentStore>());
-            services.AddSingleton<IWriteReadModel>(s => s.GetRequiredService<DocumentStore>());
+            services.AddSingleton<SQLDocumentRepository>();
+            services.AddSingleton<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
+            services.AddSingleton<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
 
             Services = services.BuildServiceProvider();
         }
