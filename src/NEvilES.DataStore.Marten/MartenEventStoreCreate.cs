@@ -40,7 +40,6 @@ CREATE TABLE public.events(
        category varchar(500) NOT NULL,
        streamid uuid NOT NULL,
        transactionid uuid NOT NULL,
-       metadata text NOT NULL,
        bodytype varchar(500) NOT NULL,
        body text NOT NULL,
        who uuid NOT NULL,
