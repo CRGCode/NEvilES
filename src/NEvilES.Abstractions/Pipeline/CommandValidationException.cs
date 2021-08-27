@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NEvilES
+namespace NEvilES.Abstractions.Pipeline
 {
     public class CommandValidationException : Exception
     {

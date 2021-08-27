@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NEvilES
+namespace NEvilES.Abstractions.Pipeline
 {
     public abstract class CommandValidatorBase<T> : INeedExternalValidation<T>
     {

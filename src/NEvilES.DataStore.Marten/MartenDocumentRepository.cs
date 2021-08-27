@@ -27,12 +27,6 @@ namespace NEvilES.DataStore.Marten
             session.SaveChanges();
         }
 
-        public void Save<T>(T item) where T : class, IHaveIdentity
-        {
-            session.Store(item);
-            session.SaveChanges();
-        }
-
         public void Delete<T>(T item) where T : class, IHaveIdentity
         {
             session.Delete(item);

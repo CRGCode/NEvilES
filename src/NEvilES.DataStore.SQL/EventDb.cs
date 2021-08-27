@@ -1,5 +1,4 @@
 ﻿using System;
-using NEvilES.Abstractions;
 using NEvilES.Abstractions.DataStore;
 
 namespace NEvilES.DataStore.SQL
@@ -16,10 +15,5 @@ namespace NEvilES.DataStore.SQL
         public string Body { get; set; }
         public DateTime When { get; set; }
         public int Version { get; set; }
-
-        //Do we really need this?
-        // public string Metadata { get; set; }
     }
-
-
 }

@@ -1,6 +1,4 @@
-using NEvilES.Abstractions.Pipeline;
-
-namespace NEvilES.Pipeline
+namespace NEvilES.Abstractions.Pipeline
 {
     public abstract class BaseProjector
     {

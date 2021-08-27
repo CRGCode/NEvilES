@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security;
-using NEvilES.Abstractions;
-using NEvilES.Abstractions.Pipeline;
 
-namespace NEvilES.Pipeline
+namespace NEvilES.Abstractions.Pipeline
 {
      public class ValidationProcessor<T> : IProcessPipelineStage<T>
         where T : IMessage

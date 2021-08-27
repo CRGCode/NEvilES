@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Abstractions.Pipeline.Async;
-using NEvilES.Pipeline.Async;
 
 namespace NEvilES.Pipeline
 {
@@ -13,7 +13,10 @@ namespace NEvilES.Pipeline
         {
             foreach (var commit in reader.Read(from, to))
             {
-                Project(new CommandResult(commit), factory, CommandContext.Null());
+                var commandResult = new CommandResult(commit);
+                var user = new CommandContext.User(commit.By);
+                var commandContext = new CommandContext(user, null, CommandContext.User.NullUser(), null);
+                Project(commandResult, factory, commandContext);
             }
         }
 
@@ -22,8 +25,9 @@ namespace NEvilES.Pipeline
         {
             foreach (var commit in await reader.ReadAsync(from, to))
             {
-                await ProjectAsync(new CommandResult(commit), factory,
-                    CommandContext.Null());
+                CommandResult commandResult = new CommandResult(commit);
+                var commandContext = new CommandContext(new CommandContext.User(commit.By), null, CommandContext.User.NullUser(), null);
+                await ProjectAsync(commandResult, factory, commandContext);
             }
         }
 

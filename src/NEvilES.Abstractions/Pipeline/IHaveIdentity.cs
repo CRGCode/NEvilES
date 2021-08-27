@@ -22,7 +22,6 @@ namespace NEvilES.Abstractions.Pipeline
     {
         void Insert<T>(T item) where T : class, IHaveIdentity;
         void Update<T>(T item) where T : class, IHaveIdentity;
-        void Save<T>(T item) where T : class, IHaveIdentity;
         void Delete<T>(T item) where T : class, IHaveIdentity;
     }
 

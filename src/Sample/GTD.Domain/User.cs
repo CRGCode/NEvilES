@@ -1,6 +1,6 @@
 using System;
-using NEvilES;
 using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 
 namespace GTD.Domain
 {

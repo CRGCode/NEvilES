@@ -8,31 +8,43 @@ namespace NEvilES
 {
     public class InMemoryDocumentRepository : IReadFromReadModel, IWriteReadModel
     {
-        private readonly ConcurrentDictionary<Guid, object> data;
+        private readonly ConcurrentDictionary<string, object> data;
 
         public InMemoryDocumentRepository()
         {
-            data = new ConcurrentDictionary<Guid, object>();
+            data = new ConcurrentDictionary<string, object>();
         }
 
         public void Insert<T>(T item) where T : class, IHaveIdentity
         {
-            data.TryAdd(item.Id, item);
+            data.TryAdd($"{typeof(T).Name}_{item.Id}", item);
         }
 
         public void Update<T>(T item) where T : class, IHaveIdentity
         {
-            data[item.Id] = item;
+            if (data.ContainsKey($"{typeof(T).Name}_{item.Id}"))
+            {
+                data[$"{typeof(T).Name}_{item.Id}"] = item;
+            }
+            else
+            {
+                data.TryAdd($"{typeof(T).Name}_{item.Id}", item);
+            }
+        }
+
+        public void Delete<T>(T item) where T : class, IHaveIdentity
+        {
+            data.TryRemove($"{typeof(T).Name}_{item.Id}", out _);
         }
 
         public T Get<T>(Guid id) where T : class, IHaveIdentity
         {
-            return (T)data[id];
+            return (T)data[$"{typeof(T).Name}_{id}"];
         }
 
         public IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity
         {
-            return data.Values.Cast<T>();
+            return data.Values.Where(x => x.GetType() == typeof(T)).Cast<T>();
         }
 
         public IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity
@@ -50,14 +62,9 @@ namespace NEvilES
             return data.Count;
         }
 
-        void IWriteReadModel.Save<T>(T item)
+        public IEnumerable<object> GetAll()
         {
-            throw new NotImplementedException();
-        }
-
-        void IWriteReadModel.Delete<T>(T item)
-        {
-            throw new NotImplementedException();
+            return data.Values;
         }
     }
 }

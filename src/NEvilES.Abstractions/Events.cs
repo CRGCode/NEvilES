@@ -1,7 +1,6 @@
-﻿using NEvilES.Abstractions;
-using System;
+﻿using System;
 
-namespace NEvilES
+namespace NEvilES.Abstractions
 {
     public class Event : IEvent
     {

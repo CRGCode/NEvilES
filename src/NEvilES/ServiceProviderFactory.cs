@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using NEvilES.Pipeline;
+using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES
 {

@@ -1,4 +1,5 @@
 using System.Linq;
+using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Tests.CommonDomain.Sample
 {

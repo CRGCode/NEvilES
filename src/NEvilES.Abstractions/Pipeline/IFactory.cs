@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 
-namespace NEvilES.Pipeline
+namespace NEvilES.Abstractions.Pipeline
 {
     public interface IFactory
     {

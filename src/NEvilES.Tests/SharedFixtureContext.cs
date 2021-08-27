@@ -6,7 +6,6 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
 using NEvilES.Tests.CommonDomain.Sample.ReadModel;

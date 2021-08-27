@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using NEvilES;
 using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 
 namespace GTD.Domain
 {

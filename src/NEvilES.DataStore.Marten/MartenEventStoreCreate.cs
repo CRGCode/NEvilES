@@ -6,7 +6,6 @@ namespace NEvilES.DataStore.Marten
 {
     public class MartenEventStoreCreate : ICreateOrWipeDb
     {
-
         public void CreateOrWipeDb(IConnectionString connString)
         {
             void RunSql(NpgsqlConnection connection, string sql)

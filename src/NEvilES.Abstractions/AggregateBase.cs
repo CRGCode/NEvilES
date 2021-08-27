@@ -3,9 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using NEvilES.Abstractions;
 
-namespace NEvilES
+namespace NEvilES.Abstractions
 {
     public interface IAggregateHandlers
     {

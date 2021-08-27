@@ -13,7 +13,5 @@ namespace NEvilES.Abstractions.DataStore
         string Body { get; set; }
         DateTime When { get; set; }
         int Version { get; set; }
-        //Do we really need this?
-        // string Metadata { get; set; }
     }
 }

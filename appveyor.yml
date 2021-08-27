@@ -1,12 +1,9 @@
-version: 0.1.1-alpha{build}
+version: 1.4.0.{build}
 image: Visual Studio 2019
 nuget:
   account_feed: true
   project_feed: true
   disable_publish_on_pr: true
-environment:
-  ver_num: 0.1.0
-  ver_suffix: -alpha
 init:
   - net start MSSQL$SQL2019
 build_script:

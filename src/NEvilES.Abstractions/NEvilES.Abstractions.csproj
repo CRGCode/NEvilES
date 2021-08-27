@@ -5,9 +5,7 @@
 	  <AssemblyName>NEvilES.Abstractions</AssemblyName>
 	  <PackageId>NEvilES.Abstractions</PackageId>
 	  <Description>.Net Evil Event Sourcing Core</Description>
-	  <VersionPrefix>0.0.1</VersionPrefix>
 	  <Authors>Craig Gardiner;Elijah Bate</Authors>
-	  <Version>1.1.21</Version>
 	  <PackageProjectUrl>github.com/CRGCode/NEvilES</PackageProjectUrl>
 	  <RepositoryUrl>github.com/CRGCode/NEvilES</RepositoryUrl>
 	  <PackageTags>event-sourcing event-store cqrs</PackageTags>

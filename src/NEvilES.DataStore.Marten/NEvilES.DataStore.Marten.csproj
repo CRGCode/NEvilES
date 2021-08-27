@@ -4,8 +4,6 @@
     <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <DebugType>portable</DebugType>
     <Description>.Net Evil Event Sourcing Data Store</Description>
-    <VersionPrefix>0.0.1</VersionPrefix>
-    <Version>1.1.21</Version>
     <Authors>Craig Gardiner;Elijah Bate</Authors>
   </PropertyGroup>
 

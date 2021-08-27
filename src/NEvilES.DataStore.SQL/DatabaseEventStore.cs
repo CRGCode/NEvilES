@@ -5,9 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NEvilES.Abstractions;
-using NEvilES.Abstractions.DataStore;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Pipeline;
 
 namespace NEvilES.DataStore.SQL
 {
@@ -167,13 +165,12 @@ namespace NEvilES.DataStore.SQL
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText =
-                    @"INSERT INTO events(category,streamid,transactionid,metadata,bodytype,body,who,_when,version,appversion)
-                    VALUES(@Category, @StreamId, @TransactionId, @MetaData, @BodyType, @Body, @Who, @When, @Version, @AppVersion)";
+                    @"INSERT INTO events(category,streamid,transactionid,bodytype,body,who,_when,version,appversion)
+                    VALUES(@Category, @StreamId, @TransactionId, @BodyType, @Body, @Who, @When, @Version, @AppVersion)";
                 var category = CreateParam(cmd, "@Category", DbType.String, 500);
                 var streamId = CreateParam(cmd, "@StreamId", DbType.Guid);
                 var version = CreateParam(cmd, "@Version", DbType.Int32);
                 var transactionId = CreateParam(cmd, "@TransactionId", DbType.Guid);
-                var metaData = CreateParam(cmd, "@MetaData", DbType.String, -1);
                 var bodyType = CreateParam(cmd, "@BodyType", DbType.String, 500);
                 var body = CreateParam(cmd, "@Body", DbType.String, -1);
                 var by = CreateParam(cmd, "@Who", DbType.Guid);
@@ -192,7 +189,6 @@ namespace NEvilES.DataStore.SQL
                     category.Value = aggregate.GetType().FullName;
                     bodyType.Value = eventData.Type.FullName;
                     by.Value = commandContext.ImpersonatorBy?.GuidId ?? commandContext.By.GuidId;
-                    metaData.Value = "";
 
                     cmd.ExecuteNonQuery();
                     count++;

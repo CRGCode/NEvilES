@@ -44,18 +44,6 @@ namespace NEvilES.DataStore.Marten.Tests
         }
 
         [Fact]
-        public void Save()
-        {
-            var id = Guid.NewGuid();
-            var item = new Person(id, "John");
-            writer.Save(item);
-
-            var person = reader.Get<Person>(id);
-
-            Assert.Equal("John", person.Name);
-        }
-
-        [Fact]
         public void Query()
         {
             var id = Guid.NewGuid();

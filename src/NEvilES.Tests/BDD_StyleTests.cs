@@ -1,4 +1,5 @@
 using System;
+using NEvilES.Abstractions;
 using NEvilES.Testing;
 using Xunit;
 using NEvilES.Tests.CommonDomain.Sample;
