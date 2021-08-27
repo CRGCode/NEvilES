@@ -34,7 +34,7 @@ namespace GTD.SeedData
                     var conn = c.GetService<IDbConnection>();
                     return conn.BeginTransaction();
                 })
-                .AddEventStore<DatabaseEventStore, PipelineTransaction>(opts =>
+                .AddEventStore<SQLEventStore, PipelineTransaction>(opts =>
                 {
                     opts.DomainAssemblyTypes = new[]
                     {
@@ -65,7 +65,7 @@ namespace GTD.SeedData
 
             //using (var scope = container.CreateScope())
             //{
-            //    ReplayEvents.Replay(container.GetService<IFactory>(), scope.ServiceProvider.GetRequiredService<IAggregateHistory>());
+            //    ReplayEvents.Replay(container.GetService<IFactory>(), scope.ServiceProvider.GetRequiredService<IReadEventStore>());
             //}
             //var reader = (InMemoryDocumentRepository)container.GetService<IReadFromReadModel>();
             //var client1 = reader.Query<ReadModel.Client>(x => x.Name == "FBI").ToArray();

@@ -9,7 +9,7 @@ namespace NEvilES.Pipeline
 {
     public static class ReplayEvents
     {
-        public static void Replay(IFactory factory, IAggregateHistory reader, Int64 from = 0, Int64 to = 0)
+        public static void Replay(IFactory factory, IReadEventStore reader, Int64 from = 0, Int64 to = 0)
         {
             foreach (var commit in reader.Read(from, to))
             {
@@ -19,7 +19,6 @@ namespace NEvilES.Pipeline
                 Project(commandResult, factory, commandContext);
             }
         }
-
 
         public static async Task ReplayAsync(IFactory factory, IAsyncAggregateHistory reader, Int64 from = 0, Int64 to = 0)
         {

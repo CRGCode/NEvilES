@@ -28,7 +28,7 @@ namespace NEvilES.DataStore.SQL.Tests
                     var conn = c.GetService<IDbConnection>();
                     return conn.BeginTransaction();
                 })
-                .AddEventStore<DatabaseEventStore, PipelineTransaction>(opts =>
+                .AddEventStore<SQLEventStore, PipelineTransaction>(opts =>
                 {
                     opts.DomainAssemblyTypes = new[]
                     {

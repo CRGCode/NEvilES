@@ -184,7 +184,7 @@ namespace NEvilES
             services.AddScoped<ICommandProcessor, PipelineProcessor>();
             services.AddScoped<ISecurityContext, SecurityContext>();
             services.AddScoped(typeof(IRepository), typeof(TRepository));
-            services.AddScoped(typeof(IAggregateHistory), typeof(TRepository));
+            services.AddScoped(typeof(IReadEventStore), typeof(TRepository));
             services.AddSingleton<IEventTypeLookupStrategy>(lookup);
             services.AddScoped<IFactory, ServiceProviderFactory>();
 

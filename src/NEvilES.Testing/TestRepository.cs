@@ -112,7 +112,12 @@ namespace NEvilES.Testing
             ((AggregateBase)aggregate).SetState(id);
             return aggregate;
         }
-      
+
+        public TAggregate GetVersion<TAggregate>(Guid id, long version) where TAggregate : IAggregate
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IAggregateCommit> SaveAsync(IAggregate aggregate)
             => Task.FromResult(Save(aggregate));
 

@@ -49,6 +49,11 @@ namespace NEvilES.Tests
             return aggregate;
         }
 
+        public TAggregate GetVersion<TAggregate>(Guid id, long version) where TAggregate : IAggregate
+        {
+            throw new NotImplementedException();
+        }
+
         public IAggregate GetStateless(Type type, Guid id)
         {
             if (aggregates.ContainsKey(id))

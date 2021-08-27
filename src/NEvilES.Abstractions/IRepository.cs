@@ -7,6 +7,7 @@ namespace NEvilES.Abstractions
     {
         TAggregate Get<TAggregate>(Guid id) where TAggregate : IAggregate;
         IAggregate Get(Type type, Guid id);
+        TAggregate GetVersion<TAggregate>(Guid id, Int64 version) where TAggregate : IAggregate;
         IAggregate GetStateless(Type type, Guid id);
         IAggregateCommit Save(IAggregate aggregate);
     }

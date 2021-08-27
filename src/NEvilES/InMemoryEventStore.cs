@@ -53,8 +53,9 @@ namespace NEvilES
         {
             return (TAggregate)Get(typeof(TAggregate), id);
         }
+        public IAggregate Get(Type type, Guid id) => Get(type, id, null);
 
-        public IAggregate Get(Type type, Guid id)
+        public IAggregate Get(Type type, Guid id, Int64? version)
         {
             if (!eventData.ContainsKey(id))
             {
@@ -62,11 +63,14 @@ namespace NEvilES
                 ((AggregateBase)emptyAggregate).SetState(id);
                 return emptyAggregate;
             }
-            var evts = eventData[id].OrderBy(x => x.Id).ToArray();
 
-            var aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(evts[0].Category));
+            var events = version.HasValue ? 
+                eventData[id].Where(x => x.Version <= version).OrderBy(x => x.Id).ToArray() : 
+                eventData[id].OrderBy(x => x.Id).ToArray();
 
-            foreach (var eventDb in evts.OrderBy(x => x.Version))
+            var aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(events[0].Category));
+
+            foreach (var eventDb in events.OrderBy(x => x.Version))
             {
                 var message = (IEvent)JsonConvert.DeserializeObject(eventDb.Body, eventTypeLookupStrategy.Resolve(eventDb.BodyType.FullName), SerializerSettings);
                 message.StreamId = eventDb.StreamId;
@@ -75,6 +79,11 @@ namespace NEvilES
             ((AggregateBase)aggregate).SetState(id);
 
             return aggregate;
+        }
+
+        public TAggregate GetVersion<TAggregate>(Guid id, Int64 version) where TAggregate : IAggregate
+        {
+            return (TAggregate)Get(typeof(TAggregate), id, version);
         }
 
         public IAggregate GetStateless(Type type, Guid id)
