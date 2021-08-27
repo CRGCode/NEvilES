@@ -43,6 +43,7 @@ namespace NEvilES.DataStore.SQL.Tests
                     };
                 });
 
+            services.AddSingleton<IReadEventStore,SQLEventStoreReader>();
             services.AddSingleton<SQLDocumentRepository>();
             services.AddSingleton<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
             services.AddSingleton<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());

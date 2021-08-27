@@ -124,7 +124,7 @@ namespace NEvilES.Testing
         public IAggregateCommit Save(IAggregate aggregate)
         {
             aggregates[aggregate.Id] = aggregate;
-            return new AggregateCommit(aggregate.Id, Guid.Empty, "", aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray());
+            return new AggregateCommit(aggregate.Id, Guid.Empty, aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray());
         }
 
         public class DomainAggregateDoesNotExist : Exception

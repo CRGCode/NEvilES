@@ -151,7 +151,7 @@ namespace NEvilES.DataStore.DynamoDB
             return aggregate;
         }
 
-        private TransactWriteItem GetDynamoDbTransactItem(IAggregate aggregate, int version, string metadata, IEventData eventData)
+        private TransactWriteItem GetDynamoDbTransactItem(IAggregate aggregate, int version, IEventData eventData)
         {
             var _when = DateTimeOffset.Now;
             // TimeSpan t = _when.UtcDateTime - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -203,7 +203,6 @@ namespace NEvilES.DataStore.DynamoDB
             var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
             var count = 0;
 
-            var metadata = string.Empty;
             try
             {
 
@@ -215,7 +214,7 @@ namespace NEvilES.DataStore.DynamoDB
                     {
                         //Todo: check actual event version, as it should be correct
                         int eventVersion = (aggregate.Version - uncommittedEvents.Length + count + 1);
-                        items.Add(GetDynamoDbTransactItem(aggregate, eventVersion, metadata, eventData));
+                        items.Add(GetDynamoDbTransactItem(aggregate, eventVersion, eventData));
                         count++;
                     }
 
@@ -234,7 +233,7 @@ namespace NEvilES.DataStore.DynamoDB
             }
 
             aggregate.ClearUncommittedEvents();
-            return new AggregateCommit(aggregate.Id, _commandContext.By.GuidId, metadata, uncommittedEvents);
+            return new AggregateCommit(aggregate.Id, _commandContext.By.GuidId, uncommittedEvents);
         }
 
 
@@ -300,7 +299,7 @@ namespace NEvilES.DataStore.DynamoDB
                 var streamId = row.StreamId;
                 var who = row.Who;
                 var eventData = ReadToIEventData(streamId, row);
-                yield return new AggregateCommit(streamId, who, "", new[] { eventData });
+                yield return new AggregateCommit(streamId, who, new[] { eventData });
             }
 
         }

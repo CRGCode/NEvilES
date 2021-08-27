@@ -40,6 +40,11 @@ namespace NEvilES.DataStore.LiteDb
 
         public IAggregate Get(Type type, Guid id) => Get(type, id, null);
 
+        public TAggregate GetVersion<TAggregate>(Guid id, long version) where TAggregate : IAggregate
+        {
+            return (TAggregate)Get(typeof(TAggregate), id, version);
+        }
+
         public IAggregate Get(Type type, Guid id, Int64? version)
         {
 
@@ -85,7 +90,6 @@ namespace NEvilES.DataStore.LiteDb
 
             var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
 
-            var metadata = string.Empty;
             try
             {
                 var col = _db.GetCollection<LiteDbEventTable>("eventstore");
@@ -111,7 +115,7 @@ namespace NEvilES.DataStore.LiteDb
             }
 
             aggregate.ClearUncommittedEvents();
-            return new AggregateCommit(aggregate.Id, _commandContext.By.GuidId, metadata, uncommittedEvents);
+            return new AggregateCommit(aggregate.Id, _commandContext.By.GuidId, uncommittedEvents);
         }
     }
 }

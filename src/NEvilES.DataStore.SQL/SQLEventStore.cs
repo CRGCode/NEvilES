@@ -9,7 +9,7 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.DataStore.SQL
 {
-    public class SQLEventStore : EventStoreReader, IRepository
+    public class SQLEventStore : SQLEventStoreReader, IRepository
     {
 
         private readonly ICommandContext commandContext;
@@ -161,7 +161,6 @@ namespace NEvilES.DataStore.SQL
             var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
             var count = 0;
 
-            var metadata = string.Empty;
             using (var cmd = Transaction.Connection.CreateCommand())
             {
                 cmd.Transaction = Transaction;
@@ -198,7 +197,7 @@ namespace NEvilES.DataStore.SQL
             }
 
             aggregate.ClearUncommittedEvents();
-            return new AggregateCommit(aggregate.Id, commandContext.By.GuidId, metadata, uncommittedEvents);
+            return new AggregateCommit(aggregate.Id, commandContext.By.GuidId, uncommittedEvents);
         }
     }
 }

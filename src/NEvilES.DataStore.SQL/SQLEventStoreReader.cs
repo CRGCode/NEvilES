@@ -7,12 +7,12 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.DataStore.SQL
 {
-    public class EventStoreReader : IReadEventStore
+    public class SQLEventStoreReader : IReadEventStore
     {
         protected readonly IDbTransaction Transaction;
         protected readonly IEventTypeLookupStrategy EventTypeLookupStrategy;
 
-        public EventStoreReader(IDbTransaction transaction, IEventTypeLookupStrategy eventTypeLookupStrategy)
+        public SQLEventStoreReader(IDbTransaction transaction, IEventTypeLookupStrategy eventTypeLookupStrategy)
         {
             Transaction = transaction;
             EventTypeLookupStrategy = eventTypeLookupStrategy;
@@ -39,25 +39,23 @@ namespace NEvilES.DataStore.SQL
 
         public IEnumerable<IAggregateCommit> Read(Int64 from = 0, Int64 to = 0)
         {
-            using (var cmd = Transaction.Connection.CreateCommand())
+            using var cmd = Transaction.Connection.CreateCommand();
+            cmd.Transaction = Transaction;
+            cmd.CommandType = CommandType.Text;
+            if (from == 0 && to == 0)
             {
-                cmd.Transaction = Transaction;
-                cmd.CommandType = CommandType.Text;
-                if (from == 0 && to == 0)
-                {
-                    cmd.CommandText =
-                        "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events ORDER BY id";
-                }
-                else
-                {
-                    cmd.CommandText =
-                        "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events WHERE id BETWEEN @from AND @to ORDER BY id";
-                    CreateParam(cmd, "@from", DbType.Int64, from);
-                    CreateParam(cmd, "@to", DbType.Int64, to);
-                }
-
-                return ReadToAggregateCommits(cmd);
+                cmd.CommandText =
+                    "SELECT streamid, bodytype, body, who, _when, version FROM events ORDER BY id";
             }
+            else
+            {
+                cmd.CommandText =
+                    "SELECT streamid, bodytype, body, who, _when, version FROM events WHERE id BETWEEN @from AND @to ORDER BY id";
+                CreateParam(cmd, "@from", DbType.Int64, from);
+                CreateParam(cmd, "@to", DbType.Int64, to);
+            }
+
+            return ReadToAggregateCommits(cmd);
         }
 
         protected IEnumerable<IAggregateCommit> ReadToAggregateCommits(IDbCommand cmd)
@@ -67,18 +65,16 @@ namespace NEvilES.DataStore.SQL
                 while (reader.Read())
                 {
                     var streamId = reader.GetGuid(0);
-                    var metadata = reader.GetString(1);
                     var who = reader.GetGuid(4);
 
                     var eventData = ReadToIEventData(streamId, reader);
-                    yield return new AggregateCommit(streamId, who, metadata, new[] { eventData });
+                    yield return new AggregateCommit(streamId, who, new[] { eventData });
                 }
             }
         }
 
         protected IEventData ReadToIEventData(Guid streamId, IDataReader reader)
         {
-
             var type = EventTypeLookupStrategy.Resolve(reader.GetString(2));
             var @event = (IEvent)JsonConvert.DeserializeObject(reader.GetString(3), type);
             @event.StreamId = streamId;

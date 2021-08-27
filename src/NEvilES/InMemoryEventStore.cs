@@ -153,7 +153,7 @@ namespace NEvilES
             }
 
             aggregate.ClearUncommittedEvents();
-            return new AggregateCommit(aggregate.Id, Guid.Empty, "", uncommittedEvents);
+            return new AggregateCommit(aggregate.Id, Guid.Empty, uncommittedEvents);
         }
     }
 }

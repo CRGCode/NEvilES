@@ -42,7 +42,7 @@ namespace NEvilES.Pipeline
 
         public IAggregateCommit ToAggregateCommit(ICommandContext context)
         {
-            return new AggregateCommit(UpdatedAggregates[0].StreamId, context.Transaction.Id, "", UpdatedAggregates.SelectMany(x => x.UpdatedEvents).ToArray());
+            return new AggregateCommit(UpdatedAggregates[0].StreamId, context.Transaction.Id, UpdatedAggregates.SelectMany(x => x.UpdatedEvents).ToArray());
         }
 
         public T FindProjectedItem<T>() where T : class

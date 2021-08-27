@@ -191,6 +191,24 @@ namespace NEvilES
             return services;
         }
 
+        public static IServiceCollection AddEventStoreReader<TReader>(this IServiceCollection services, Type[] aggregateTypes) 
+            where TReader : IReadEventStore
+        {
+            var lookup = new EventTypeLookupStrategy();
+            foreach (var t in aggregateTypes)
+            {
+                lookup.ScanAssemblyOfType(t);
+            }
+
+            //services.RegisterTypesFrom(aggregateTypes);
+
+            services.AddScoped(typeof(IReadEventStore), typeof(TReader));
+            services.AddSingleton<IEventTypeLookupStrategy>(lookup);
+            services.AddScoped<IFactory, ServiceProviderFactory>();
+
+            return services;
+        }
+
     }
 
     public class EventStoreOptions

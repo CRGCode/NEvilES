@@ -5,11 +5,10 @@ namespace NEvilES
 {
     public class AggregateCommit : BaseAggregateCommit
     {
-        public AggregateCommit(Guid streamId, Guid by, string metadata, IEventData[] updatedEvents)
+        public AggregateCommit(Guid streamId, Guid by, IEventData[] updatedEvents)
         {
             StreamId = streamId;
             By = by;
-            Metadata = metadata;
             UpdatedEvents = updatedEvents;
         }
     }

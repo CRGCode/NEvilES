@@ -29,7 +29,7 @@ namespace NEvilES.Tests
             var events = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
 
             aggregate.ClearUncommittedEvents();
-            return new AggregateCommit(aggregate.Id, Guid.Empty, string.Empty, events);
+            return new AggregateCommit(aggregate.Id, Guid.Empty, events);
         }
 
         public TAggregate Get<TAggregate>(Guid id) where TAggregate : IAggregate
