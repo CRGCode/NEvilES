@@ -16,7 +16,14 @@ namespace NEvilES.Pipeline
                 var commandResult = new CommandResult(commit);
                 var user = new CommandContext.User(commit.By);
                 var commandContext = new CommandContext(user, null, CommandContext.User.NullUser(), null);
-                Project(commandResult, factory, commandContext);
+                try
+                {
+                    Project(commandResult, factory, commandContext);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
         }
 

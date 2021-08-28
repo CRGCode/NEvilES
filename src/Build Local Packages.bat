@@ -1,4 +1,4 @@
-set version=1.5.1.0
+set version=1.5.2
 dotnet pack -p:PackageVersion=%version% .\NEvilES.Abstractions -o ..\Packages 
 dotnet pack -p:PackageVersion=%version% .\NEvilES -o ..\Packages 
 dotnet pack -p:PackageVersion=%version% .\NEvilES.DataStore.SQL -o ..\Packages 
