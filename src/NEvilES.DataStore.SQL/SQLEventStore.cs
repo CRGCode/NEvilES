@@ -35,7 +35,7 @@ namespace NEvilES.DataStore.SQL
 
         public IAggregate Get(Type type, Guid id) => Get(type, id, null);
 
-        public IAggregate Get(Type type, Guid id, Int64? version)
+        public IAggregate Get(Type type, Guid id, long? version)
         {
             var events = new List<EventDb>();
             using (var cmd = Transaction.Connection.CreateCommand())
@@ -145,7 +145,7 @@ namespace NEvilES.DataStore.SQL
             return aggregate;
         }
 
-        public TAggregate GetVersion<TAggregate>(Guid id, Int64 version) where TAggregate : IAggregate
+        public TAggregate GetVersion<TAggregate>(Guid id, long version) where TAggregate : IAggregate
         {
             return (TAggregate)Get(typeof(TAggregate), id, version);
         }

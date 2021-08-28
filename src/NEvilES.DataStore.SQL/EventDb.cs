@@ -5,7 +5,7 @@ namespace NEvilES.DataStore.SQL
 {
     public class EventDb : IEventRow
     {
-        public Int64 Id { get; set; }
+        public long Id { get; set; }
         public string Category { get; set; }
         public Guid StreamId { get; set; }
         public Guid TransactionId { get; set; }

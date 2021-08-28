@@ -32,7 +32,7 @@ namespace NEvilES.DataStore.SQL.Tests
                         typeof(NEvilES.Tests.CommonDomain.Sample.Address),
                     };
 
-                    opts.GetUserContext = s => new Pipeline.CommandContext.User(CombGuid.NewGuid());
+                    opts.GetUserContext = s => new CommandContext.User(CombGuid.NewGuid());
 
                     opts.ReadModelAssemblyTypes = new[]
                     {

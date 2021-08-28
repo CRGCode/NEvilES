@@ -45,7 +45,7 @@ namespace NEvilES.DataStore.LiteDb
             return (TAggregate)Get(typeof(TAggregate), id, version);
         }
 
-        public IAggregate Get(Type type, Guid id, Int64? version)
+        public IAggregate Get(Type type, Guid id, long? version)
         {
 
             var collection = _db.GetCollection<LiteDbEventTable>("eventstore");

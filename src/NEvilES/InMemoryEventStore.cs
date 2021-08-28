@@ -55,7 +55,7 @@ namespace NEvilES
         }
         public IAggregate Get(Type type, Guid id) => Get(type, id, null);
 
-        public IAggregate Get(Type type, Guid id, Int64? version)
+        public IAggregate Get(Type type, Guid id, long? version)
         {
             if (!eventData.ContainsKey(id))
             {
@@ -81,7 +81,7 @@ namespace NEvilES
             return aggregate;
         }
 
-        public TAggregate GetVersion<TAggregate>(Guid id, Int64 version) where TAggregate : IAggregate
+        public TAggregate GetVersion<TAggregate>(Guid id, long version) where TAggregate : IAggregate
         {
             return (TAggregate)Get(typeof(TAggregate), id, version);
         }

@@ -26,8 +26,5 @@ namespace NEvilES.DataStore.DynamoDB
         [DynamoDBRangeKey]
         [DynamoDBGlobalSecondaryIndexRangeKey("CommitedAt-Version-Index")]
         public int Version { get; set; }
-
-        //Do we really need this?
-        // public string Metadata { get; set; }
     }
 }

@@ -47,7 +47,7 @@ namespace NEvilES.DataStore.DynamoDB
         }
         public Task<IAggregate> GetAsync(Type type, Guid id) => GetAsync(type, id, null);
 
-        public async Task<IAggregate> GetAsync(Type type, Guid id, Int64? version)
+        public async Task<IAggregate> GetAsync(Type type, Guid id, long? version)
         {
             var expression = new Expression()
             {
@@ -158,14 +158,14 @@ namespace NEvilES.DataStore.DynamoDB
 
             var _whenTimeStamp = (ulong)_when.ToUnixTimeMilliseconds();
 
-            var item = new Amazon.DynamoDBv2.Model.TransactWriteItem
+            var item = new TransactWriteItem
             {
-                Put = new Amazon.DynamoDBv2.Model.Put
+                Put = new Put
                 {
                     ConditionExpression = $"attribute_not_exists({nameof(DynamoDBEvent.Version)})",
                     TableName = TableConstants.EVENT_TABLE_NAME,
 
-                    Item = new Dictionary<string, Amazon.DynamoDBv2.Model.AttributeValue> {
+                    Item = new Dictionary<string, AttributeValue> {
                         { nameof(DynamoDBEvent.StreamId), new AttributeValue(aggregate.Id.ToString()) },
                         { nameof(DynamoDBEvent.Version), new AttributeValue
                             {
@@ -184,7 +184,6 @@ namespace NEvilES.DataStore.DynamoDB
                         {nameof(DynamoDBEvent.Category), new AttributeValue(aggregate.GetType().FullName)},
                         {nameof(DynamoDBEvent.BodyType), new AttributeValue(eventData.Type.FullName)},
                         {nameof(DynamoDBEvent.Who), new AttributeValue( (_commandContext.ImpersonatorBy?.GuidId ?? _commandContext.By.GuidId).ToString())},
-                        // {"metaData", new AttributeValue(metadata)},
                     }
                 }
             };
@@ -219,7 +218,7 @@ namespace NEvilES.DataStore.DynamoDB
                     }
 
 
-                    var abc = await _dynamoDbClient.TransactWriteItemsAsync(new Amazon.DynamoDBv2.Model.TransactWriteItemsRequest
+                    var abc = await _dynamoDbClient.TransactWriteItemsAsync(new TransactWriteItemsRequest
                     {
                         TransactItems = items
                     });
@@ -352,7 +351,7 @@ namespace NEvilES.DataStore.DynamoDB
 
         }
 
-        public async Task<TAggregate> GetVersionAsync<TAggregate>(Guid id, Int64 version) where TAggregate : IAggregate
+        public async Task<TAggregate> GetVersionAsync<TAggregate>(Guid id, long version) where TAggregate : IAggregate
         {
             IAggregate aggregate = await GetAsync(typeof(TAggregate), id, version);
             return (TAggregate)aggregate;

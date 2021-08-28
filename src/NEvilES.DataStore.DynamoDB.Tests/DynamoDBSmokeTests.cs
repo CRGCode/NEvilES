@@ -14,7 +14,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
 
         public DynamoDBSmokeTests(TestContext context)
         {
-            this.repository = context.Services.GetService<IAsyncRepository>();
+            repository = context.Services.GetService<IAsyncRepository>();
         }
 
         [Fact]

@@ -126,7 +126,6 @@ CREATE TABLE [dbo].[events](
        [category] [nvarchar](500) NOT NULL,
        [streamid] [uniqueidentifier] NOT NULL,
        [transactionid] [uniqueidentifier] NOT NULL,
-       [metadata] [nvarchar](max) NOT NULL,
        [bodytype] [nvarchar](500) NOT NULL,
        [body] [nvarchar](max) NOT NULL,
        [who] [uniqueidentifier] NOT NULL,
