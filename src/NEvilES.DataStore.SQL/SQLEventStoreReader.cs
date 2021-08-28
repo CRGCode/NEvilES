@@ -37,59 +37,53 @@ namespace NEvilES.DataStore.SQL
             return param;
         }
 
-        public IEnumerable<IAggregateCommit> Read(Int64 from = 0, Int64 to = 0)
+        public IEnumerable<IAggregateCommit> Read(long from = 0, long to = 0)
         {
-            using (var cmd = Transaction.Connection.CreateCommand())
+            using var cmd = Transaction.Connection.CreateCommand();
+            cmd.Transaction = Transaction;
+            cmd.CommandType = CommandType.Text;
+            if (@from == 0 && to == 0)
             {
-                cmd.Transaction = Transaction;
-                cmd.CommandType = CommandType.Text;
-                if (from == 0 && to == 0)
-                {
-                    cmd.CommandText =
-                        "SELECT streamid, bodytype, body, who, _when, version FROM events ORDER BY id";
-                }
-                else
-                {
-                    cmd.CommandText =
-                        "SELECT streamid, bodytype, body, who, _when, version FROM events WHERE id BETWEEN @from AND @to ORDER BY id";
-                    CreateParam(cmd, "@from", DbType.Int64, from);
-                    CreateParam(cmd, "@to", DbType.Int64, to);
-                }
-
-                return ReadToAggregateCommits(cmd);
+                cmd.CommandText =
+                    "SELECT streamid, bodytype, body, who, _when, version FROM events ORDER BY id";
             }
+            else
+            {
+                cmd.CommandText =
+                    "SELECT streamid, bodytype, body, who, _when, version FROM events WHERE id BETWEEN @from AND @to ORDER BY id";
+                CreateParam(cmd, "@from", DbType.Int64, @from);
+                CreateParam(cmd, "@to", DbType.Int64, to);
+            }
+
+            foreach (var aggregateCommit in AggregateCommits(cmd)) yield return aggregateCommit;
         }
 
         public IEnumerable<IAggregateCommit> Read(Guid streamId)
         {
-            using (var cmd = Transaction.Connection.CreateCommand())
-            {
-                cmd.Transaction = Transaction;
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText =
-                    "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events WHERE streamid = @streamid order by id";
-                CreateParam(cmd, "@streamid", DbType.Guid, streamId);
+            using var cmd = Transaction.Connection.CreateCommand();
+            cmd.Transaction = Transaction;
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText =
+                "SELECT streamid, bodytype, body, who, _when, version FROM events WHERE streamid = @streamId order by id";
+            CreateParam(cmd, "@streamId", DbType.Guid, streamId);
 
-                return ReadToAggregateCommits(cmd);
-            }
+            foreach (var aggregateCommit in AggregateCommits(cmd)) yield return aggregateCommit;
         }
 
         public IEnumerable<IAggregateCommit> ReadNewestLimit(Guid streamId, int limit = 50)
         {
-            using (var cmd = Transaction.Connection.CreateCommand())
-            {
-                cmd.Transaction = Transaction;
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText =
-                    "SELECT streamid, metadata, bodytype, body, who, _when, version FROM events WHERE streamid = @streamid order by id DESC limit @limit";
-                CreateParam(cmd, "@streamid", DbType.Guid, streamId);
-                CreateParam(cmd, "@limit", DbType.Int32, null, limit);
+            using var cmd = Transaction.Connection.CreateCommand();
+            cmd.Transaction = Transaction;
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText =
+                "SELECT streamid, bodytype, body, who, _when, version FROM events WHERE streamid = @streamId order by id DESC limit @limit";
+            CreateParam(cmd, "@streamId", DbType.Guid, streamId);
+            CreateParam(cmd, "@limit", DbType.Int32, null, limit);
 
-                return ReadToAggregateCommits(cmd);
-            }
+            foreach (var aggregateCommit in AggregateCommits(cmd)) yield return aggregateCommit;
         }
 
-        protected IEnumerable<IAggregateCommit> ReadToAggregateCommits(IDbCommand cmd)
+        private IEnumerable<IAggregateCommit> AggregateCommits(IDbCommand cmd)
         {
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
