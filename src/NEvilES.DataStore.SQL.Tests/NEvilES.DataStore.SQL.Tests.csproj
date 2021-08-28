@@ -7,14 +7,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="Npgsql" Version="4.1.9" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
-    <PackageReference Include="xunit" Version="2.4.0" />
+		<PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <PackageReference Include="coverlet.collector" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NEvilES.Abstractions\NEvilES.Abstractions.csproj" />
+    <ProjectReference Include="..\NEvilES.DataStore.Marten\NEvilES.DataStore.Marten.csproj" />
+    <ProjectReference Include="..\NEvilES.DataStore.MSSQL\NEvilES.DataStore.MSSQL.csproj" />
     <ProjectReference Include="..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
     <ProjectReference Include="..\NEvilES.Testing\NEvilES.Testing.csproj" />
     <ProjectReference Include="..\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj" />

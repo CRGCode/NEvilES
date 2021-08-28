@@ -7,6 +7,10 @@ using Newtonsoft.Json.Serialization;
 
 namespace NEvilES.DataStore.SQL
 {
+
+    // NOTE 
+    // TODO - This is not general and needs work as it has MS SQL specific T-SQL
+
     public class SQLDocumentRepository : IReadFromReadModel, IWriteReadModel
     {
         private readonly IDbTransaction transaction;

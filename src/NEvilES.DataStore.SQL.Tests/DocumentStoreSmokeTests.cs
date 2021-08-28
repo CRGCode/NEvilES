@@ -5,15 +5,15 @@ using Xunit;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
-    public class DocumentStoreSmokeTests : IClassFixture<TestContext>
+    public class DocumentStoreSmokeTests : IClassFixture<SQLTestContext>
     {
         private IReadFromReadModel reader;
         private IWriteReadModel writer;
 
-        public DocumentStoreSmokeTests(TestContext context)
+        public DocumentStoreSmokeTests(SQLTestContext context)
         {
-            writer = context.Services.GetService<IWriteReadModel>();
-            reader = context.Services.GetService<IReadFromReadModel>();
+            writer = context.Container.GetService<IWriteReadModel>();
+            reader = context.Container.GetService<IReadFromReadModel>();
         }
 
         [Fact]

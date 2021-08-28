@@ -7,7 +7,6 @@ namespace NEvilES.Abstractions
     {
         Guid StreamId { get; set; }
         Guid By { get; set; }
-        string Metadata { get; set; }
         IEventData[] UpdatedEvents { get; set; }
         string ToString();
     }
@@ -16,7 +15,6 @@ namespace NEvilES.Abstractions
     {
         public Guid StreamId { get; set; }
         public Guid By { get; set; }
-        public string Metadata { get; set; }
         public IEventData[] UpdatedEvents { get; set; }
 
         public override string ToString()
