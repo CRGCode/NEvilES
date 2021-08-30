@@ -46,20 +46,21 @@ EXEC ('CREATE DATABASE [{0}] ON PRIMARY
 
                 cmd.CommandText = @"
 CREATE TABLE events(
-       [id] [bigint] IDENTITY(1,1) NOT NULL,
-       [category] [nvarchar](500) NOT NULL,
-       [streamid] [uniqueidentifier] NOT NULL,
-       [transactionid] [uniqueidentifier] NOT NULL,
-       [bodytype] [nvarchar](500) NOT NULL,
-       [body] [nvarchar](max) NOT NULL,
-       [who] [uniqueidentifier] NOT NULL,
-       [_when] [datetime] NOT NULL,
-       [version] [int] NOT NULL,
-       [appversion] [nvarchar](20) NOT NULL,
-PRIMARY KEY CLUSTERED
-(
-       [id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+        [id] [bigint] IDENTITY(1,1) NOT NULL,
+        [category] [nvarchar](500) NOT NULL,
+        [streamid] [uniqueidentifier] NOT NULL,
+        [transactionid] [uniqueidentifier] NOT NULL,
+        [bodytype] [nvarchar](500) NOT NULL,
+        [body] [nvarchar](max) NOT NULL,
+        [who] [uniqueidentifier] NOT NULL,
+        [_when] [datetime] NOT NULL,
+        [version] [int] NOT NULL,
+        [appversion] [nvarchar](20) NOT NULL,
+    PRIMARY KEY CLUSTERED
+    (
+	       [id] ASC
+    ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+    CONSTRAINT UQ_StreamVersion UNIQUE(streamid,[version]) 
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 ";
                 cmd.ExecuteNonQuery();

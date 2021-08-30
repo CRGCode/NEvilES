@@ -30,7 +30,7 @@ namespace NEvilES.DataStore.SQL.Tests
         public void WipeAllEvents()
         {
             scope.Dispose();    //  we don't want this as we are going to delete the Db and the context has created a Db transactions
-            new MartenEventStoreCreate().CreateOrWipeDb(connectionString);
+            new PgSQLEventStoreCreate().CreateOrWipeDb(connectionString);
         }
 
         [Fact]
