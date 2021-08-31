@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore.MSSQL;
+using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
 using Xunit;
 using Xunit.Abstractions;
@@ -56,12 +57,14 @@ namespace NEvilES.DataStore.SQL.Tests
             Assert.NotNull(commit);
         }
 
-        public void RunCommand<TCommand>(TCommand command) where TCommand : ICommand
+        private void RunCommand<TCommand>(TCommand command) where TCommand : ICommand
         {
             var serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
             using (var serviceScope = serviceScopeFactory.CreateScope())
             {
-                var processor = serviceScope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                var commandContext = serviceScope.ServiceProvider.GetRequiredService<ICommandContext>();
+                var processor =
+                    new CommandProcessor<TCommand>(new ScopedServiceProviderFactory(serviceScope), commandContext);
                 processor.Process(command);
             }
         }
@@ -112,34 +115,36 @@ namespace NEvilES.DataStore.SQL.Tests
         private static readonly int[] BackOff = {10,20,50,100,200,300,500,600,700,1000};
 
         [Fact]
-        public void RetryOnConcurrencyExceptions()
+        public void RetryCommandProcessorOnConcurrencyExceptions()
         {
             void IncludeUser(int userNumber, Guid guid, Guid userId)
             {
                 var retry = 0;
                 do
                 {
-                    try
+                    var serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
+                    using (var serviceScope = serviceScopeFactory.CreateScope())
                     {
-                        var serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
-                        using (var serviceScope = serviceScopeFactory.CreateScope())
+                        try
                         {
-                            var processor = serviceScope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                            var commandContext = serviceScope.ServiceProvider.GetRequiredService<ICommandContext>();
+                            var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(new ScopedServiceProviderFactory(serviceScope),commandContext);
                             processor.Process(new ChatRoom.IncludeUserInRoom()
                             {
                                 StreamId = guid,
                                 UserId = userId
                             });
-                        }
+                            return;
 
-                        return;
+                        }
+                        catch (AggregateConcurrencyException)
+                        {
+                            var delay = BackOff[retry++];
+                            Thread.Sleep(delay);
+                            testOutputHelper.WriteLine($"User {userNumber} Retry[{retry}] - {delay}");
+                        }
                     }
-                    catch (AggregateConcurrencyException)
-                    {
-                        var delay = BackOff[retry++];
-                        Thread.Sleep(delay);
-                        testOutputHelper.WriteLine($"User {userNumber} Retry[{retry}] - {delay}");
-                    }
+
                 } while (retry < RETRIES);
 
                 RunCommand(new ChatRoom.IncludeUserInRoom()
@@ -183,6 +188,54 @@ namespace NEvilES.DataStore.SQL.Tests
             Assert.Equal(tasks.Length + 1, events.Count());
         }
 
+        [Fact]
+        public void PipelineProcessorHandlesRetryOnConcurrencyExceptions()
+        {
+            var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
+
+            var chatRoom = Guid.NewGuid();
+            commandProcessor.Process(new ChatRoom.Create
+            {
+                StreamId = chatRoom,
+                InitialUsers = new HashSet<Guid>(),
+                Name = "Biz Room"
+            });
+
+            void IncludeUser(int userNumber, Guid guid, Guid userId)
+            {
+                commandProcessor.Process(new ChatRoom.IncludeUserInRoom()
+                {
+                    StreamId = guid,
+                    UserId = userId
+                });
+                testOutputHelper.WriteLine($"User {userNumber}");
+            }
+
+            var tasks = new[]
+            {
+                new Task(() => { IncludeUser(1, chatRoom, Guid.NewGuid()); }),
+                new Task(() => { IncludeUser(2, chatRoom, Guid.NewGuid()); }),
+                new Task(() => { IncludeUser(3, chatRoom, Guid.NewGuid()); }),
+                new Task(() => { IncludeUser(4, chatRoom, Guid.NewGuid()); }),
+                new Task(() => { IncludeUser(5, chatRoom, Guid.NewGuid()); }),
+                new Task(() => { IncludeUser(6, chatRoom, Guid.NewGuid()); }),
+                new Task(() => { IncludeUser(7, chatRoom, Guid.NewGuid()); }),
+                new Task(() => { IncludeUser(8, chatRoom, Guid.NewGuid()); })
+            };
+
+            foreach (var task in tasks)
+            {
+                task.Start();
+            }
+
+            Task.WaitAll(tasks, CancellationToken.None);
+
+            var reader = scope.ServiceProvider.GetRequiredService<IReadEventStore>();
+
+            var events = reader.Read(chatRoom);
+
+            Assert.Equal(tasks.Length + 1, events.Count());
+        }
 
         public void Dispose()
         {

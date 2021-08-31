@@ -49,11 +49,11 @@ namespace NEvilES.Pipeline
 
                     var handler = aggHandler.Handlers[commandType];
                     var parameters = handler.GetParameters();
-                    var deps = new object[] { command }.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
+                    var dependencies = new object[] { command }.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
 
                     try
                     {
-                        handler.Invoke(agg, deps);
+                        handler.Invoke(agg, dependencies);
                     }
                     catch (TargetInvocationException e) when (e.InnerException != null)
                     {
@@ -93,6 +93,7 @@ namespace NEvilES.Pipeline
                 var commit = repo.Save(agg);
                 commandResult.Append(commit);
             }
+
             return commandResult;
         }
     }

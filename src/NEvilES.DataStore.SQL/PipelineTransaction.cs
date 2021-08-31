@@ -8,6 +8,7 @@ namespace NEvilES.DataStore.SQL
     {
         private readonly IDbConnection connection;
         private readonly IDbTransaction transaction;
+        private bool rollback;
 
         public PipelineTransaction(IDbConnection connection, IDbTransaction transaction)
         {
@@ -18,8 +19,15 @@ namespace NEvilES.DataStore.SQL
 
         public void Dispose()
         {
-            transaction.Commit();
+            if(!rollback)
+                transaction.Commit();
             connection.Close();
+        }
+
+        public override void Rollback()
+        {
+            transaction.Rollback();
+            rollback = true;
         }
     }
 }

@@ -35,7 +35,7 @@ namespace NEvilES
         }
     }
 
-    public class ScopedServiceProviderFactory : IFactory
+    public class ScopedServiceProviderFactory : IFactory, IDisposable
     {
         private readonly IServiceScope scope;
 
@@ -57,10 +57,14 @@ namespace NEvilES
 
         public IEnumerable GetAll(Type type)
         {
-
             var typeToResolve = typeof(IEnumerable<>).MakeGenericType(type);
             var resolve = scope.ServiceProvider.GetService(typeToResolve);
             return resolve as Array;
+        }
+
+        public void Dispose()
+        {
+            scope?.Dispose();
         }
     }
 

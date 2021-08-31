@@ -12,6 +12,11 @@ namespace NEvilES
     {
         public Guid Id { get; }
 
+        public void Rollback()
+        {
+            throw new NotImplementedException();
+        }
+
         public Transaction(Guid id)
         {
             Id = id;

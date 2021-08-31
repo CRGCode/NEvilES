@@ -43,28 +43,21 @@ namespace GTD.SeedData
 
         void RunCommand<TCommand>(TCommand command) where TCommand : ICommand
         {
-            var serviceScopeFactory = container.GetRequiredService<IServiceScopeFactory>();
-            using (var scope = serviceScopeFactory.CreateScope())
-            {
-                var processor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
-                processor.Process(command);
-            }
+            var processor = container.GetRequiredService<ICommandProcessor>();
+            processor.Process(command);
         }
-        
+
         private void AddItems(int items)
         {
             foreach (var request in requests)
             {
                 for (int i = 0; i < items; i++)
                 {
-                    if (new Random().Next(10) > 5)
+                    RunCommand(new Request.AddComment
                     {
-                        RunCommand(new Request.AddComment
-                        {
-                            StreamId = request,
-                            Text = "Note",
-                        });
-                    }
+                        StreamId = request,
+                        Text = "Note",
+                    });
                 }
             }
         }
@@ -80,7 +73,7 @@ namespace GTD.SeedData
                     StreamId = id,
                     Name = $"Client {count} - {id}",
                 });
-                var users = CreateUsers(id, new Random().Next(5) + 5);
+                var users = CreateUsers(id, 4);
                 items.Add(id, users);
             }
 

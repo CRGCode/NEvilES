@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.DataStore;
@@ -15,9 +16,15 @@ namespace GTD.SeedData
 
             //SeedData.Initialise(connString, container);
 
-            container.GetRequiredService<ICreateOrWipeDb>().CreateOrWipeDb(new ConnectionString(connString));
+            var stopwatch = new Stopwatch();
 
+            stopwatch.Start();
+            container.GetRequiredService<ICreateOrWipeDb>().CreateOrWipeDb(new ConnectionString(connString));
+            Console.WriteLine($"Finished wiping Db - {stopwatch.Elapsed:g}");
+            
+            stopwatch.Restart();
             new LoadTest(container, 3, 10, 20).Begin(10, 10);
+            Console.WriteLine($"Load test time - {stopwatch.Elapsed:g}");
 
             Console.WriteLine("Done - Hit any key!");
             Console.ReadKey();
