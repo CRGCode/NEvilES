@@ -8,7 +8,5 @@ namespace NEvilES.Abstractions.Pipeline
     public interface ICommandProcessor
     {
         ICommandResult Process<T>(T command) where T : IMessage;
-        ICommandContext Context { get; }
     }
-
 }

@@ -144,5 +144,9 @@ namespace NEvilES.Testing
         {
             throw new NotImplementedException();
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

@@ -8,6 +8,11 @@ namespace NEvilES.DataStore.DynamoDB
         {
             Id = CombGuid.NewGuid();
         }
+
+        public override void Rollback()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
 

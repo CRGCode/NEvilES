@@ -15,29 +15,22 @@ using Xunit.Abstractions;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
-    public class SQLEventStoreTests : IDisposable, IClassFixture<SQLTestContext>
+    public class SQLEventStoreTests : IClassFixture<SQLTestContext>, IDisposable
     {
         private readonly SQLTestContext context;
         private readonly ITestOutputHelper testOutputHelper;
-        private readonly IRepository repository;
         private readonly IConnectionString connectionString;
-        private readonly IServiceScope scope;
 
         public SQLEventStoreTests(SQLTestContext context, ITestOutputHelper testOutputHelper)
         {
             this.context = context;
             this.testOutputHelper = testOutputHelper;
             connectionString = context.Container.GetRequiredService<IConnectionString>();
-
-            var serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
-            scope = serviceScopeFactory.CreateScope();
-            repository = scope.ServiceProvider.GetRequiredService<IRepository>();
         }
 
         [Fact]
         public void WipeAllEvents()
         {
-            scope.Dispose();    //  we don't want this as we are going to delete the Db and the context has created a Db transactions
             new MSSQLEventStoreCreate().CreateOrWipeDb(connectionString);
         }
 
@@ -52,37 +45,33 @@ namespace NEvilES.DataStore.SQL.Tests
                 Name = "Biz Room"
             });
 
+            using var scope = context.Container.CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<IRepository>();
             var commit = repository.Save(chatRoom);
 
             Assert.NotNull(commit);
-        }
-
-        private void RunCommand<TCommand>(TCommand command) where TCommand : ICommand
-        {
-            var serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
-            using (var serviceScope = serviceScopeFactory.CreateScope())
-            {
-                var commandContext = serviceScope.ServiceProvider.GetRequiredService<ICommandContext>();
-                var processor =
-                    new CommandProcessor<TCommand>(new ScopedServiceProviderFactory(serviceScope), commandContext);
-                processor.Process(command);
-            }
         }
 
         [Fact]
         public void ForceConcurrencyExceptions()
         {
             var chatRoom = Guid.NewGuid();
-            RunCommand(new ChatRoom.Create
+            var commandProcessor  = context.Container.GetRequiredService<ICommandProcessor>();
+            commandProcessor.Process(new ChatRoom.Create
             {
                 StreamId = chatRoom,
                 InitialUsers = new HashSet<Guid> { },
                 Name = "Biz Room"
             });
 
+            
             void IncludeUser(Guid guid, Guid userId)
             {
-                RunCommand(new ChatRoom.IncludeUserInRoom()
+                using var scope = context.Container.CreateScope();
+                //var processor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
+                var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(new ScopedServiceProviderFactory(scope), commandContext);
+                processor.Process(new ChatRoom.IncludeUserInRoom()
                 {
                     StreamId = guid,
                     UserId = userId
@@ -117,6 +106,15 @@ namespace NEvilES.DataStore.SQL.Tests
         [Fact]
         public void RetryCommandProcessorOnConcurrencyExceptions()
         {
+            var chatRoom = Guid.NewGuid();
+            var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
+            commandProcessor.Process(new ChatRoom.Create
+            {
+                StreamId = chatRoom,
+                InitialUsers = new HashSet<Guid> { },
+                Name = "Biz Room"
+            });
+
             void IncludeUser(int userNumber, Guid guid, Guid userId)
             {
                 var retry = 0;
@@ -146,21 +144,7 @@ namespace NEvilES.DataStore.SQL.Tests
                     }
 
                 } while (retry < RETRIES);
-
-                RunCommand(new ChatRoom.IncludeUserInRoom()
-                {
-                    StreamId = guid,
-                    UserId = userId
-                });
             }
-
-            var chatRoom = Guid.NewGuid();
-            RunCommand(new ChatRoom.Create
-            {
-                StreamId = chatRoom,
-                InitialUsers = new HashSet<Guid> { },
-                Name = "Biz Room"
-            });
 
             var tasks = new[]
             {
@@ -181,7 +165,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
             Task.WaitAll(tasks, CancellationToken.None);
 
-            var reader = scope.ServiceProvider.GetRequiredService<IReadEventStore>();
+            var reader = context.Container.GetRequiredService<IReadEventStore>();
 
             var events = reader.Read(chatRoom);
 
@@ -191,9 +175,8 @@ namespace NEvilES.DataStore.SQL.Tests
         [Fact]
         public void PipelineProcessorHandlesRetryOnConcurrencyExceptions()
         {
-            var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
-
             var chatRoom = Guid.NewGuid();
+            var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
             commandProcessor.Process(new ChatRoom.Create
             {
                 StreamId = chatRoom,
@@ -230,7 +213,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
             Task.WaitAll(tasks, CancellationToken.None);
 
-            var reader = scope.ServiceProvider.GetRequiredService<IReadEventStore>();
+            var reader = context.Container.GetRequiredService<IReadEventStore>();
 
             var events = reader.Read(chatRoom);
 
@@ -239,7 +222,6 @@ namespace NEvilES.DataStore.SQL.Tests
 
         public void Dispose()
         {
-            scope?.Dispose();
         }
     }
 }

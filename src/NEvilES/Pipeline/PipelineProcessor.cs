@@ -8,16 +8,11 @@ namespace NEvilES.Pipeline
 {
     public class PipelineProcessor : ICommandProcessor
     {
-        private readonly ISecurityContext securityContext;
-        private readonly IServiceProvider serviceProvider;
+        private readonly IFactory factory;
 
-        public ICommandContext Context { get; }
-
-        public PipelineProcessor(ISecurityContext securityContext, IServiceProvider serviceProvider, ICommandContext commandContext)
+        public PipelineProcessor(IFactory factory)
         {
-            this.securityContext = securityContext;
-            this.serviceProvider = serviceProvider;
-            Context = commandContext;
+            this.factory = factory;
         }
 
         const int RETRIES = 10;
@@ -28,21 +23,22 @@ namespace NEvilES.Pipeline
             var retry = 0;
             do
             {
-                using var factory = new ScopedServiceProviderFactory(serviceProvider.CreateScope());
-                var commandProcessor = new CommandProcessor<T>(factory, Context);
-                var validationProcessor = new ValidationProcessor<T>(factory, commandProcessor);
+                using var scope = new ScopedServiceProviderFactory(((IServiceProvider)factory.Get(typeof(IServiceProvider))).CreateScope());
+                var commandContext = (ICommandContext)scope.Get(typeof(ICommandContext));
+                var securityContext = (ISecurityContext)scope.Get(typeof(ISecurityContext));
+                var commandProcessor = new CommandProcessor<T>(scope, commandContext);
+                var validationProcessor = new ValidationProcessor<T>(scope, commandProcessor);
                 var securityProcessor = new SecurityProcessor<T>(securityContext, validationProcessor);
 
                 try
                 {
-                    return securityProcessor.Process(command);
-
+                    var commandResult = securityProcessor.Process(command);
+                    return commandResult;
                 }
                 catch (AggregateConcurrencyException)
                 {
-                    var transaction = (ITransaction)factory.Get(typeof(ITransaction));
-                    transaction.Rollback();
-                    factory.Dispose();
+                    commandContext.Transaction.Rollback();
+                    scope.Dispose();
                     var delay = BackOff[retry++];
                     Thread.Sleep(delay);
                 }

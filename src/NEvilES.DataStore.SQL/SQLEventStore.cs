@@ -209,6 +209,4 @@ namespace NEvilES.DataStore.SQL
             return new AggregateCommit(aggregate.Id, commandContext.By.GuidId, uncommittedEvents);
         }
     }
-
-    
 }

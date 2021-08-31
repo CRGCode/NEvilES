@@ -29,6 +29,7 @@ namespace GTD.SeedData
 
         public void Begin(int workers, int notes)
         {
+            Console.WriteLine("Begin workers");
             var tasks = new List<Task>();
 
             for (int i = 0; i < workers; i++)

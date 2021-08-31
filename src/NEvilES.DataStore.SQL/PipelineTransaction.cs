@@ -19,7 +19,7 @@ namespace NEvilES.DataStore.SQL
 
         public void Dispose()
         {
-            if(!rollback)
+            if (!rollback)
                 transaction.Commit();
             connection.Close();
         }
