@@ -56,8 +56,6 @@ namespace NEvilES.DataStore.SQL.Tests
             AddServices(services);
 
             Container = services.BuildServiceProvider();
-
-
         }
     }
 }

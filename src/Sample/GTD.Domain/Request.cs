@@ -41,7 +41,7 @@ namespace GTD.Domain
 
         public class Aggregate : AggregateBase,
             IHandleAggregateCommand<NewRequest, UniqueValidator>,
-            IHandleStatelessEvent<CommentAdded>,
+            IHandleAggregateCommand<AddComment>,
             IHandleAggregateCommand<Accept>,
             IHandleAggregateCommand<Cancel>
         {
@@ -49,6 +49,13 @@ namespace GTD.Domain
             {
                 if (uniqueValidator.Dispatch(command).IsValid)
                     Raise<Created>(command);
+            }
+
+            public void Handle(AddComment command)
+            {
+                if (state == RequestState.Cancelled)
+                    throw new DomainAggregateException(this, "Can't accept a cancelled request");
+                RaiseStateless<AddComment>(command);
             }
 
             public void Handle(Accept command)

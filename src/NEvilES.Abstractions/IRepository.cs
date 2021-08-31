@@ -20,4 +20,11 @@ namespace NEvilES.Abstractions
         Task<IAggregate> GetStatelessAsync(Type type, Guid id);
         Task<IAggregateCommit> SaveAsync(IAggregate aggregate);
     }
+
+    public class AggregateConcurrencyException : Exception
+    {
+        public AggregateConcurrencyException(Guid aggregateId, IEventData eventData)
+        {
+        }
+    }
 }

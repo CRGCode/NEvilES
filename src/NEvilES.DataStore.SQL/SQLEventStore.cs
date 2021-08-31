@@ -191,7 +191,16 @@ namespace NEvilES.DataStore.SQL
                     bodyType.Value = eventData.Type.FullName;
                     by.Value = commandContext.ImpersonatorBy?.GuidId ?? commandContext.By.GuidId;
 
-                    cmd.ExecuteNonQuery();
+                    try
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.Message.ToLower().Contains("unique"))
+                            throw new AggregateConcurrencyException(aggregate.Id, eventData);
+                        throw;
+                    }
                     count++;
                 }
             }
@@ -200,4 +209,6 @@ namespace NEvilES.DataStore.SQL
             return new AggregateCommit(aggregate.Id, commandContext.By.GuidId, uncommittedEvents);
         }
     }
+
+    
 }
