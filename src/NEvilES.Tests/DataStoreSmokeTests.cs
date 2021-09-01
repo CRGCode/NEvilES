@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Tests.CommonDomain.Sample;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NEvilES.Tests
 {
-    public class DataStoreSmokeTests : IClassFixture<SharedFixtureContext>
+    public class DataStoreSmokeTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
-        //This is use instead of Console.Write or Debug.Write
-        private readonly ITestOutputHelper output;
         private readonly IRepository repository;
+        private readonly IServiceScope scope;
 
-        public DataStoreSmokeTests(ITestOutputHelper helper, SharedFixtureContext context)
+        public DataStoreSmokeTests(SharedFixtureContext context)
         {
-            output = helper;
-            repository = context.Container.GetInstance<IRepository>();
+            scope = context.Container.CreateScope();
+            repository = scope.ServiceProvider.GetRequiredService<IRepository>();
         }
 
         [Fact]
@@ -57,18 +56,14 @@ namespace NEvilES.Tests
             Assert.Equal(2, expected.UpdatedEvents.Length);
         }
 
-
-
         [Fact]
         public void CheckAggregateApplysEvent()
         {
-
             var streamId = Guid.NewGuid();
 
             var user1 = Guid.NewGuid();
             var user2 = Guid.NewGuid();
             var user3 = Guid.NewGuid();
-
 
             var agg = new ChatRoom.Aggregate();
             agg.Handle(new ChatRoom.Create() { StreamId = streamId, Name = "Bobs Chat", InitialUsers = new HashSet<Guid> { user1 } });
@@ -93,5 +88,9 @@ namespace NEvilES.Tests
         //            Person = new PersonalDetails("John", "God")
         //        }));
         // }
+        public void Dispose()
+        {
+            scope?.Dispose();
+        }
     }
 }

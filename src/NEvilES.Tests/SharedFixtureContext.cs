@@ -1,80 +1,133 @@
 using System;
-using System.Collections;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
+using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
 using NEvilES.Tests.CommonDomain.Sample.ReadModel;
-using StructureMap;
 
 namespace NEvilES.Tests
 {
-    public class SharedFixtureContext : IDisposable
+    public class SharedFixtureContext 
     {
+        public IServiceProvider Container { get; }
+
         private static bool runOnce = true;
 
         public SharedFixtureContext()
         {
-            var lookup = new EventTypeLookupStrategy();
-            lookup.ScanAssemblyOfType(typeof(Person.Created));
-            lookup.ScanAssemblyOfType(typeof(Approval));
-
             var appVeyor = Environment.GetEnvironmentVariable("APPVEYOR");
             var connString = appVeyor == null ? "ES_TEST" : "AppVeyor";
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json");
-
             var configuration = builder.Build();
 
-            Container = new Container(x =>
-            {
-                x.Scan(s =>
+            var services = new ServiceCollection()
+                .AddSingleton<IConnectionString>(c => new ConnectionString(configuration.GetConnectionString(connString)))
+                .AddScoped(c =>
                 {
-                    s.AssemblyContainingType<Person.Created>();
-                    s.AssemblyContainingType<Approval.Create>();
-                    s.AssemblyContainingType<ICommandProcessor>();
+                    var conn = c.GetService<IDbConnection>();
+                    return conn.BeginTransaction();
+                })
+                .AddEventStore<SQLEventStore, PipelineTransaction>(opts =>
+                {
+                    opts.DomainAssemblyTypes = new[]
+                    {
+                        typeof(Person.Created),
+                        typeof(Approval),
+                        //typeof(UniqueNameValidation)
+                    };
 
-                    s.ConnectImplementationsToTypesClosing(typeof(IProcessCommand<>));
-                    s.ConnectImplementationsToTypesClosing(typeof(IHandleStatelessEvent<>));
-                    s.ConnectImplementationsToTypesClosing(typeof(IHandleAggregateCommandMarker<>));
-                    s.ConnectImplementationsToTypesClosing(typeof(INeedExternalValidation<>));
-                    s.ConnectImplementationsToTypesClosing(typeof(IProject<>));
-                    s.ConnectImplementationsToTypesClosing(typeof(IProjectWithResult<>));
+                    opts.GetUserContext = s => new CommandContext.User(CombGuid.NewGuid());
 
-                    s.WithDefaultConventions();
-                    s.SingleImplementationsOfInterface();
+                    opts.ReadModelAssemblyTypes = new[]
+                    {
+                        typeof(Person.Created),
+                    };
                 });
 
-                x.For<IApprovalWorkflowEngine>().Use<ApprovalWorkflowEngine>();
-                x.For<ICommandProcessor>().Use<PipelineProcessor>();
-                x.For<ISecurityContext>().Use<SecurityContext>();
-                x.For<ICommandProcessor>().Use<PipelineProcessor>();
-                x.For<IEventTypeLookupStrategy>().Add(lookup).Singleton();
-                x.For<IRepository>().Use<InMemoryEventStore>();
-                // x.For<IRepository>().Use<SQLEventStore>();
-                x.For<IReadModel>().Use<TestReadModel>();
-                x.For<IFactory>().Use<Factory>();
-
-                x.For<IConnectionString>().Use(s => new ConnectionString(configuration.GetConnectionString(connString))).Singleton();
-                x.For<ICommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
-                x.For<IDbConnection>().Use("Connection", s => new SqlConnection(s.GetInstance<IConnectionString>().Data));
-                x.For<IDbTransaction>().Use("Transaction", s => s.GetInstance<IDbConnection>().BeginTransaction());
+            services.AddSingleton<IUser>(c => new CommandContext.User(Guid.Parse("00000001-0007-4852-9D2D-111111111111")));
+            services.AddScoped<ICommandContext, CommandContext>(s =>
+            {
+                var user = s.GetRequiredService<IUser>();
+                var transaction = s.GetRequiredService<ITransaction>();
+                return new CommandContext(user, transaction, null, "1.0");
             });
+
+            services.AddScoped<IReadEventStore, SQLEventStoreReader>();
+            services.AddScoped<SQLDocumentRepository>();
+            services.AddScoped<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
+            services.AddScoped<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
+
+            services.AddScoped<IDbConnection>(c =>
+            {
+                var conn = new SqlConnection(c.GetRequiredService<IConnectionString>().Data);
+                conn.Open();
+                return conn;
+            });
+
+            services.AddSingleton<IReadModel, TestReadModel>();
+            services.AddScoped<TaxRuleEngine>();
+            services.AddScoped<IApprovalWorkflowEngine, ApprovalWorkflowEngine>();
+
+            Container = services.BuildServiceProvider();
+
+
+
+
+            //////////
+            //var lookup = new EventTypeLookupStrategy();
+            //lookup.ScanAssemblyOfType(typeof(Person.Created));
+            //lookup.ScanAssemblyOfType(typeof(Approval));
+
+            //Container = new Container(x =>
+            //{
+            //    x.Scan(s =>
+            //    {
+            //        s.AssemblyContainingType<Person.Created>();
+            //        s.AssemblyContainingType<Approval.Create>();
+            //        s.AssemblyContainingType<ICommandProcessor>();
+
+            //        s.ConnectImplementationsToTypesClosing(typeof(IProcessCommand<>));
+            //        s.ConnectImplementationsToTypesClosing(typeof(IHandleStatelessEvent<>));
+            //        s.ConnectImplementationsToTypesClosing(typeof(IHandleAggregateCommandMarker<>));
+            //        s.ConnectImplementationsToTypesClosing(typeof(INeedExternalValidation<>));
+            //        s.ConnectImplementationsToTypesClosing(typeof(IProject<>));
+            //        s.ConnectImplementationsToTypesClosing(typeof(IProjectWithResult<>));
+
+            //        s.WithDefaultConventions();
+            //        s.SingleImplementationsOfInterface();
+            //    });
+
+            //    x.For<IApprovalWorkflowEngine>().Use<ApprovalWorkflowEngine>();
+            //    x.For<ICommandProcessor>().Use<PipelineProcessor>();
+            //    x.For<ISecurityContext>().Use<SecurityContext>();
+            //    x.For<ICommandProcessor>().Use<PipelineProcessor>();
+            //    x.For<IEventTypeLookupStrategy>().Add(lookup).Singleton();
+            //    x.For<IRepository>().Use<InMemoryEventStore>();
+            //    // x.For<IRepository>().Use<SQLEventStore>();
+            //    x.For<IReadModel>().Use<TestReadModel>();
+            //    x.For<IFactory>().Use<Factory>();
+
+            //    x.For<IConnectionString>().Use(s => new ConnectionString(configuration.GetConnectionString(connString))).Singleton();
+            //    x.For<ICommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
+            //    x.For<IDbConnection>().Use("Connection", s => new SqlConnection(s.GetRequiredService<IConnectionString>().Data));
+            //    x.For<IDbTransaction>().Use("Transaction", s => s.GetRequiredService<IDbConnection>().BeginTransaction());
+            //});
 
             if (runOnce)
             {
                 runOnce = false;
-                TestLocalDbExists(Container.GetInstance<IConnectionString>());
+                TestLocalDbExists(Container.GetRequiredService<IConnectionString>());
             }
         }
-
-        public Container Container { get; private set; }
 
         public static void TestLocalDbExists(IConnectionString connString)
         {
@@ -140,36 +193,6 @@ PRIMARY KEY CLUSTERED
 ";
                 command.ExecuteNonQuery();
             }
-        }
-
-        public void Dispose()
-        {
-            Container?.Dispose();
-        }
-    }
-
-    public class Factory : IFactory
-    {
-        private readonly IContainer container;
-
-        public Factory(IContainer container)
-        {
-            this.container = container;
-        }
-
-        public object Get(Type type)
-        {
-            return container.GetInstance(type);
-        }
-
-        public object TryGet(Type type)
-        {
-            return container.TryGetInstance(type);
-        }
-
-        public IEnumerable GetAll(Type type)
-        {
-            return container.GetAllInstances(type);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
         public class Create : Person.Create, ICommand { }
 
         public class Aggregate : Person.Aggregate,
-            IHandleAggregateCommand<Create>,
+            IHandleAggregateCommand<Create,UniqueNameValidation>,
             IHandleAggregateCommand<PayBonus>,
             IHandleAggregateCommand<PayPerson, TaxRuleEngine>
         {
@@ -43,9 +43,12 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 RaiseStateless<PaidPerson>(c);
             }
 
-            public void Handle(Create command)
+            public void Handle(Create command, UniqueNameValidation validator)
             {
-                base.Handle(command);
+                if (validator.Dispatch(command).IsValid)
+                {
+                   Handle(command);
+                }
             }
 
             //---------------------------------------------------------------------

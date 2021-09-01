@@ -34,7 +34,8 @@ namespace NEvilES
                 foreach (var item in assemblyTypes)
                 {
                     var interfaces = item.GetInterfaces().ToArray();
-                    if (item.IsAbstract || !item.IsClass) continue;
+                    if (item.IsAbstract || !item.IsClass) 
+                        continue;
 
                     var matchingInterfaces = interfaces.Where(t => t.Name == name).ToArray();
 
@@ -72,10 +73,10 @@ namespace NEvilES
                     if (!Types.ContainsKey(type.Assembly))
                     {
                         Types.Add(type.Assembly, type.Assembly.GetTypes());
+                        //Types.Add(type.Assembly, type.Assembly.DefinedTypes.Select(x => x.AsType()).ToArray());
                     }
                     assemblies.Add(type.Assembly);
                 }
-
             }
 
             return new RegisteredTypesBuilder(assemblies.SelectMany<Assembly, Type>(x => Types[x]), services);
