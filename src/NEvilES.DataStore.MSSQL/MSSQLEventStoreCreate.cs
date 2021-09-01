@@ -30,8 +30,8 @@ SET @FILENAME = CONVERT(VARCHAR(255), SERVERPROPERTY('instancedefaultdatapath'))
 EXEC ('CREATE DATABASE [{0}] ON PRIMARY
 	(NAME = [{0}],
 	FILENAME =''' + @FILENAME + ''',
-	SIZE = 25MB,
-	MAXSIZE = 50MB,
+	SIZE = 250MB,
+	MAXSIZE = 5000MB,
 	FILEGROWTH = 5MB )')
 ", dbName);
                 var command = connection.CreateCommand();

@@ -17,13 +17,14 @@ namespace GTD.SeedData
             //SeedData.Initialise(connString, container);
 
             var stopwatch = new Stopwatch();
-
             stopwatch.Start();
+
             container.GetRequiredService<ICreateOrWipeDb>().CreateOrWipeDb(new ConnectionString(connString));
+
             Console.WriteLine($"Finished wiping Db - {stopwatch.Elapsed:g}");
-            
             stopwatch.Restart();
-            new LoadTest(container, 3, 10, 20).Begin(10, 10);
+            
+            new LoadTest(container, 3, 10, 20).Begin(5, 100);
             Console.WriteLine($"Load test time - {stopwatch.Elapsed:g}");
 
             Console.WriteLine("Done - Hit any key!");
