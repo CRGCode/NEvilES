@@ -210,6 +210,29 @@ namespace NEvilES
             return services;
         }
 
+        public static IServiceCollection AddAllGenericTypes(this IServiceCollection services, Type genericType, Assembly[] assemblies)
+        {
+            var typesFromAssemblies = assemblies.SelectMany(a => a.DefinedTypes.Where(x => x.GetInterfaces()
+                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericType))).ToArray();
+
+            foreach (var item in typesFromAssemblies)
+            {
+                var interfaces = item.GetInterfaces();
+                if (item.IsAbstract || !item.IsClass)
+                    continue;
+
+                var name = genericType.Name;
+                if (interfaces.All(type => type.Name != name))
+                    continue;
+                services.AddScoped(item);
+                foreach (var type in interfaces.Where(x => x.Name == name))
+                {
+                    services.AddScoped(type, s => s.GetRequiredService(item));
+                }
+            }
+
+            return services;
+        }
     }
 
     public class EventStoreOptions

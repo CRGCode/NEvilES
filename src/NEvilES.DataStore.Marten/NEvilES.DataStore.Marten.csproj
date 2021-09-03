@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Marten" Version="3.13.4" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" />

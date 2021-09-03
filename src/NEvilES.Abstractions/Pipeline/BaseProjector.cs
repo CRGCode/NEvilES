@@ -1,11 +1,11 @@
 namespace NEvilES.Abstractions.Pipeline
 {
-    public abstract class BaseProjector
+    public abstract class BaseProjector<TId>
     {
-        protected readonly IReadFromReadModel Reader;
-        protected readonly IWriteReadModel Writer;
+        protected readonly IReadFromReadModel<TId> Reader;
+        protected readonly IWriteReadModel<TId> Writer;
 
-        protected BaseProjector(IReadFromReadModel reader, IWriteReadModel writer)
+        protected BaseProjector(IReadFromReadModel<TId> reader, IWriteReadModel<TId> writer)
         {
             Reader = reader;
             Writer = writer;

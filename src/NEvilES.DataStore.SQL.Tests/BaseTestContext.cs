@@ -49,9 +49,9 @@ namespace NEvilES.DataStore.SQL.Tests
             });
 
             services.AddScoped<IReadEventStore,SQLEventStoreReader>();
-            services.AddScoped<SQLDocumentRepository>();
-            services.AddScoped<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
-            services.AddScoped<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
+            //services.AddScoped<SQLDocumentRepository>();
+            //services.AddScoped<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
+            //services.AddScoped<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
 
             AddServices(services);
 

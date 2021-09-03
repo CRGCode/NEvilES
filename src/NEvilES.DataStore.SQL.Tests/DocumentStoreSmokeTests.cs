@@ -7,13 +7,13 @@ namespace NEvilES.DataStore.SQL.Tests
 {
     public class DocumentStoreSmokeTests : IClassFixture<SQLTestContext>
     {
-        private IReadFromReadModel reader;
-        private IWriteReadModel writer;
+        private readonly IReadFromReadModel<Guid> reader;
+        private readonly IWriteReadModel<Guid> writer;
 
         public DocumentStoreSmokeTests(SQLTestContext context)
         {
-            writer = context.Container.GetService<IWriteReadModel>();
-            reader = context.Container.GetService<IReadFromReadModel>();
+            writer = context.Container.GetService<IWriteReadModel<Guid>>();
+            reader = context.Container.GetService<IReadFromReadModel<Guid>>();
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace NEvilES.DataStore.SQL.Tests
         }
     }
 
-    public class Person : IHaveIdentity
+    public class Person : IHaveIdentity<Guid>
     {
         public Guid Id { get; }
         public string Name { get; set; }

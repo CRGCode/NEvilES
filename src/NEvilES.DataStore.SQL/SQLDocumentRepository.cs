@@ -11,7 +11,7 @@ namespace NEvilES.DataStore.SQL
     // NOTE 
     // TODO - This is not general and needs work as it has MS SQL specific T-SQL
 
-    public class SQLDocumentRepository : IReadFromReadModel, IWriteReadModel
+    public abstract class SQLDocumentRepository<TId> : IReadFromReadModel<TId>, IWriteReadModel<TId>
     {
         private readonly IDbTransaction transaction;
         private readonly HashSet<string> docTypes;
@@ -22,7 +22,7 @@ namespace NEvilES.DataStore.SQL
             docTypes = new HashSet<string>();
         }
 
-        public void Insert<T>(T item) where T : class, IHaveIdentity
+        public void Insert<T>(T item) where T : class, IHaveIdentity<TId>
         {
             var docName = CheckDocTypeExists<T>();
 
@@ -36,7 +36,7 @@ namespace NEvilES.DataStore.SQL
             command.ExecuteNonQuery();
         }
 
-        public void Update<T>(T item) where T : class, IHaveIdentity
+        public void Update<T>(T item) where T : class, IHaveIdentity<TId>
         {
             var docName = CheckDocTypeExists<T>();
 
@@ -50,7 +50,7 @@ namespace NEvilES.DataStore.SQL
             command.ExecuteNonQuery();
         }
 
-        public void Save<T>(T item) where T : class, IHaveIdentity
+        public void Save<T>(T item) where T : class, IHaveIdentity<TId>
         {
             var docName = CheckDocTypeExists<T>();
 
@@ -68,7 +68,7 @@ ELSE
             command.ExecuteNonQuery();
         }
 
-        public void Delete<T>(T item) where T : class, IHaveIdentity
+        public void Delete<T>(T item) where T : class, IHaveIdentity<TId>
         {
             var connection = transaction.Connection;
 
@@ -90,7 +90,7 @@ ELSE
             }
         }
 
-        public T Get<T>(Guid id) where T : class, IHaveIdentity
+        public T Get<T>(TId id) where T : class, IHaveIdentity<TId>
         {
             var connection = transaction.Connection;
 
@@ -109,7 +109,7 @@ ELSE
             return item is DBNull ? default : JsonConvert.DeserializeObject<T>((string)item, serializerSetting);
         }
 
-        public IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity
+        public IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity<TId>
         {
             var connection = transaction.Connection;
 
@@ -141,7 +141,7 @@ ELSE
             }
         }
 
-        public IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity
+        public IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity<TId>
         {
             // layta mate
             return null;
@@ -184,4 +184,19 @@ CREATE TABLE Doc.{0}(
             return command;
         }
     }
+
+    public class DocumentRepositoryWithKeyTypeGuid : SQLDocumentRepository<Guid>
+    {
+        public DocumentRepositoryWithKeyTypeGuid(IDbTransaction transaction) : base(transaction)
+        {
+        }
+    }
+
+    public class DocumentRepositoryWithKeyTypeString : SQLDocumentRepository<string>
+    {
+        public DocumentRepositoryWithKeyTypeString(IDbTransaction transaction) : base(transaction)
+        {
+        }
+    }
+
 }

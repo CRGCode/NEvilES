@@ -3,26 +3,24 @@ using System.Collections.Generic;
 
 namespace NEvilES.Abstractions.Pipeline
 {
-    public interface IHaveIdentity
+    public interface IHaveIdentity<out TId>
     {
-        Guid Id { get; }
+        TId Id { get; }
     }
 
-    public interface IReadFromReadModel
+    public interface IReadFromReadModel<in TId>
     {
-        T Get<T>(Guid id) where T : class, IHaveIdentity;
+        T Get<T>(TId id) where T : class, IHaveIdentity<TId>;
 
-        IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity;
+        IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity<TId>;
 
-        IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity;
+        IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity<TId>;
     }
 
-
-    public interface IWriteReadModel
+    public interface IWriteReadModel<in TId>
     {
-        void Insert<T>(T item) where T : class, IHaveIdentity;
-        void Update<T>(T item) where T : class, IHaveIdentity;
-        void Delete<T>(T item) where T : class, IHaveIdentity;
+        void Insert<T>(T item) where T : class, IHaveIdentity<TId>;
+        void Update<T>(T item) where T : class, IHaveIdentity<TId>;
+        void Delete<T>(T item) where T : class, IHaveIdentity<TId>;
     }
-
 }

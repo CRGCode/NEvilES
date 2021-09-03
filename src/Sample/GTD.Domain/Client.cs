@@ -73,6 +73,8 @@ namespace GTD.Domain
             public CommandValidationResult Dispatch(NewClient command)
             {
                 // Check ReadModel
+
+                // .......
                 return new CommandValidationResult(true);
             }
         }

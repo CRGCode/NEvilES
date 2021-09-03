@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
@@ -19,6 +20,10 @@ namespace NEvilES.DataStore.SQL.Tests
                 conn.Open();
                 return conn;
             });
+
+            services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
+            services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
+
         }
     }
 }

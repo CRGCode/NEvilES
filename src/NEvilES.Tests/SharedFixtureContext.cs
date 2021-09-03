@@ -9,7 +9,6 @@ using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
-using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 
 namespace NEvilES.Tests
 {
@@ -61,10 +60,12 @@ namespace NEvilES.Tests
                 return new CommandContext(user, transaction, null, "1.0");
             });
 
+            services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(InMemoryDocumentRepository<>).Assembly });
+            services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(InMemoryDocumentRepository<>).Assembly });
             services.AddScoped<IReadEventStore, SQLEventStoreReader>();
-            services.AddScoped<SQLDocumentRepository>();
-            services.AddScoped<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
-            services.AddScoped<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
+            //services.AddScoped(typeof(SQLDocumentRepository<>));
+            //services.AddScoped<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
+            //services.AddScoped<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
 
             services.AddScoped<IDbConnection>(c =>
             {
@@ -73,7 +74,7 @@ namespace NEvilES.Tests
                 return conn;
             });
 
-            services.AddSingleton<IReadModel, TestReadModel>();
+            services.AddSingleton<IReadModel, CommonDomain.Sample.ReadModel.TestReadModel>();
             services.AddScoped<TaxRuleEngine>();
             services.AddScoped<IApprovalWorkflowEngine, ApprovalWorkflowEngine>();
 
