@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Tests.CommonDomain.Sample.ReadModel;
+using NEvilES.Pipeline;
 using Xunit;
 
 namespace NEvilES.Tests
 {
+    using CommonDomain.Sample.ReadModel;
+
     public class ReadModelTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
         private readonly IServiceScope scope;
@@ -22,7 +24,7 @@ namespace NEvilES.Tests
         {
             var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<Guid>>();
 
-            Assert.Throws<KeyNotFoundException>(() => reader.Get<Person>(Guid.NewGuid()));
+            Assert.Throws<KeyNotFoundException>(() => reader.Get<ChatRoom>(Guid.NewGuid()));
         }
 
         [Fact]
@@ -53,14 +55,29 @@ namespace NEvilES.Tests
             var writer = scope.ServiceProvider.GetRequiredService<IWriteReadModel<Guid>>();
 
             var id = Guid.NewGuid();
-            writer.Insert(new Person { Id = id });
+            writer.Insert(new ChatRoom { Id = id });
 
             var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<Guid>>();
 
-            var person = reader.Get<Person>(id);
+            var person = reader.Get<ChatRoom>(id);
 
             Assert.Equal(id, person.Id);
         }
+
+        [Fact]
+        public void ProjectorWorks()
+        {
+            var projector = scope.ServiceProvider.GetRequiredService<IProjectWithResult<CommonDomain.Sample.ChatRoom.Created>>();
+            Assert.NotNull(projector);
+
+            var processor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+
+            var results =  processor.Process(new CommonDomain.Sample.ChatRoom.Create()
+                { StreamId = Guid.NewGuid(), Name = "ChatRoom 1", InitialUsers = new HashSet<Guid>() });
+
+            Assert.Single(results.ReadModelItems);
+        }
+
 
         public void Dispose()
         {

@@ -51,9 +51,8 @@ namespace GTD.SeedData
             services.AddScoped<ICommandContext, CommandContext>(s =>
                 new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
 
-            services.AddScoped<SQLDocumentRepository>();
-            services.AddScoped<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
-            services.AddScoped<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
+            services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
+            services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
 
             var container = services.BuildServiceProvider();
             return container;

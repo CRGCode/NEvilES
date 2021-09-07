@@ -56,7 +56,7 @@ namespace GTD.SeedData
 
                 processor.Process(new Request.CommentAdded { StreamId = request.StreamId, Text = "System test comment" });
             }
-            var reader = container.GetRequiredService<IReadFromReadModel>();
+            var reader = container.GetRequiredService<IReadFromReadModel<Guid>>();
             var client = reader.Get<ReadModel.Client>(id);
             Console.WriteLine("Id {0} - {1}", id, client.Name);
         }

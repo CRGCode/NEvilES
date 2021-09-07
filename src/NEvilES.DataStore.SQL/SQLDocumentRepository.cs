@@ -31,9 +31,13 @@ namespace NEvilES.DataStore.SQL
             object json = JsonConvert.SerializeObject(item);
             var sql = $"insert into Doc.{docName} values ('{item.Id}','{json}')";
 
-            var command = CreateCommand<T>(connection, sql);
-
-            command.ExecuteNonQuery();
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Transaction = transaction;
+                command.CommandType = CommandType.Text;
+                command.ExecuteNonQuery();
+            }
         }
 
         public void Update<T>(T item) where T : class, IHaveIdentity<TId>
@@ -45,9 +49,13 @@ namespace NEvilES.DataStore.SQL
             var json = JsonConvert.SerializeObject(item);
             var sql = $"update Doc.{docName} set Data = '{json}' where Id = '{item.Id}'";
 
-            var command = CreateCommand<T>(connection, sql);
-
-            command.ExecuteNonQuery();
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Transaction = transaction;
+                command.CommandType = CommandType.Text;
+                command.ExecuteNonQuery();
+            }
         }
 
         public void Save<T>(T item) where T : class, IHaveIdentity<TId>
@@ -63,9 +71,13 @@ IF EXISTS (SELECT 1 FROM Doc.{docName} WHERE Id = '{item.Id}')
 ELSE
 	insert into Doc.{docName} values ('{item.Id}','{json}')";
 
-            var command = CreateCommand<T>(connection, sql);
-
-            command.ExecuteNonQuery();
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Transaction = transaction;
+                command.CommandType = CommandType.Text;
+                command.ExecuteNonQuery();
+            }
         }
 
         public void Delete<T>(T item) where T : class, IHaveIdentity<TId>
@@ -75,9 +87,13 @@ ELSE
             var docName = typeof(T).Name;
             var sql = $"delete from Doc.{docName} where Id = '{item.Id}'";
 
-            var command = CreateCommand<T>(connection, sql);
-
-            command.ExecuteNonQuery();
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Transaction = transaction;
+                command.CommandType = CommandType.Text;
+                command.ExecuteNonQuery();
+            }
         }
 
         public class CamelCaseContractResolver : DefaultContractResolver
@@ -96,17 +112,21 @@ ELSE
 
             var docName = typeof(T).Name;
             var sql = $"select Data from Doc.{docName} where Id = '{id}'";
-            
-            var command = CreateCommand<T>(connection, sql);
 
-            var item = command.ExecuteScalar();
-
-            var serializerSetting = new JsonSerializerSettings()
+            using (var command = connection.CreateCommand())
             {
-                ContractResolver = new CamelCaseContractResolver()
-            };
+                command.CommandText = sql;
+                command.Transaction = transaction;
+                command.CommandType = CommandType.Text;
+                var item = command.ExecuteScalar();
 
-            return item is DBNull ? default : JsonConvert.DeserializeObject<T>((string)item, serializerSetting);
+                var serializerSetting = new JsonSerializerSettings()
+                {
+                    ContractResolver = new CamelCaseContractResolver()
+                };
+
+                return item is DBNull ? default : JsonConvert.DeserializeObject<T>((string)item, serializerSetting);
+            }
         }
 
         public IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity<TId>
@@ -121,23 +141,28 @@ ELSE
                 ContractResolver = new CamelCaseContractResolver()
             };
 
-            var command = CreateCommand<T>(connection, sql);
-
-            var reader = command.ExecuteReader();
-
-            var hasRows = reader.Read();
-
-            if (hasRows)
+            using (var command = connection.CreateCommand())
             {
-                do
+                command.CommandText = sql;
+                command.Transaction = transaction;
+                command.CommandType = CommandType.Text;
+
+                var reader = command.ExecuteReader();
+
+                var hasRows = reader.Read();
+
+                if (hasRows)
                 {
-                    var item = reader.GetString(0);
-                    yield return JsonConvert.DeserializeObject<T>(item, serializerSetting);
-                } while (reader.Read());
-            }
-            else
-            {
-                yield return default;
+                    do
+                    {
+                        var item = reader.GetString(0);
+                        yield return JsonConvert.DeserializeObject<T>(item, serializerSetting);
+                    } while (reader.Read());
+                }
+                else
+                {
+                    yield return default;
+                }
             }
         }
 
@@ -171,17 +196,14 @@ CREATE TABLE Doc.{0}(
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 ", docName);
 
-            var command = CreateCommand<T>(connection, createTable);
-            command.ExecuteNonQuery();
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = createTable;
+                command.Transaction = transaction;
+                command.CommandType = CommandType.Text;
+                command.ExecuteNonQuery();
+            }
             return docName;
-        }
-
-        private IDbCommand CreateCommand<T>(IDbConnection connection, string sql)
-        {
-            var command = connection.CreateCommand();
-            command.Transaction = transaction;
-            command.CommandText = sql;
-            return command;
         }
     }
 

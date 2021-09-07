@@ -142,7 +142,7 @@ namespace NEvilES.DataStore.SQL.Tests
                             testOutputHelper.WriteLine($"User {userNumber} Retry[{retry}] - {delay}");
                         }
                     }
-
+                    
                 } while (retry < RETRIES);
             }
 

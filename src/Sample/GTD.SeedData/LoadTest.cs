@@ -57,7 +57,7 @@ namespace GTD.SeedData
                     RunCommand(new Request.AddComment
                     {
                         StreamId = request,
-                        Text = "Note",
+                        Text = $"Note {i}",
                     });
                 }
             }

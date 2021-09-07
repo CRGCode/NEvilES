@@ -6,21 +6,25 @@ namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class ChatRoom
     {
-        public class Create : ICommand
+        public class Create : Created, ICommand
         {
             public Create()
             {
                 InitialUsers = new HashSet<Guid>();
             }
 
-            public Guid StreamId { get; set; }
+        }
+
+        public class Created : Event
+        {
             public string Name { get; set; }
             public HashSet<Guid> InitialUsers { get; set; }
         }
 
-        public class Created : Create, IEvent
+        public class RenameRoom : RoomRenamed, ICommand { }
+        public class RoomRenamed : Event
         {
-
+            public string NewName { get; set; }
         }
 
         public class IncludeUserInRoom : ICommand
@@ -40,17 +44,14 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public Guid UserId { get; set; }
         }
 
-        public class UserRemovedFromRoom : RemoveUserFromRoom, IEvent
-        {
-
-        }
+        public class UserRemovedFromRoom : RemoveUserFromRoom, IEvent { }
 
 
         public class Aggregate : AggregateBase,
             IHandleAggregateCommand<Create>,
             IHandleAggregateCommand<IncludeUserInRoom>,
-            IHandleAggregateCommand<RemoveUserFromRoom>
-
+            IHandleAggregateCommand<RemoveUserFromRoom>,
+            IHandleAggregateCommand<RenameRoom>
         {
             public void Handle(Create command)
             {
@@ -67,28 +68,28 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 Raise<UserRemovedFromRoom>(command);
             }
 
-
+            public void Handle(RenameRoom command)
+            {
+                RaiseStateless<RoomRenamed>(command);
+            }
 
             //------------------------------------------------
 
-            private string Name;
-            private HashSet<Guid> UsersInRoom;
-
+            private HashSet<Guid> usersInRoom;
 
             private void Apply(Created e)
             {
                 Id = e.StreamId;
-                Name = e.Name;
-                UsersInRoom = e.InitialUsers;
+                usersInRoom = e.InitialUsers;
             }
             private void Apply(UserIncludedInRoom e)
             {
-                UsersInRoom.Add(e.UserId);
+                usersInRoom.Add(e.UserId);
             }
 
             private void Apply(UserRemovedFromRoom e)
             {
-                UsersInRoom.Remove(e.UserId);
+                usersInRoom.Remove(e.UserId);
             }
         }
 

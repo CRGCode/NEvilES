@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace GTD.ReadModel
 {
-    public class Request : IHaveIdentity
+    public class Request : IHaveIdentity<Guid>
     {
         [JsonConstructor]
         public Request(Guid id, Guid projectId, string shortName, string description, int priority, Comment[] comments)
@@ -36,6 +36,7 @@ namespace GTD.ReadModel
 
         public class Comment
         {
+            [JsonConstructor]
             public Comment(Guid id, string text)
             {
                 Id = id;
@@ -55,10 +56,10 @@ namespace GTD.ReadModel
             IProject<Domain.Request.Created>,
             IProject<Domain.Request.CommentAdded>
         {
-            private readonly IReadFromReadModel reader;
-            private readonly IWriteReadModel writer;
+            private readonly IReadFromReadModel<Guid> reader;
+            private readonly IWriteReadModel<Guid> writer;
 
-            public Projector(IReadFromReadModel reader, IWriteReadModel writer)
+            public Projector(IReadFromReadModel<Guid> reader, IWriteReadModel<Guid> writer)
             {
                 this.reader = reader;
                 this.writer = writer;

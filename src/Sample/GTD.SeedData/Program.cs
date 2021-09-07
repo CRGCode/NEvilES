@@ -24,7 +24,7 @@ namespace GTD.SeedData
             Console.WriteLine($"Finished wiping Db - {stopwatch.Elapsed:g}");
             stopwatch.Restart();
             
-            new LoadTest(container, 3, 10, 20).Begin(5, 100);
+            new LoadTest(container, 3, 10, 20).Begin(5, 10);
             Console.WriteLine($"Load test time - {stopwatch.Elapsed:g}");
 
             Console.WriteLine("Done - Hit any key!");

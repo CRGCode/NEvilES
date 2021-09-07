@@ -7,18 +7,16 @@ namespace GTD.Domain
 {
     public abstract class Request
     {
-        public class NewRequest : ICommand
+        public class NewRequest : Created, ICommand { }
+
+        public class Created : Event
         {
-            public Guid StreamId { get; set; }
             public Guid ProjectId { get; set; }
             public string ShortName { get; set; }
             public string Description { get; set; }
             public int Priority { get; set; }
 
             public List<string> AttachedFiles { get; set; }
-        }
-        public class Created : NewRequest, IEvent
-        {
         }
 
         public class AddComment : CommentAdded, ICommand { }
@@ -55,7 +53,7 @@ namespace GTD.Domain
             {
                 if (state == RequestState.Cancelled)
                     throw new DomainAggregateException(this, "Can't accept a cancelled request");
-                RaiseStateless<AddComment>(command);
+                RaiseStateless<CommentAdded>(command);
             }
 
             public void Handle(Accept command)

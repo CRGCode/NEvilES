@@ -178,6 +178,10 @@ namespace NEvilES.Abstractions
 
         public void RaiseStateless<TEvent>(object command) where TEvent : class, IEvent, new()
         {
+            if (typeof(TEvent).GetInterface("ICommand") == typeof(ICommand))
+            {
+                throw new Exception("You can't RaiseStateless<TEvent> where typeof(TEvent) is a Command - I think you meant the Event!");
+            }
             var evt = SimpleMapper.Map<TEvent>(command);
 
             RaiseStatelessEvent(evt);

@@ -5,7 +5,7 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace GTD.ReadModel
 {
-    public class Client : IHaveIdentity
+    public class Client : IHaveIdentity<Guid>
     {
         public Client(Guid id, string name)
         {
@@ -32,10 +32,10 @@ namespace GTD.ReadModel
             IProject<Domain.Client.UserNotificationAdded>,
             IProject<Domain.Client.UserNotificationRemoved>
         {
-            private readonly IReadFromReadModel reader;
-            private readonly IWriteReadModel writer;
+            private readonly IReadFromReadModel<Guid> reader;
+            private readonly IWriteReadModel<Guid> writer;
 
-            public Projector(IReadFromReadModel reader, IWriteReadModel writer)
+            public Projector(IReadFromReadModel<Guid> reader, IWriteReadModel<Guid> writer)
             {
                 this.reader = reader;
                 this.writer = writer;
