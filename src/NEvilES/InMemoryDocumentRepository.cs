@@ -39,7 +39,11 @@ namespace NEvilES
 
         public T Get<T>(TId id) where T : class, IHaveIdentity<TId>
         {
-            return (T)data[$"{typeof(T).Name}_{id}"];
+            if (data.ContainsKey($"{typeof(T).Name}_{id}"))
+            {
+                return (T)data[$"{typeof(T).Name}_{id}"];
+            }
+            return default;
         }
 
         public IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity<TId>
