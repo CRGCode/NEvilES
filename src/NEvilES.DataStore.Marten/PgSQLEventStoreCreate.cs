@@ -57,36 +57,13 @@ CREATE TABLE public.events(
 
         public void CreateEventTable(IConnectionString connString)
         {
-            void RunSql(NpgsqlConnection connection, string sql)
-            {
-                var command = connection.CreateCommand();
-                command.CommandText = sql;
-                command.ExecuteNonQuery();
-            }
-            var dbName = connString.Keys["Database"];
-
-            using (var connection = new NpgsqlConnection($@"Host={connString.Keys["Host"]};Username=postgres;Password=password;Database=postgres"))
-            {
-                connection.Open();
-
-                RunSql(connection, $@"
-SELECT	pg_terminate_backend (pid)
-FROM	pg_stat_activity
-WHERE	datname = '{dbName}';
-");
-                RunSql(connection, $@"DROP DATABASE IF EXISTS {dbName};");
-                NpgsqlConnection.ClearAllPools();
-                RunSql(connection, $@"CREATE DATABASE {dbName};");
-                NpgsqlConnection.ClearAllPools();
-            }
-
             using (var connection = new NpgsqlConnection(connString.Data))
             {
                 connection.Open();
                 var cmd = connection.CreateCommand();
 
                 cmd.CommandText = @"
-CREATE TABLE public.events(
+CREATE TABLE IF NOT EXISTS public.events(
     id SERIAL PRIMARY KEY,
     category varchar(500) NOT NULL,
     streamid uuid NOT NULL,
@@ -102,6 +79,5 @@ CREATE TABLE public.events(
                 cmd.ExecuteNonQuery();
             }
         }
-
     }
 }
