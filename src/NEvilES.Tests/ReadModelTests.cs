@@ -24,7 +24,8 @@ namespace NEvilES.Tests
         {
             var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<Guid>>();
 
-            Assert.Throws<KeyNotFoundException>(() => reader.Get<ChatRoom>(Guid.NewGuid()));
+            var chatRoom = reader.Get<ChatRoom>(Guid.NewGuid());
+            Assert.Null(chatRoom);
         }
 
         [Fact]
@@ -32,7 +33,9 @@ namespace NEvilES.Tests
         {
             var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<string>>();
 
-            Assert.Throws<KeyNotFoundException>(() => reader.Get<Dashboard>("1234"));
+            var dashboard = reader.Get<Dashboard>("1234");
+
+            Assert.Null(dashboard);
         }
 
         [Fact]
