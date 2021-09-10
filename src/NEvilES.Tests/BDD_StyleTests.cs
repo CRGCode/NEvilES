@@ -28,7 +28,7 @@ namespace NEvilES.Tests
                 ThenFailWith<DomainAggregateException>());
         }
 
-        [Fact]
+        [RunnableInDebugOnly]
         public void FailsExpectedEvent()
         {
             var streamId = Guid.NewGuid();

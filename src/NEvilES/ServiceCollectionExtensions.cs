@@ -142,8 +142,8 @@ namespace NEvilES
 
             services.AddScoped(opts.GetUserContext);
             services.AddScoped(typeof(ITransaction), typeof(TTransaction));
-            //services.AddScoped<ICommandContext>(s => 
-            //    new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
+            services.AddScoped<ICommandContext>(s =>
+                new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
 
             services.AddScoped<IAsyncCommandProcessor, AsyncPipelineProcessor>();
             services.AddScoped<ISecurityContext, SecurityContext>();

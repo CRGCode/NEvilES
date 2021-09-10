@@ -225,10 +225,9 @@ namespace NEvilES.DataStore.DynamoDB
 
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new Exception(
-                    $"The aggregate {aggregate.GetType().FullName} has tried to save events to an old version of an aggregate");
+                throw new Exception($"The aggregate {aggregate.GetType().FullName} has tried to save events to an old version of an aggregate", ex);
             }
 
             aggregate.ClearUncommittedEvents();
