@@ -40,7 +40,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
     public class SampleProjector2 :
         IProject<Person.Created>,
         IProject<Employee.PaidBonus>,
-        IProject<Customer.SendEmail>
+        IProject<Customer.EmailSent>
     {
         public void Project(Person.Created message, IProjectorData data)
         {
@@ -52,7 +52,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
             data.CommandContext.Result.ReadModelItems.Add(message.Amount);
         }
 
-        public void Project(Customer.SendEmail message, IProjectorData data)
+        public void Project(Customer.EmailSent message, IProjectorData data)
         {
             data.CommandContext.Result.ReadModelItems.Add(message.Text);
         }

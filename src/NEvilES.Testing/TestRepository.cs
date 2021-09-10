@@ -130,7 +130,7 @@ namespace NEvilES.Testing
         public class DomainAggregateDoesNotExist : Exception
         {
             public DomainAggregateDoesNotExist(Guid id)
-                : base(string.Format("Domain aggregate doesn't exist {0}", id))
+                : base($"Domain aggregate doesn't exist {id}")
             {
             }
         }

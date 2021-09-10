@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Xunit;
 
 namespace NEvilES.Tests
@@ -19,8 +20,30 @@ namespace NEvilES.Tests
                 Name = "Chat 1"
             });
             var iAgg = (IAggregate) agg;
+
             Assert.Equal(1, iAgg.Version);
             Assert.Equal(streamId, iAgg.Id);
+        }
+
+        [Fact]
+        public void RaiseEventOrdering()
+        {
+            var streamId = Guid.NewGuid();
+            var agg = new Customer.Aggregate();
+            agg.Raise<Customer.Created>(new Customer.Create()
+            {
+                StreamId = streamId,
+                Name = "Chat 1"
+            });
+            agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 600));
+
+            var iAgg = (IAggregate)agg;
+
+            Assert.Equal(streamId, iAgg.Id);
+            Assert.Equal(2, iAgg.Version);
+            var events = new object[2];
+            iAgg.GetUncommittedEvents().CopyTo(events, 0);
+            Assert.Equal(600,  ((Customer.Refunded)((EventData)events[1]).Event).Amount);
         }
 
         //[Fact]
@@ -66,5 +89,16 @@ namespace NEvilES.Tests
             Assert.Contains("You can't RaiseStatelessEvent - There's a 'private void Apply", ex.Message);
         }
 
+        [Fact]
+        public void CanHandleCommand()
+        {
+            var streamId = Guid.NewGuid();
+            var agg = new Customer.Aggregate();
+            agg.Raise<Customer.Created>(new Customer.Create { StreamId = streamId, Name = "Customer 1" });
+            agg.Handle(new Customer.Complain(){ StreamId = streamId, Reason = "Not Happy"});
+            var iAgg = (IAggregate)agg;
+            Assert.Equal(3, iAgg.Version);
+            Assert.Equal(streamId, iAgg.Id);
+        }
     }
 }

@@ -1,9 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks>netstandard2.1</TargetFrameworks>
-        <AssemblyName>NEvilES.Testing</AssemblyName>
-        <PackageId>NEvilES.Testing</PackageId>
-    </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.1</TargetFrameworks>
+		<PackageId>NEvilES.Testing</PackageId>
+		<Description>.Net Evil Event Sourcing Testing</Description>
+		<Authors>Craig Gardiner;Elijah Bate</Authors>
+		<PackageProjectUrl>github.com/CRGCode/NEvilES</PackageProjectUrl>
+		<RepositoryUrl>github.com/CRGCode/NEvilES</RepositoryUrl>
+		<PackageTags>event-sourcing event-store cqrs</PackageTags>
+		<IsPackable>true</IsPackable>
+	</PropertyGroup>
     <ItemGroup>
       <PackageReference Include="xunit" Version="2.4.0" />
       <ProjectReference Include="..\NEvilES\NEvilES.csproj" />

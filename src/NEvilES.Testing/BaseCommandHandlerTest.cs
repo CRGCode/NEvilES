@@ -55,20 +55,21 @@ namespace NEvilES.Testing
             if (expectedEvents.Count() != receivedEvents.Count)
             {
                 var resultString = new StringBuilder();
-                resultString.AppendLine(string.Format("Expected {0} events, but received {1}", expectedEvents.Count(), receivedEvents.Count));
+                resultString.AppendLine(
+                    $"Expected {expectedEvents.Count()} events, but received {receivedEvents.Count}");
 
                 resultString.AppendLine();
                 resultString.AppendLine("\tExpected:");
                 foreach (var expected in expectedEvents)
                 {
-                    resultString.AppendLine(string.Format("\t\t - {0}", expected.GetType()));
+                    resultString.AppendLine($"\t\t - {expected.GetType()}");
                 }
 
                 resultString.AppendLine();
                 resultString.AppendLine("\tReceived:");
                 foreach (var result in receivedEvents)
                 {
-                    resultString.AppendLine(string.Format("\t\t - {0}", result.GetType()));
+                    resultString.AppendLine($"\t\t - {result.GetType()}");
                 }
 
                 throw new Exception(resultString.ToString());
@@ -95,7 +96,8 @@ namespace NEvilES.Testing
             var exception = Record.Exception(() => handler(agg));
 
             Assert.True(exception != null, "Exception was expected. Command has passed where it should have failed");
-            Assert.True(exception is DomainAggregateException, string.Format("Domain Exception was expected! However this was thrown - {0}", exception));
+            Assert.True(exception is DomainAggregateException,
+                $"Domain Exception was expected! However this was thrown - {exception}");
             Assert.True(messageContains == null || exception.Message.Contains(messageContains));
             Console.WriteLine(exception.Message);
         }
@@ -128,7 +130,7 @@ namespace NEvilES.Testing
                         return false;
                     r.Tested = true;
                     return CompareEvents(e, r.Value);
-                }), string.Format("{0} Event not found within aggregate results. Events received:\r\n{1}", e.GetType(), b.ToString()));
+                }), $"{e.GetType()} Event not found within aggregate results. Events received:\r\n{b.ToString()}");
             }
         }
 
@@ -165,8 +167,8 @@ namespace NEvilES.Testing
                 var valExpected = pa.GetValue(expected);
                 if (valExpected == null || (pa.PropertyType == typeof(Guid) && valExpected.Equals(Guid.Empty)))
                     continue;
-                Assert.True(valResult != null, string.Format("EventType {0} has a Property '{1}' that was null, when it should have been '{2}'. \nLook at your command handler and make sure your command passes thru all command properties to the event being raised",
-                    expectedType.Name, pa.Name, valExpected));
+                Assert.True(valResult != null,
+                    $"EventType {expectedType.Name} has a Property '{pa.Name}' that was null, when it should have been '{valExpected}'. \nLook at your command handler and make sure your command passes thru all command properties to the event being raised");
 
                 Assert.True(valExpected.CompareEx(valResult), $"Property {pa.Name} doesn't match expected value. EventType {expectedType.Name}. Expected '{valExpected}', but was '{valResult}'");
             }

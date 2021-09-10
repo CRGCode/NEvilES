@@ -60,22 +60,26 @@ namespace NEvilES.Testing
                             var expectedType = expectedEvents[i].GetType();
                             var actualType = gotEvents[i].GetType();
                             Assert.True(expectedType == actualType || actualType.GetTypeInfo().IsSubclassOf(expectedType),
-                                string.Format("Incorrect event in results; expected a {0} but got a {1}",
-                                    expectedType.Name, actualType.Name));
+                                $"Incorrect event in results; expected a {expectedType.Name} but got a {actualType.Name}");
                             Assert.Equal(JsonConvert.SerializeObject(expectedEvents[i]), JsonConvert.SerializeObject(gotEvents[i]));
                         }
                     }
                     else
                     {
-                        Assert.True(gotEvents.Length < expectedEvents.Length, string.Format("Expected event(s) missing: {0}",
-                            string.Join(", ", EventDiff(expectedEvents, gotEvents))));
-                        Assert.True(false, string.Format("Unexpected event(s) emitted: {0}",
-                            string.Join(", ", EventDiff(gotEvents, expectedEvents))));
+                        if (gotEvents.Length > expectedEvents.Length)
+                        {
+                            var diff = string.Join(", ", EventDiff(gotEvents, expectedEvents));
+                            Assert.True(false, $"Expected event(s) missing: {diff}");
+                        }
+                        else
+                        {
+                            var diff = string.Join(", ", EventDiff(expectedEvents, gotEvents));
+                            Assert.True(false, $"Unexpected event(s) emitted: {diff}");
+                        }
                     }
                 }
                 else
-                    Assert.True(false, string.Format("Expected events, but got exception {0}",
-                        got.GetType().Name));
+                    Assert.True(false, $"Expected events, but got exception {got.GetType().Name}");
             };
         }
 
@@ -122,7 +126,7 @@ namespace NEvilES.Testing
     public class ThenFailWithConditionFailed : Exception
     {
         public ThenFailWithConditionFailed(string condition, Exception innerException)
-            : base(string.Format(@"Then failed with ""{0}""", condition), innerException)
+            : base($@"Then failed with ""{condition}""", innerException)
         {
         }
     }

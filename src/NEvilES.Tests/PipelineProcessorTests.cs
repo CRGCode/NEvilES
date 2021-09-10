@@ -151,7 +151,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var email = new Customer.SendEmail { StreamId = streamId, Text = "Testing" };
+            var email = new Customer.EmailSent { StreamId = streamId, Text = "Testing" };
             var results = commandProcessor.Process(email);
             var projectedItem = results.ReadModelItems[0];
             Assert.True((string)projectedItem == email.Text);

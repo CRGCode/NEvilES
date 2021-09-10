@@ -12,9 +12,13 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public string Name { get; set; }
         }
 
-        public class Created : Create, IEvent
-        {
+        public class Created : Create, IEvent { }
 
+        public class Complain : Complaint, ICommand { }
+
+        public class Complaint : Event 
+        {
+            public string Reason { get; set; }
         }
 
         public class Refunded : IEvent
@@ -27,11 +31,18 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 StreamId = streamId;
                 Amount = amount;
             }
+
+            public Refunded() { }
         }
 
-        public class SendEmail : IEvent
+        public class EmailSent : IEvent
         {
             public Guid StreamId { get; set; }
+            public string Text { get; set; }
+        }
+
+        public class NoteAdded : Event
+        {
             public string Text { get; set; }
         }
 
@@ -42,8 +53,9 @@ namespace NEvilES.Tests.CommonDomain.Sample
 
         public class Aggregate : AggregateBase,
             IHandleAggregateCommand<Create, Validate>,
+            IHandleAggregateCommand<Complain>,
             IHandleStatelessEvent<BadStatelessEvent>,
-            IHandleStatelessEvent<SendEmail>,
+            IHandleStatelessEvent<EmailSent>,
             IHandleStatelessEvent<Refunded>
         {
             public void Handle(Create command, Validate validate)
@@ -56,13 +68,26 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 Raise<Created>(command);
             }
 
+            public void Handle(Complain command)
+            {
+                Raise<Complaint>(command);
+                RaiseStatelessEvent(new NoteAdded(){StreamId = command.StreamId, Text = command.Reason});
+            }
+
             //---------------------------------------------------------------------
             // ReSharper disable UnusedMember.Local
             private void Apply(Created ev)
             {
                 Id = ev.StreamId;
             }
+
+            private void Apply(Complaint ev)
+            {
+                
+            }
+
         }
+
         public class Validate : INeedExternalValidation<Create>
         {
             public CommandValidationResult Dispatch(Create command)

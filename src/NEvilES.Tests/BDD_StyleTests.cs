@@ -27,6 +27,15 @@ namespace NEvilES.Tests
                 When(x => x.Handle(cmd, new Customer.Validate())),
                 ThenFailWith<DomainAggregateException>());
         }
+
+        [Fact]
+        public void FailsExpectedEvent()
+        {
+            var streamId = Guid.NewGuid();
+            Test(Given(new Customer.Created { StreamId = streamId, Name = "Customer 1" }),
+                When(x => x.Handle(new Customer.Complain() { StreamId = streamId, Reason = "Not Happy" })),
+                Then(new Customer.Complaint { StreamId = streamId, Reason = "Not Happy" }));
+        }
     }
 
     public class BDD_StyleTests_Person : BaseAggregateTest<Person.Aggregate>

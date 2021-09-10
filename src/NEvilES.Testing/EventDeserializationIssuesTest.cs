@@ -51,7 +51,7 @@ namespace NEvilES.Testing
 
             var r = new StringBuilder();
             r.AppendLine("Issues with these IEvent objects may cause deserialization problems:");
-            eventConstructionIssues.ForEach(x => r.AppendLine(string.Format("\t- {0}", x)));
+            eventConstructionIssues.ForEach(x => r.AppendLine($"\t- {x}"));
 
             throw new Exception(r.ToString());
         }
