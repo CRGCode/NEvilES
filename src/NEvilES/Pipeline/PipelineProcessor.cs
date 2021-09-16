@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 
@@ -24,6 +25,7 @@ namespace NEvilES.Pipeline
             do
             {
                 using var scope = new ScopedServiceProviderFactory(((IServiceProvider)factory.Get(typeof(IServiceProvider))).CreateScope());
+                var logger = (ILogger<PipelineProcessor>)scope.Get(typeof(ILogger<PipelineProcessor>));
                 var commandContext = (ICommandContext)scope.Get(typeof(ICommandContext));
                 var securityContext = (ISecurityContext)scope.Get(typeof(ISecurityContext));
                 var commandProcessor = new CommandProcessor<T>(scope, commandContext);
@@ -40,18 +42,27 @@ namespace NEvilES.Pipeline
                     commandContext.Transaction.Rollback();
                     scope.Dispose();
                     var delay = BackOff[retry++];
+                    logger.LogDebug($"Retry[{retry}] for command {typeof(T).Name} with backoff delay {delay}");
                     Thread.Sleep(delay);
+                }
+                catch (Exception exception)
+                {
+                    logger?.LogError(exception, $"Command {typeof(T).FullName} error");
+
+                    commandContext.Transaction.Rollback();
+                    scope.Dispose();
+                    throw;
                 }
 
             } while (retry < RETRIES);
 
-            throw new PipelineProcessorException(command, retry);
+            throw new PipelineProcessorRetryException(command, retry);
         }
     }
 
-    public class PipelineProcessorException : Exception
+    public class PipelineProcessorRetryException : Exception
     {
-        public PipelineProcessorException(IMessage command, int attempts) : 
+        public PipelineProcessorRetryException(IMessage command, int attempts) : 
             base($"Command '{command.GetType().FullName}' failed after {attempts} retries")
         {
         }

@@ -234,11 +234,6 @@ namespace NEvilES.DataStore.DynamoDB
             return new AggregateCommit(aggregate.Id, _commandContext.By.GuidId, uncommittedEvents);
         }
 
-
-
-
-
-
         public async Task<IEnumerable<IAggregateCommit>> ReadAsync(long from = 0, long to = 0)
         {
             var expression = new Expression()
