@@ -52,7 +52,7 @@ namespace NEvilES.DataStore.SQL.Tests
             var chatRoom = new ChatRoom.Aggregate();
             chatRoom.RaiseEvent(new ChatRoom.Created
             {
-                StreamId = Guid.NewGuid(),
+                ChatRoomId = Guid.NewGuid(),
                 InitialUsers = new HashSet<Guid> { },
                 Name = "Biz Room"
             });

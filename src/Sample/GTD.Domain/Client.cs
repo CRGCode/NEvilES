@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 
@@ -6,23 +7,30 @@ namespace GTD.Domain
 {
     public abstract class Client
     {
-        public class NewClient : Created, ICommand { }
-        public class Created : Event
+        public abstract class Id : IMessage
+        {
+            public Guid ClientId { get; set; }
+            public Guid GetStreamId() => ClientId;
+        }
+
+        public class NewClient : Id, ICommand
         {
             public string Name { get; set; }
         }
+        public class Created : NewClient, IEvent { }
 
-        public class AddUserNotification : UserNotificationAdded, ICommand { }
-        public class UserNotificationAdded : Event
+        public class AddUserNotification : Id, ICommand
+        {
+            public string EmailAddress { get; set; }
+        }
+        public class UserNotificationAdded : AddUserNotification, IEvent { }
+
+        public class RemoveUserNotification : Id, ICommand
         {
             public string EmailAddress { get; set; }
         }
 
-        public class RemoveUserNotification : UserNotificationRemoved, ICommand { }
-        public class UserNotificationRemoved : Event
-        {
-            public string EmailAddress { get; set; }
-        }
+        public class UserNotificationRemoved : RemoveUserNotification, IEvent { }
 
         public class Aggregate : AggregateBase,
             IHandleAggregateCommand<NewClient, UniqueNameValidator>,
@@ -32,21 +40,21 @@ namespace GTD.Domain
             public void Handle(NewClient command, UniqueNameValidator uniqueNameValidator)
             {
                 if (uniqueNameValidator.Dispatch(command).IsValid)
-                    RaiseEvent<Created>(command);
+                    Raise<Created>(command);
             }
 
             public void Handle(AddUserNotification command)
             {
                 if (notifications.Contains(command.EmailAddress))
                     throw new DomainAggregateException(this, "User already added!");
-                RaiseEvent<UserNotificationAdded>(command);
+                Raise<UserNotificationAdded>(command);
             }
 
             public void Handle(RemoveUserNotification command)
             {
                 if (!notifications.Contains(command.EmailAddress))
                     throw new DomainAggregateException(this, "Can't remove User that doesn't exist!");
-                RaiseEvent<UserNotificationRemoved>(command);
+                Raise<UserNotificationRemoved>(command);
             }
 
             //-------------------------------------------------------------------

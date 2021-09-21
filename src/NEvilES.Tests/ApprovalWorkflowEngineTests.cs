@@ -65,7 +65,7 @@ namespace NEvilES.Tests
         public void Approval_GetCommand_Performance_UsingReflection()
         {
             // Arrange
-            var command = new Employee.Create { StreamId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
+            var command = new Employee.Create { PersonId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
             var result = approvalWorkflowEngine.Initiate(command);
             var repository = container.GetRequiredService<IRepository>();
             var approvalRequest = repository.Get<Approval.Aggregate>(result.UpdatedAggregates.First().StreamId);
@@ -79,7 +79,7 @@ namespace NEvilES.Tests
         public void Approval_GetCommand_Performance_UsingDynamic()
         {
             // Arrange
-            var command = new Employee.Create { StreamId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
+            var command = new Employee.Create { PersonId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
             var result = approvalWorkflowEngine.Initiate(command);
             var repository = container.GetRequiredService<IRepository>();
             var approvalRequest = repository.Get<Approval.Aggregate>(result.UpdatedAggregates.First().StreamId);
@@ -92,7 +92,7 @@ namespace NEvilES.Tests
         [Fact]
         public void ApprovalWorkflowEngine_Initiate()
         {
-            var command = new Employee.Create { StreamId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
+            var command = new Employee.Create { PersonId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
 
             var expected = approvalWorkflowEngine.Initiate(command);
 
@@ -103,25 +103,25 @@ namespace NEvilES.Tests
         [Fact]
         public void ApprovalWorkflowEngine_Transition()
         {
-            var command = new Employee.Create { StreamId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
+            var command = new Employee.Create { PersonId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
             var result = approvalWorkflowEngine.Initiate(command);
             var approvalRequest = result.FilterEvents<Approval.Created>().First();
 
-            var expected = approvalWorkflowEngine.Transition(approvalRequest.StreamId, "blah");
+            var expected = approvalWorkflowEngine.Transition(approvalRequest.ApprovalId, "blah");
 
             var stateChangedEvent = expected.FilterEvents<Approval.StateChanged>().First();
-            Assert.Equal(approvalRequest.StreamId, stateChangedEvent.StreamId);
+            Assert.Equal(approvalRequest.ApprovalId, stateChangedEvent.ApprovalId);
             Assert.Equal("blah", stateChangedEvent.State);
         }
 
         [Fact(Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
         public void ApprovalWorkflowEngine_Transition_Approve()
         {
-            var command = new Employee.Create { StreamId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
+            var command = new Employee.Create { PersonId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
             var result = approvalWorkflowEngine.Initiate(command);
             var approvalRequest = result.FilterEvents<Approval.Created>().First();
 
-            var expected = approvalWorkflowEngine.Transition(approvalRequest.StreamId, "Approved");
+            var expected = approvalWorkflowEngine.Transition(approvalRequest.ApprovalId, "Approved");
 
             Assert.Equal(command.Person.Name, expected.FilterEvents<Person.Created>().First().Person.Name);
         }
@@ -153,7 +153,7 @@ namespace NEvilES.Tests
             var approvalRequest = result.FilterEvents<Approval.Created>().First();
 
             // Act
-            var expected = approvalWorkflowEngine.Transition(approvalRequest.StreamId, "Approved");
+            var expected = approvalWorkflowEngine.Transition(approvalRequest.ApprovalId, "Approved");
 
             var projectedItem = expected.FindProjectedItem<PersonalDetails>();
             Assert.True(projectedItem.FirstName == command.Person.FirstName);
@@ -164,7 +164,7 @@ namespace NEvilES.Tests
             Assert.True(email.StreamId != streamId);
             Assert.True(email.EmailAddress == command.Email);
             Assert.Equal(4, expected.UpdatedAggregates.Count);
-            Assert.Equal(approvalRequest.StreamId, expected.FilterEvents<Approval.StateChanged>().First().StreamId);
+            Assert.Equal(approvalRequest.ApprovalId, expected.FilterEvents<Approval.StateChanged>().First().ApprovalId);
             Assert.Equal(command.Person.Name, expected.FilterEvents<Person.Created>().First().Person.Name);
         }
 

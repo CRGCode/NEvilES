@@ -91,7 +91,7 @@ namespace NEvilES.DataStore.SQL
                 var streamId = reader.GetGuid(0);
                 var type = EventTypeLookupStrategy.Resolve(reader.GetString(1));
                 var @event = (IEvent)JsonConvert.DeserializeObject(reader.GetString(2), type);
-                @event.StreamId = streamId;
+                //@event.StreamId = streamId;
                 var who = reader.GetGuid(3);
                 var when = DateTime.SpecifyKind(reader.GetDateTime(4), DateTimeKind.Utc);
                 var version = reader.GetInt32(5);

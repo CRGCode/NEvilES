@@ -9,6 +9,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
         {
             public Guid StreamId { get; set; }
             public string EmailAddress { get; set; }
+            public Guid GetStreamId() => StreamId;
         }
 
         public class Aggregate : StatelessAggregate,

@@ -34,7 +34,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
+            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
 
             var expected = repository.Save(agg);
             Assert.NotNull(expected);
@@ -47,7 +47,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
+            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
             agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
 
             var expected = repository.Save(agg);
@@ -66,9 +66,9 @@ namespace NEvilES.Tests
             var user3 = Guid.NewGuid();
 
             var agg = new ChatRoom.Aggregate();
-            agg.Handle(new ChatRoom.Create() { StreamId = streamId, Name = "Bobs Chat", InitialUsers = new HashSet<Guid> { user1 } });
-            agg.Handle(new ChatRoom.IncludeUserInRoom() { StreamId = streamId, UserId = user2 });
-            agg.Handle(new ChatRoom.IncludeUserInRoom() { StreamId = streamId, UserId = user3 });
+            agg.Handle(new ChatRoom.Create { ChatRoomId = streamId, Name = "Bobs Chat", InitialUsers = new HashSet<Guid> { user1 } });
+            agg.Handle(new ChatRoom.IncludeUserInRoom { ChatRoomId = streamId, UserId = user2 });
+            agg.Handle(new ChatRoom.IncludeUserInRoom { ChatRoomId = streamId, UserId = user3 });
 
             var expected = repository.Save(agg);
             Assert.NotNull(expected);
@@ -84,7 +84,7 @@ namespace NEvilES.Tests
         //    Assert.Throws<DomainAggregateException>(() =>
         //        _commandProcessor.Process(new Employee.Create
         //        {
-        //            StreamId = streamId,
+        //            Id = streamId,
         //            Person = new PersonalDetails("John", "God")
         //        }));
         // }

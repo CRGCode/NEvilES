@@ -6,46 +6,45 @@ namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class ChatRoom
     {
-        public class Create : Created, ICommand
+        public abstract class Id : IMessage
         {
+            public Guid GetStreamId() => ChatRoomId;
+            public Guid ChatRoomId { get; set; }
+        }
+
+        public class Create : Id, ICommand
+        {
+            public string Name { get; set; }
+            public HashSet<Guid> InitialUsers { get; set; }
+
             public Create()
             {
                 InitialUsers = new HashSet<Guid>();
             }
-
         }
 
-        public class Created : Event
-        {
-            public string Name { get; set; }
-            public HashSet<Guid> InitialUsers { get; set; }
-        }
+        public class Created : Create, IEvent { }
 
-        public class RenameRoom : RoomRenamed, ICommand { }
-        public class RoomRenamed : Event
+        public class RenameRoom : Id, ICommand
         {
             public string NewName { get; set; }
         }
 
-        public class IncludeUserInRoom : ICommand
+        public class RoomRenamed : RenameRoom, IEvent { }
+
+        public class IncludeUserInRoom : Id, ICommand
         {
-            public Guid StreamId { get; set; }
             public Guid UserId { get; set; }
         }
 
-        public class UserIncludedInRoom : IncludeUserInRoom, IEvent
-        {
+        public class UserIncludedInRoom : IncludeUserInRoom, IEvent { }
 
-        }
-
-        public class RemoveUserFromRoom : ICommand
+        public class RemoveUserFromRoom : Id, ICommand
         {
-            public Guid StreamId { get; set; }
             public Guid UserId { get; set; }
         }
 
         public class UserRemovedFromRoom : RemoveUserFromRoom, IEvent { }
-
 
         public class Aggregate : AggregateBase,
             IHandleAggregateCommand<Create>,
@@ -79,7 +78,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
 
             private void Apply(Created e)
             {
-                Id = e.StreamId;
+                Id = e.ChatRoomId;
                 usersInRoom = e.InitialUsers;
             }
             private void Apply(UserIncludedInRoom e)
@@ -92,6 +91,5 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 usersInRoom.Remove(e.UserId);
             }
         }
-
     }
 }

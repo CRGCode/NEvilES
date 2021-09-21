@@ -7,9 +7,13 @@ namespace GTD.Domain
 {
     public abstract class Request
     {
-        public class NewRequest : Created, ICommand { }
+        public abstract class Id : IMessage
+        {
+            public Guid RequestId { get; set; }
+            public Guid GetStreamId() => RequestId;
+        }
 
-        public class Created : Event
+        public class NewRequest : Id, ICommand
         {
             public Guid ProjectId { get; set; }
             public string ShortName { get; set; }
@@ -19,23 +23,35 @@ namespace GTD.Domain
             public List<string> AttachedFiles { get; set; }
         }
 
-        public class AddComment : CommentAdded, ICommand { }
-        public class CommentAdded : Event
+        public class Created : NewRequest, IEvent { }
+
+        public class AddComment : Id, ICommand
         {
             public string Text { get; set; }
         }
+        public class CommentAdded : AddComment, IEvent { }
 
-        public class Accept : Accepted, ICommand { }
-        public class Accepted : Event
+        public class Accept : Id, ICommand
         {
             public DateTimeOffset CompleteDate { get; set; }
         }
 
-        public class Cancel : Cancelled, ICommand { }
-        public class Cancelled : Event
+        public class Accepted : Accept, IMapEvent<Accepted, Accept>
+        {
+            public Accepted Map(Accept c)
+            {
+                return new Accepted
+                {
+                    CompleteDate = c.CompleteDate
+                };
+            }
+        }
+
+        public class Cancel : Id, ICommand
         {
             public string Reason { get; set; }
         }
+        public class Cancelled : Cancel, IEvent { }
 
         public class Aggregate : AggregateBase,
             IHandleAggregateCommand<NewRequest, UniqueValidator>,
@@ -60,14 +76,14 @@ namespace GTD.Domain
             {
                 if (state == RequestState.Cancelled)
                     throw new DomainAggregateException(this, "Can't accept a cancelled request");
-                RaiseEvent<Accepted>(command);
+                Raise<Accepted, Accept>(command);
             }
 
             public void Handle(Cancel command)
             {
                 if (state == RequestState.Cancelled)
                     throw new DomainAggregateException(this, "Request already cancelled");
-                RaiseEvent<Cancelled>(command);
+                Raise<Cancelled>(command);
             }
 
             //-------------------------------------------------------------------

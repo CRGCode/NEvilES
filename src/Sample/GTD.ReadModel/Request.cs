@@ -20,7 +20,7 @@ namespace GTD.ReadModel
 
         public Request(Domain.Request.Created c)
         {
-            Id = c.StreamId;
+            Id = c.RequestId;
             ProjectId = c.ProjectId;
             ShortName = c.ShortName;
             Description = c.Description;
@@ -37,17 +37,14 @@ namespace GTD.ReadModel
         public class Comment
         {
             [JsonConstructor]
-            public Comment(Guid id, string text)
+            public Comment(string text)
             {
-                Id = id;
                 Text = text;
             }
 
-            public Guid Id { get; }
             public string Text { get; set; }
             public Comment(Domain.Request.CommentAdded c)
             {
-                Id = c.StreamId;
                 Text = c.Text;
             }
         }
@@ -72,7 +69,7 @@ namespace GTD.ReadModel
 
             public void Project(Domain.Request.CommentAdded message, IProjectorData data)
             {
-                var request = reader.Get<Request>(message.StreamId);
+                var request = reader.Get<Request>(message.RequestId);
                 request.Comments.Add(new Comment(message));
                 writer.Update(request);
             }

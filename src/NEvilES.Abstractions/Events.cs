@@ -2,10 +2,17 @@
 
 namespace NEvilES.Abstractions
 {
-    public class Event : IEvent
-    {
-        public Guid StreamId { get; set; }
-    }
+    //public class Event : IEvent
+    //{
+    //    public Guid StreamId { get; set; }
+    //}
+
+    //public abstract class Command : ICommand
+    //{
+    //    private Guid StreamId { get; set; }
+    //    public abstract Guid GetStreamId();
+    //}
+
 
 
     public class EventData : IEventData

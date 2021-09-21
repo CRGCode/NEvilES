@@ -56,7 +56,8 @@ namespace GTD.SeedData
                 {
                     RunCommand(new Request.AddComment
                     {
-                        StreamId = request,
+                        
+                        RequestId = request,
                         Text = $"Note {i}",
                     });
                 }
@@ -71,7 +72,7 @@ namespace GTD.SeedData
                 var id = Guid.NewGuid();
                 RunCommand(new Client.NewClient()
                 {
-                    StreamId = id,
+                    ClientId = id,
                     Name = $"Client {count} - {id}",
                 });
                 var users = CreateUsers(id, 4);
@@ -93,7 +94,7 @@ namespace GTD.SeedData
                     var id = Guid.NewGuid();
                     processor.Process(new User.NewUser()
                     {
-                        StreamId = id,
+                        UserId = id,
                         ClientGroup = clientId,
                         Details = new User.Details($"user_{id}@test.com", "pwd", "roles....", $"User{count}")
                     });
@@ -118,7 +119,7 @@ namespace GTD.SeedData
                         var id = Guid.NewGuid();
                         processor.Process(new Project.NewProject()
                         {
-                            StreamId = id,
+                            ProjectId = id,
                             Name = $"Project {count} - {id}",
                             ClientId = client.Key,
                             DefaultContacts = new[]
@@ -149,7 +150,7 @@ namespace GTD.SeedData
                         var id = Guid.NewGuid();
                         processor.Process(new Request.NewRequest()
                         {
-                            StreamId = id,
+                            RequestId = id,
                             ProjectId = projectId,
                             Description = $"Request {id}",
                             Priority = 5,

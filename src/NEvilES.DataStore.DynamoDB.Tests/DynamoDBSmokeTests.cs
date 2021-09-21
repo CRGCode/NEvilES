@@ -33,7 +33,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
+            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
 
             var expected = await repository.SaveAsync(agg);
             Assert.NotNull(expected);
@@ -46,7 +46,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
+            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
             agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
 
             var expected = await repository.SaveAsync(agg);
@@ -60,7 +60,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { StreamId = streamId, Name = "Test" }, new Customer.Validate());
+            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
             agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
 
             var res = await repository.SaveAsync(agg);
@@ -84,9 +84,9 @@ namespace NEvilES.DataStore.DynamoDB.Tests
 
 
             var agg = new ChatRoom.Aggregate();
-            agg.Handle(new ChatRoom.Create() { StreamId = streamId, Name = "Bobs Chat", InitialUsers = new HashSet<Guid> { user1 } });
-            agg.Handle(new ChatRoom.IncludeUserInRoom() { StreamId = streamId, UserId = user2 });
-            agg.Handle(new ChatRoom.IncludeUserInRoom() { StreamId = streamId, UserId = user3 });
+            agg.Handle(new ChatRoom.Create() { ChatRoomId = streamId, Name = "Bobs Chat", InitialUsers = new HashSet<Guid> { user1 } });
+            agg.Handle(new ChatRoom.IncludeUserInRoom() { ChatRoomId = streamId, UserId = user2 });
+            agg.Handle(new ChatRoom.IncludeUserInRoom() { ChatRoomId = streamId, UserId = user3 });
 
             var expected = await repository.SaveAsync(agg);
             Assert.NotNull(expected);

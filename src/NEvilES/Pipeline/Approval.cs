@@ -5,15 +5,21 @@ namespace NEvilES.Pipeline
 {
     public abstract class Approval
     {
+        public abstract class Id : IMessage
+        {
+            public Guid GetStreamId() => ApprovalId;
+            public Guid ApprovalId { get; set; }
+        }
+
         public class InnerCommand
         {
             public Guid CommandStreamId { get; set; }
             public object Command { get; set; }
             public Type Type { get; set; }
 
-            public static InnerCommand Wrap<T>(T command) where T : IMessage
+            public static InnerCommand Wrap<T>(T command) where T : ICommand
             {
-                return new InnerCommand(typeof(T), command, command.StreamId);
+                return new InnerCommand(typeof(T), command, command.GetStreamId());
             }
 
             public InnerCommand(Type type, object command, Guid commandStreamId)
@@ -24,24 +30,26 @@ namespace NEvilES.Pipeline
             }
         }
 
-        public class Create : ICommand
+        public class Create : Id, ICommand
         {
             public InnerCommand InnerCommand { get; set; }
-            public Guid StreamId { get; set; }
 
-            public Create(Guid streamId, InnerCommand innerCommand)
+            public Create(Guid approvalId, InnerCommand innerCommand)
             {
-                StreamId = streamId;
+                ApprovalId = approvalId;
                 InnerCommand = innerCommand;
             }
 
             public Create(Create c)
             {
-                StreamId = c.StreamId;
+                ApprovalId = c.ApprovalId;
                 InnerCommand = c.InnerCommand;
             }
 
             protected Create() { }
+            //{
+            //    throw new NotImplementedException();
+            //}
         }
 
         public class Created : Create, IEvent
@@ -50,29 +58,28 @@ namespace NEvilES.Pipeline
 
             public Created(Create c) : base(c)
             {
+                ApprovalId = c.GetStreamId();
             }
         }
 
-        public class ChangeState : ICommand
+        public class ChangeState : Id, ICommand
         {
-            public Guid StreamId { get; set; }
             public string NewState { get; }
 
-            public ChangeState(Guid id, string newState)
+            public ChangeState(Guid approvalId, string newState)
             {
-                StreamId = id;
+                ApprovalId = approvalId;
                 NewState = newState;
             }
         }
 
-        public class StateChanged : IEvent
+        public class StateChanged : Id, IEvent
         {
-            public Guid StreamId { get; set; }
             public string State { get; set; }
 
-            public StateChanged(Guid streamId, string state)
+            public StateChanged(Guid approvalId, string state)
             {
-                StreamId = streamId;
+                ApprovalId = approvalId;
                 State = state;
             }
         }
@@ -88,21 +95,21 @@ namespace NEvilES.Pipeline
 
             public void Handle(ChangeState c)
             {
-                RaiseStatelessEvent(new StateChanged(c.StreamId, c.NewState));
+                RaiseStatelessEvent(new StateChanged(c.GetStreamId(), c.NewState));
             }
 
             public InnerCommand GetInnerCommand()
             {
-                return _command;
+                return command;
             }
 
             //--------------------------------------------
-            private InnerCommand _command;
+            private InnerCommand command;
 
             private void Apply(Created e)
             {
-                Id = e.StreamId;
-                _command = e.InnerCommand;
+                Id = e.ApprovalId;
+                command = e.InnerCommand;
             }
         }
     }

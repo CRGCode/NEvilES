@@ -5,22 +5,26 @@ namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class Employee
     {
-        public class PayPerson : PaidPerson, ICommand { }
-
-        public class PaidPerson : IEvent
+        public abstract class Id : IMessage
         {
-            public Guid StreamId { get; set; }
+            public Guid GetStreamId() => EmployeeId;
+            public Guid EmployeeId { get; set; }
+        }
+
+        public class PayPerson : Id, ICommand
+        {
             public decimal NetAmount { get; set; }
             public decimal Tax { get; set; }
         }
 
-        public class PayBonus : PaidBonus, ICommand { }
+        public class PaidPerson : PayPerson, IEvent { }
 
-        public class PaidBonus : IEvent
+        public class PayBonus : Id, ICommand
         {
-            public Guid StreamId { get; set; }
             public decimal Amount { get; set; }
         }
+
+        public class PaidBonus : PayBonus, IEvent { }
 
         public class Create : Person.Create, ICommand { }
 

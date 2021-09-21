@@ -12,9 +12,9 @@ namespace NEvilES.Abstractions
         ICollection GetUncommittedEvents();
         void ClearUncommittedEvents();
 
-        void Raise<TEvent>(object command) where TEvent : class, IEvent, new();
+        void Raise<TEvent>(object command) where TEvent : IEvent, new();
         void RaiseEvent<T>(T evt) where T : IEvent;
-        void RaiseStateless<TEvent>(object command) where TEvent : class, IEvent, new();
+        void RaiseStateless<TEvent>(object command) where TEvent : IEvent, new();
         void RaiseStatelessEvent<T>(T evt) where T : IEvent;
     }
 

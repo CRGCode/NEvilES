@@ -18,13 +18,13 @@ namespace NEvilES.Tests.CommonDomain.Sample
 
         public IProjectorResult Project(Person.Created message, IProjectorData data)
         {
-            db.People.Add(message.StreamId, message.Person);
+            db.People.Add(message.PersonId, message.Person);
             return new ProjectorResult(message.Person);
         }
 
         public IProjectorResult Project(Person.NameCorrectedV2 message, IProjectorData data)
         {
-            var person = db.People[message.StreamId];
+            var person = db.People[message.PersonId];
             person.FirstName = message.FirstName;
             person.LastName = message.LastName;
 
