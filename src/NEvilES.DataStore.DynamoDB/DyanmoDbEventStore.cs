@@ -89,7 +89,7 @@ namespace NEvilES.DataStore.DynamoDB
                 var message =
                     (IEvent)
                     JsonConvert.DeserializeObject(eventDb.Body, _eventTypeLookupStrategy.Resolve(eventDb.BodyType), SerializerSettings);
-                message.StreamId = eventDb.StreamId;
+                //message.StreamId = eventDb.StreamId;
                 aggregate.ApplyEvent(message);
             }
             ((AggregateBase)aggregate).SetState(id);
@@ -275,7 +275,7 @@ namespace NEvilES.DataStore.DynamoDB
 
             var type = _eventTypeLookupStrategy.Resolve(row.BodyType);
             var @event = (IEvent)JsonConvert.DeserializeObject(row.Body, type);
-            @event.StreamId = streamId;
+            //@event.StreamId = streamId;
 
             var when = row.When;
             var version = row.Version;

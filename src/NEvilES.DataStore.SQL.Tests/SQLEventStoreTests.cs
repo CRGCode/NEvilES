@@ -40,7 +40,7 @@ namespace NEvilES.DataStore.SQL.Tests
             var chatRoom = new ChatRoom.Aggregate();
             chatRoom.RaiseEvent(new ChatRoom.Created
             {
-                StreamId = Guid.NewGuid(),
+                ChatRoomId = Guid.NewGuid(),
                 InitialUsers = new HashSet<Guid> { }, 
                 Name = "Biz Room"
             });
@@ -59,7 +59,7 @@ namespace NEvilES.DataStore.SQL.Tests
             var commandProcessor  = context.Container.GetRequiredService<ICommandProcessor>();
             commandProcessor.Process(new ChatRoom.Create
             {
-                StreamId = chatRoom,
+                ChatRoomId = chatRoom,
                 InitialUsers = new HashSet<Guid> { },
                 Name = "Biz Room"
             });
@@ -73,7 +73,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(new ScopedServiceProviderFactory(scope), commandContext);
                 processor.Process(new ChatRoom.IncludeUserInRoom()
                 {
-                    StreamId = guid,
+                    ChatRoomId = guid,
                     UserId = userId
                 });
             }
@@ -110,7 +110,7 @@ namespace NEvilES.DataStore.SQL.Tests
             var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
             commandProcessor.Process(new ChatRoom.Create
             {
-                StreamId = chatRoom,
+                ChatRoomId = chatRoom,
                 InitialUsers = new HashSet<Guid> { },
                 Name = "Biz Room"
             });
@@ -129,7 +129,7 @@ namespace NEvilES.DataStore.SQL.Tests
                             var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(new ScopedServiceProviderFactory(serviceScope),commandContext);
                             processor.Process(new ChatRoom.IncludeUserInRoom()
                             {
-                                StreamId = guid,
+                                ChatRoomId = guid,
                                 UserId = userId
                             });
                             return;
@@ -179,7 +179,7 @@ namespace NEvilES.DataStore.SQL.Tests
             var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
             commandProcessor.Process(new ChatRoom.Create
             {
-                StreamId = chatRoom,
+                ChatRoomId = chatRoom,
                 InitialUsers = new HashSet<Guid>(),
                 Name = "Biz Room"
             });
@@ -188,7 +188,7 @@ namespace NEvilES.DataStore.SQL.Tests
             {
                 commandProcessor.Process(new ChatRoom.IncludeUserInRoom()
                 {
-                    StreamId = guid,
+                    ChatRoomId = guid,
                     UserId = userId
                 });
                 testOutputHelper.WriteLine($"User {userNumber}");

@@ -78,7 +78,7 @@ namespace NEvilES
             foreach (var eventDb in events.OrderBy(x => x.Version))
             {
                 var message = (IEvent)JsonConvert.DeserializeObject(eventDb.Body, eventTypeLookupStrategy.Resolve(eventDb.BodyType.FullName), SerializerSettings);
-                message.StreamId = eventDb.StreamId;
+                //message.StreamId = eventDb.StreamId;
                 aggregate.ApplyEvent(message);
             }
             ((AggregateBase)aggregate).SetState(id);
@@ -97,8 +97,7 @@ namespace NEvilES
 
             EventDb eventDb = null;
 
-            List<EventDb> events;
-            if (eventData.TryGetValue(id, out events))
+            if (eventData.TryGetValue(id, out var events))
             {
                 eventDb = events
                     .Take(1)
@@ -134,8 +133,7 @@ namespace NEvilES
             var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
             var count = 0;
 
-            List<EventDb> events;
-            if (!eventData.TryGetValue(aggregate.Id, out events))
+            if (!eventData.TryGetValue(aggregate.Id, out var events))
             {
                 events = new List<EventDb>();
                 eventData.Add(aggregate.Id, events);

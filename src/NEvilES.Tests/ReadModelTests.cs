@@ -75,8 +75,7 @@ namespace NEvilES.Tests
 
             var processor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
 
-            var results =  processor.Process(new CommonDomain.Sample.ChatRoom.Create()
-                { StreamId = Guid.NewGuid(), Name = "ChatRoom 1", InitialUsers = new HashSet<Guid>() });
+            var results =  processor.Process(new CommonDomain.Sample.ChatRoom.Create { ChatRoomId = Guid.NewGuid(), Name = "ChatRoom 1", InitialUsers = new HashSet<Guid>() });
 
             Assert.Single(results.ReadModelItems);
         }

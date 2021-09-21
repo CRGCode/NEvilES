@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.SqlClient;
 using GTD.Domain;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NEvilES;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.DataStore;
@@ -19,6 +20,13 @@ namespace GTD.SeedData
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConnectionString>(c => new ConnectionString(connString))
+                .AddLogging(loggingBuilder =>
+                {
+                    loggingBuilder.ClearProviders();
+                    loggingBuilder.AddConsole();
+                    loggingBuilder.SetMinimumLevel(LogLevel.Information);
+
+                })
                 .AddScoped<IDbConnection>(c =>
                 {
                     var conn = new SqlConnection(c.GetRequiredService<IConnectionString>().Data);

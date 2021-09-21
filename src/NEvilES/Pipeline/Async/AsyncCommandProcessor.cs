@@ -28,15 +28,15 @@ namespace NEvilES.Pipeline.Async
             return commandContext.Result.Add(projectResults);
         }
 
-        public async Task<CommandResult> ExecuteAsync<T>(T command) where  T : IMessage
+        public async Task<CommandResult> ExecuteAsync<T>(T message) where  T : IMessage
         {
             var commandResult = new CommandResult();
-            var commandType = command.GetType();
-            var streamId = command.StreamId;
+            var commandType = message.GetType();
             var repo = (IAsyncRepository) factory.Get(typeof(IAsyncRepository));
 
-            if (command is ICommand)
+            if (message is ICommand command)
             {
+                var streamId = command.GetStreamId();
                 var type = typeof(IHandleAggregateCommandMarker<>).MakeGenericType(commandType);
                 var aggHandlers = factory.GetAll(type).Cast<IAggregateHandlers>().ToList();
                 if (aggHandlers.Any())
@@ -51,7 +51,7 @@ namespace NEvilES.Pipeline.Async
 
                     var handler = aggHandler.Handlers[commandType];
                     var parameters = handler.GetParameters();
-                    var deps = new object[] {command}.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
+                    var deps = new object[] { command }.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
 
                     try
                     {
@@ -81,7 +81,7 @@ namespace NEvilES.Pipeline.Async
                 //foreach (var commandHandler in commandHandlers)
                 //{
                 //    var method = commandHandler.GetType().GetMethod("Handle");
-                //    method.Invoke(commandHandler, new object[] { command });
+                //    method.Invoke(commandHandler, new object[] { message });
                 //}
             }
             else
@@ -89,9 +89,9 @@ namespace NEvilES.Pipeline.Async
                 var type = typeof(IHandleStatelessEvent<>).MakeGenericType(commandType);
                 var singleAggHandler = factory.TryGet(type);
 
-                var agg = await repo.GetStatelessAsync(singleAggHandler?.GetType(), streamId);
-                // // TODO don't like the cast below of command to IEvent
-                agg.RaiseStatelessEvent((IEvent) command);
+                var agg = await repo.GetStatelessAsync(singleAggHandler?.GetType(), ((IEvent)message).GetStreamId());
+                // TODO don't like the cast below of message to IEvent
+                agg.RaiseStatelessEvent((IEvent) message);
                 var commit = await repo.SaveAsync(agg);
                 commandResult.Append(commit);
             }

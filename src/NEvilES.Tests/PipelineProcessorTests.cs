@@ -27,8 +27,8 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var expected = commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "Smith") });
-            Assert.Equal(streamId, expected.FilterEvents<Person.Created>().First().StreamId);
+            var expected = commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+            Assert.Equal(streamId, expected.FilterEvents<Person.Created>().First().PersonId);
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             Assert.Throws<DomainAggregateException>(() =>
-                commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "God") }));
+                commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "God") }));
         }
 
         [Fact]
@@ -46,10 +46,10 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var netAmount = 60000M;
-            commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "Smith") });
-            var expected = commandProcessor.Process(new Employee.PayPerson { StreamId = streamId, NetAmount = netAmount });
+            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+            var expected = commandProcessor.Process(new Employee.PayPerson { EmployeeId = streamId, NetAmount = netAmount });
             var payPerson = expected.FilterEvents<Employee.PaidPerson>().First();
-            Assert.Equal(streamId, payPerson.StreamId);
+            Assert.Equal(streamId, payPerson.EmployeeId);
             Assert.True(payPerson.Tax < netAmount);
         }
 
@@ -59,10 +59,10 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var bonus = 6000M;
-            commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "Smith") });
-            var expected = commandProcessor.Process(new Employee.PayBonus { StreamId = streamId, Amount = bonus });
+            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+            var expected = commandProcessor.Process(new Employee.PayBonus { EmployeeId = streamId, Amount = bonus });
             var payPerson = expected.FilterEvents<Employee.PaidBonus>().First();
-            Assert.Equal(streamId, payPerson.StreamId);
+            Assert.Equal(streamId, payPerson.EmployeeId);
             Assert.Equal(bonus, payPerson.Amount);
 
             var agg = repository.Get<Employee.Aggregate>(streamId);
@@ -74,10 +74,10 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "Smith") });
+            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
 
-            var expected = commandProcessor.Process(new Person.StatelessBirthdateChanged { StreamId = streamId, Birthdate = DateTime.Now });
-            Assert.Equal(streamId, expected.FilterEvents<Person.StatelessBirthdateChanged>().First().StreamId);
+            var expected = commandProcessor.Process(new Person.StatelessBirthdateChanged { PersonId = streamId, Birthdate = DateTime.Now });
+            Assert.Equal(streamId, expected.FilterEvents<Person.StatelessBirthdateChanged>().First().PersonId);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             Assert.Throws<Exception>(() =>
-                commandProcessor.Process(new Customer.BadStatelessEvent { StreamId = streamId }));
+                commandProcessor.Process(new Customer.BadStatelessEvent { CustomerId = streamId }));
         }
 
         [Fact (Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
@@ -94,11 +94,11 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var results = commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "Smith") });
+            var results = commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
             var projectedItem = results.FindProjectedItem<PersonalDetails>();
             Assert.True(projectedItem.FirstName == "John");
 
-            results = commandProcessor.Process(new Person.CorrectName { StreamId = streamId, Name = "New Name" });
+            results = commandProcessor.Process(new Person.CorrectName { PersonId = streamId, Name = "New Name" });
             projectedItem = results.FindProjectedItem<PersonalDetails>();
             Assert.True(projectedItem.FirstName == "New");
         }
@@ -112,7 +112,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             Assert.Throws<CommandValidationException>(() =>
-                commandProcessor.Process(new Employee.Create { StreamId = streamId, Person = new PersonalDetails("John", "Smith") }));
+                commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") }));
         }
 
         [Fact(Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
@@ -140,7 +140,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var bonus = new Employee.PayBonus { StreamId = streamId, Amount = 10000M };
+            var bonus = new Employee.PayBonus { EmployeeId = streamId, Amount = 10000M };
             var results = commandProcessor.Process(bonus);
             var projectedItem = (decimal)results.ReadModelItems[0];
             Assert.True(projectedItem == bonus.Amount);
@@ -151,7 +151,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var email = new Customer.EmailSent { StreamId = streamId, Text = "Testing" };
+            var email = new Customer.EmailSent { CustomerId = streamId, Text = "Testing" };
             var results = commandProcessor.Process(email);
             var projectedItem = results.ReadModelItems[0];
             Assert.True((string)projectedItem == email.Text);

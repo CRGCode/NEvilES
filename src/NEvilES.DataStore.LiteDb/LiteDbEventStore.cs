@@ -66,7 +66,7 @@ namespace NEvilES.DataStore.LiteDb
                 var message =
                     (IEvent)
                     JsonConvert.DeserializeObject(eventDb.Body, _eventTypeLookupStrategy.Resolve(eventDb.BodyType), SerializerSettings);
-                message.StreamId = eventDb.StreamId;
+                //message.StreamId = eventDb.StreamId;
                 aggregate.ApplyEvent(message);
             }
             ((AggregateBase)aggregate).SetState(id);

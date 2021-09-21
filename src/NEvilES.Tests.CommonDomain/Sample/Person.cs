@@ -7,74 +7,67 @@ namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class Person
     {
-        public class Create : ICommand
+        public abstract class Id : IMessage
         {
-            public Guid StreamId { get; set; }
+            public Guid GetStreamId() => PersonId;
+            public Guid PersonId { get; set; }
+        }
+
+        public class Create : Id, ICommand
+        {
             public PersonalDetails Person { get; set; }
             public string ExtraEventInfo { get; set; }
         }
 
-        public class SendInvite : ICommand
+        public class Created : Create, IEvent
+        {
+            public Created(Guid id, PersonalDetails person)
+            {
+                PersonId = id;
+                Person = person;
+            }
+        }
+
+        public class SendInvite : Id, ICommand
         {
             public SendInvite(Guid id, PersonalDetails person, string email)
             {
-                StreamId = id;
+                PersonId = id;
                 Person = person;
                 Email = email;
             }
 
-            public Guid StreamId { get; set; }
             public PersonalDetails Person { get; set; }
             public string Email { get; set; }
         }
 
-        public class Created : IEvent
-        {
-            public Guid StreamId { get; set; }
-            public PersonalDetails Person { get; set; }
 
-            public Created(Guid id, PersonalDetails person)
-            {
-                StreamId = id;
-                Person = person;
-            }
-        }
-
-        public class StatelessBirthdateChanged : IEvent
+        public class StatelessBirthdateChanged : Id, IEvent
         {
-            public Guid StreamId { get; set; }
             public DateTime Birthdate { get; set; }
         }
 
-        public class CorrectName : ICommand
+        public class CorrectName : Id, ICommand
         {
-            public Guid StreamId { get; set; }
             public string Name { get; set; }
             public string Reason { get; set; }
         }
 
-        public class NameCorrected : IEvent
-        {
-            public Guid StreamId { get; set; }
-            public string Name { get; set; }
-        }
+        public class NameCorrected : CorrectName, IEvent { }
 
-        public class NameCorrectedV2 : IEvent
+        public class NameCorrectedV2 : Id, IEvent
         {
-            public Guid StreamId { get; set; }
             public string FirstName { get; set; }
             public string LastName { get; set; }
         }
 
-        public class AddComment : CommentAdded, ICommand
+        public class AddComment : Id, ICommand
         {
+            public string Comment { get; set; }
         }
 
-        public class CommentAdded : IEvent
+        public class CommentAdded : AddComment, IEvent
         {
-            public Guid StreamId { get; set; }
-
-            public string Comment { get; set; }
         }
 
         public class Aggregate : AggregateBase,
@@ -93,7 +86,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
                     throw new DomainAggregateException(this, "No thanks, no God's allowed!");
                 }
 
-                RaiseEvent(new Created(c.StreamId, c.Person));
+                RaiseEvent(new Created(c.PersonId, c.Person));
             }
 
             public void Handle(CorrectName c)
@@ -113,7 +106,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
 
                 var e = new NameCorrectedV2
                 {
-                    StreamId = c.StreamId,
+                    PersonId = c.PersonId,
                     FirstName = c.Name.Split(' ').First(),
                     LastName = c.Name.Split(' ').Last()
                 };
@@ -130,7 +123,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
             // ReSharper disable UnusedMember.Local
             private void Apply(Created ev)
             {
-                Id = ev.StreamId;
+                Id = ev.PersonId;
                 Name = ev.Person.Name;
             }
 
@@ -141,7 +134,6 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 Name = ev.Name;
                 nameCorrected++;
             }
-
 
             private void Apply(NameCorrectedV2 ev)
             {

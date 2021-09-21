@@ -7,31 +7,38 @@ namespace GTD.Domain
 {
     public abstract class Project
     {
-        public class NewProject : Created, ICommand { }
-        public class Created : Event
+        public abstract class Id : IMessage
+        {
+            public Guid GetStreamId() => ProjectId;
+            public Guid ProjectId { get; set; }
+        }
+
+        public class NewProject : Id, ICommand
         {
             public Guid ClientId { get; set; }
             public string Name { get; set; }
             public UserNotificationEndpoint[] DefaultContacts { get; set; }
         }
 
-        public class CorrectProjectName : ProjectNameCorrected, ICommand { }
-        public class ProjectNameCorrected : Event
+        public class Created : NewProject, IEvent { }
+
+        public class CorrectProjectName : Id, ICommand
         {
             public string NewName { get; set; }
         }
+        public class ProjectNameCorrected : CorrectProjectName, IEvent { }
 
-        public class InvolveUserInProject : UserInvolvedInProject, ICommand { }
-        public class UserInvolvedInProject : Event
+        public class InvolveUserInProject : Id, ICommand
         {
             public UserNotificationEndpoint NotificationEndpoint { get; set; }
         }
+        public class UserInvolvedInProject : InvolveUserInProject, IEvent { }
 
-        public class RemoveUserFromProject : UserRemovedFromProject, ICommand { }
-        public class UserRemovedFromProject : Event
+        public class RemoveUserFromProject : Id, ICommand
         {
             public UserNotificationEndpoint NotificationEndpoint { get; set; }
         }
+        public class UserRemovedFromProject : RemoveUserFromProject, IEvent { }
 
         public enum NotificationType
         {
@@ -60,21 +67,21 @@ namespace GTD.Domain
             public void Handle(NewProject command, UniqueNameValidator uniqueNameValidator)
             {
                 if (uniqueNameValidator.Dispatch(command).IsValid)
-                    RaiseEvent<Created>(command);
+                    Raise<Created>(command);
             }
 
             public void Handle(InvolveUserInProject command)
             {
                 if (notifications.Contains(command.NotificationEndpoint))
                     throw new DomainAggregateException(this, "Endpoint already added!");
-                RaiseEvent<UserInvolvedInProject>(command);
+                Raise<UserInvolvedInProject>(command);
             }
 
             public void Handle(RemoveUserFromProject command)
             {
                 if (!notifications.Contains(command.NotificationEndpoint))
                     throw new DomainAggregateException(this, "Can't remove Endpoint that doesn't exist!");
-                RaiseEvent<UserRemovedFromProject>(command);
+                Raise<UserRemovedFromProject>(command);
             }
 
             //-------------------------------------------------------------------

@@ -158,7 +158,7 @@ namespace NEvilES.Abstractions
             }
         }
 
-        public void Raise<TEvent>(object command) where TEvent : class, IEvent, new()
+        public void Raise<TEvent>(object command) where TEvent : IEvent, new()
         {
             var evt = SimpleMapper.Map<TEvent>(command);
 
@@ -176,12 +176,23 @@ namespace NEvilES.Abstractions
             uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
         }
 
-        public void RaiseStateless<TEvent>(object command) where TEvent : class, IEvent, new()
+        public virtual void Raise<TEvent,TCommand>(TCommand cmd)
+            where TEvent : IMapEvent<TEvent,TCommand>, new()
+            where TCommand : class, ICommand
         {
-            if (typeof(TEvent).GetInterface("ICommand") == typeof(ICommand))
+            var type = typeof(TEvent);
+            if (!FindApplyHandler(type).Any())
             {
-                throw new Exception("You can't RaiseStateless<TEvent> where typeof(TEvent) is a Command - I think you meant the Event!");
+                throw new Exception($"You have forgotten to add private event method for '{type}' to aggregate '{GetType()}'");
             }
+
+            var evt = new TEvent().Map(cmd);
+            ((IAggregate)this).ApplyEvent(evt);
+            uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
+        }
+
+        public void RaiseStateless<TEvent>(object command) where TEvent : IEvent, new()
+        {
             var evt = SimpleMapper.Map<TEvent>(command);
 
             RaiseStatelessEvent(evt);
@@ -242,7 +253,7 @@ namespace NEvilES.Abstractions
 
     public static class SimpleMapper
     {
-        public static TEvent Map<TEvent>(object command) where TEvent : class, new()
+        public static TEvent Map<TEvent>(object command) where TEvent : new()
         {
             var evt = new TEvent();
 
@@ -258,6 +269,13 @@ namespace NEvilES.Abstractions
                 var p = evtProps.First(x => x.Name == sourceProp.Name);
                 p.SetValue(evt, sourceProp.GetValue(command, null), null);
             }
+
+            //if (!(command is ICommand cmd)) 
+            //    return evt;
+
+            //var commandId = cmd.GetStreamId();
+            //if (commandId != Guid.Empty)
+            //    evt.StreamId = commandId;
 
             return evt;
         }

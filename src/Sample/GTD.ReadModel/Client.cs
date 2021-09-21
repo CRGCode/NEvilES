@@ -43,19 +43,19 @@ namespace GTD.ReadModel
 
             public void Project(Domain.Client.Created message, IProjectorData data)
             {
-                writer.Insert(new Client(message.StreamId, message.Name));
+                writer.Insert(new Client(message.ClientId, message.Name));
             }
 
             public void Project(Domain.Client.UserNotificationAdded message, IProjectorData data)
             {
-                var client = reader.Get<Client>(message.StreamId);
+                var client = reader.Get<Client>(message.ClientId);
                 client.NotificationEndPoints.Add(new NotificationEndPoint(message.EmailAddress));
                 writer.Update(client);
             }
 
             public void Project(Domain.Client.UserNotificationRemoved message, IProjectorData data)
             {
-                var client = reader.Get<Client>(message.StreamId);
+                var client = reader.Get<Client>(message.ClientId);
                 client.NotificationEndPoints.Remove(client.NotificationEndPoints.First(x => x.EmailAddress == message.EmailAddress));
                 writer.Update(client);
             }

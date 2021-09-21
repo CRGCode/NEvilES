@@ -16,7 +16,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
         {
             processor.Process(new Employee.Create
             {
-                StreamId = command.StreamId,
+                PersonId = command.PersonId,
                 Person = command.Person
             });
 

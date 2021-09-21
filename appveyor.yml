@@ -1,4 +1,4 @@
-version: 1.8.1
+version: 2.0.0
 image: Visual Studio 2019
 nuget:
   account_feed: true

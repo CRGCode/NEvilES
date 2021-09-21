@@ -6,6 +6,12 @@ namespace GTD.Domain
 {
     public abstract class User
     {
+        public abstract class Id : IMessage
+        {
+            public Guid GetStreamId() => UserId;
+            public Guid UserId { get; set; }
+        }
+
         public class Details
         {
             public Details(string email, string password, string role, string name, string username = null)
@@ -24,18 +30,19 @@ namespace GTD.Domain
             public string Name { get; set; }
         }
 
-        public class NewUser : Created, ICommand { }
-        public class Created : Event
+        public class NewUser : Id, ICommand
         {
             public Details Details { get; set; }
             public Guid ClientGroup { get; set; }
-        }
 
-        public class CorrectUserDetails : UserDetailsCorrected, ICommand { }
-        public class UserDetailsCorrected : Event
+        }
+        public class Created : NewUser, IEvent { }
+
+        public class CorrectUserDetails : Id, ICommand
         {
             public Details Details { get; set; }
         }
+        public class UserDetailsCorrected : CorrectUserDetails, IEvent { }
 
         public class Aggregate : AggregateBase,
             IHandleAggregateCommand<NewUser, UniqueNameValidator>,
@@ -44,13 +51,13 @@ namespace GTD.Domain
             public void Handle(NewUser command, UniqueNameValidator uniqueNameValidator)
             {
                 if (uniqueNameValidator.Dispatch(command).IsValid)
-                    RaiseEvent<Created>(command);
+                    Raise<Created>(command);
             }
 
             public void Handle(CorrectUserDetails command, UniqueNameValidator uniqueNameValidator)
             {
                 if (uniqueNameValidator.Dispatch(command).IsValid)
-                    RaiseEvent<UserDetailsCorrected>(command);
+                    Raise<UserDetailsCorrected>(command);
             }
 
             //-------------------------------------------------------------------
