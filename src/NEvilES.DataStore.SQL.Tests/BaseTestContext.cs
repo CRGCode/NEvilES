@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
@@ -19,6 +20,10 @@ namespace NEvilES.DataStore.SQL.Tests
         {
             ConnString = connString;
             var services = new ServiceCollection()
+                .AddLogging(loggingBuilder =>
+                {
+                    loggingBuilder.SetMinimumLevel(LogLevel.Information);
+                })
                 .AddSingleton<IConnectionString>(c => new ConnectionString(ConnString))
                 .AddScoped(c =>
                 {

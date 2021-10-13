@@ -19,6 +19,28 @@ namespace NEvilES.Pipeline
         const int RETRIES = 10;
         private static readonly int[] BackOff = { 10, 20, 50, 100, 200, 300, 500, 600, 700, 1000 };
 
+        public static void AddStage<TCommand>(IProcessPipelineStage<TCommand> stage)
+            where TCommand : IMessage
+        {
+            // WIP
+            // Something like below would be nice or maybe how .NET core does it http pipeline
+            /*
+            services.AddCamundaWorker("sampleWorker")
+                .AddHandler<SayHelloHandler>()
+                .AddHandler<SayHelloGuestHandler>()
+                .ConfigurePipeline(pipeline =>
+                {
+                    pipeline.Use(next => async context =>
+                    {
+                        var logger = context.ServiceProvider.GetRequiredService<ILogger<Startup>>();
+                        logger.LogInformation("Started processing of task {Id}", context.Task.Id);
+                        await next(context);
+                        logger.LogInformation("Finished processing of task {Id}", context.Task.Id);
+                    });
+                });
+            */
+        }
+
         public ICommandResult Process<T>(T command) where T : IMessage
         {
             var retry = 0;

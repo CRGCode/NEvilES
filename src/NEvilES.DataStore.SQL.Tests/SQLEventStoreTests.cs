@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Marten.Events.Projections.Async.ErrorHandling;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
