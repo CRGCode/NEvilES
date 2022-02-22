@@ -56,18 +56,14 @@ namespace NEvilES.Pipeline
                     // TODO below looks like it needs some DRY attention
                     foreach (var projector in projectors)
                     {
-#if !DEBUG
                         try
                         {
-#endif
-                        ((dynamic) projector).Project((dynamic) message.Event, data);
-#if !DEBUG
+                            ((dynamic) projector).Project((dynamic) message.Event, data);
                         }
                         catch (Exception e)
                         {
                             throw new ProjectorException(e, "Projector exception {0} - {1} StreamId {2}", projector.GetType().Name, message.Event, agg.StreamId);
                         }
-#endif
                     }
 
                     projectorType = typeof(IProjectWithResult<>).MakeGenericType(message.Type);
@@ -75,19 +71,15 @@ namespace NEvilES.Pipeline
 
                     foreach (var projector in projectors)
                     {
-#if !DEBUG
                         try
                         {
-#endif
-                        IProjectorResult result = ((dynamic) projector).Project((dynamic) message.Event, data);
-                        commandResult.ReadModelItems.AddRange(result.Items);
-#if !DEBUG
+                            IProjectorResult result = ((dynamic) projector).Project((dynamic) message.Event, data);
+                            commandResult.ReadModelItems.AddRange(result.Items);
                         }
                         catch (Exception e)
                         {
                             throw new ProjectorException(e, "Projector exception {0} - {1} StreamId {2}", projector.GetType().Name, message.Event, agg.StreamId);
                         }
-#endif
                     }
 
                 }

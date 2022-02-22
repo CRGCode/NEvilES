@@ -78,6 +78,12 @@ namespace GTD.Domain
 
         public class UniqueNameValidator : INeedExternalValidation<NewClient>
         {
+            private readonly IReadFromReadModel<Client> reader;
+
+            public UniqueNameValidator(IReadFromReadModel<Client> reader)
+            {
+                this.reader = reader;
+            }
             public CommandValidationResult Dispatch(NewClient command)
             {
                 // Check ReadModel

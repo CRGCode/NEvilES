@@ -8,13 +8,14 @@ using NEvilES;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.DataStore;
 using NEvilES.Abstractions.Pipeline;
+using NEvilES.DataStore.Marten;
 using NEvilES.DataStore.MSSQL;
 using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 
 namespace GTD.SeedData
 {
-    public static class Startup {
+    public static class SQLStartup {
 
         public static ServiceProvider Start(string connString)
         {
