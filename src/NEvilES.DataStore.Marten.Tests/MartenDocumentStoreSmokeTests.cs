@@ -72,6 +72,11 @@ namespace NEvilES.DataStore.Marten.Tests
         public Guid Id { get; }
         public string Name { get; set; }
 
+        public Person()
+        {
+            Name = "Blank";
+        }
+
         public Person(Guid id, string name)
         {
             Id = id;

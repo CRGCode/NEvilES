@@ -11,7 +11,6 @@ namespace NEvilES.DataStore.SQL
 {
     public class SQLEventStore : SQLEventStoreReader, IRepository
     {
-
         private readonly ICommandContext commandContext;
 
         private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings

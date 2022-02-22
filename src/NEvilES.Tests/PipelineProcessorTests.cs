@@ -22,7 +22,7 @@ namespace NEvilES.Tests
             repository = scope.ServiceProvider.GetRequiredService<IRepository>();
         }
 
-        [Fact(Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
+        [Fact]//(Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
         public void CommandWithDifferentEventHandlerOnAggregate()
         {
             var streamId = Guid.NewGuid();
