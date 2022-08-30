@@ -1,0 +1,36 @@
+﻿@page "/signup"
+
+@inherits SignUpBase
+
+<div class="sign-form">
+    <EditForm EditContext="@EditContext" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <div class="sign-validation">
+            <ValidationInput placeholder="Name" @bind-value="@Model.Name" Error="@GetError(() => Model.Name)"></ValidationInput>
+        </div>
+        <div class="sign-validation">
+            <ValidationInput placeholder="email" @bind-value="@Model.Email" Error="@GetError(() => Model.Email)"></ValidationInput>
+        </div>
+
+        <div class="sign-validation">
+            <ValidationInput type="password"
+                             placeholder="Password"
+                             @bind-value="@Model.Password" Error="@GetError(() => Model.Password)"></ValidationInput>
+        </div>
+
+        <div class="sign-validation">
+            <Dropdown TValue="GenderType"
+                      @bind-SelectedItem="@SelectedGenderDropdownItem"
+                      Items="@GenderTypeDropdownItems">
+            </Dropdown>
+        </div>
+
+        <button class="sign-button btn btn-primary" type="submit">Sign Up</button>
+    </EditForm>
+
+    <div class="signup">
+        <a href="/signin">Sign in</a>
+    </div>
+
+</div>
+

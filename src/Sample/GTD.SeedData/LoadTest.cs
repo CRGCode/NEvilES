@@ -153,6 +153,7 @@ namespace GTD.SeedData
                             RequestId = id,
                             ProjectId = projectId,
                             Description = $"Request {id}",
+                            ShortName = $"R{id.ToString()[..6]}",
                             Priority = 5,
                         });
                         items.Add(id);

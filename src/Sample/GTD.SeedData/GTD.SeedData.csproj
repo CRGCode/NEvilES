@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\NEvilES.DataStore.Marten\NEvilES.DataStore.Marten.csproj" />
     <ProjectReference Include="..\..\NEvilES.DataStore.MSSQL\NEvilES.DataStore.MSSQL.csproj" />
     <ProjectReference Include="..\..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
     <ProjectReference Include="..\..\NEvilES\NEvilES.csproj" />
