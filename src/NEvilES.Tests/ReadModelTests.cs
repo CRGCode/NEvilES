@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Pipeline;
 using Xunit;
 
 namespace NEvilES.Tests

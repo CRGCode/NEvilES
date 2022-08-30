@@ -9,28 +9,30 @@ using Xunit.Abstractions;
 
 namespace NEvilES.Testing
 {
-    public class MissingHandlers
+    public abstract class ScanTypesForMissingHandlerImplementations<TCommand, TAggregate, TEvent, TProjector>
     {
         private readonly ITestOutputHelper testOutputHelper;
 
-        public MissingHandlers(ITestOutputHelper testOutputHelper)
+        protected ScanTypesForMissingHandlerImplementations(ITestOutputHelper testOutputHelper)
         {
             this.testOutputHelper = testOutputHelper;
         }
 
-        public  void  FindCommandsWithoutHandlers(Assembly assemblyWithCommands, Assembly assemblyWithAggregates)
+        [Fact]
+        public void FindCommandsWithoutHandlers()
         {
-            var missing = FindMissing(typeof(ICommand), typeof(IEvent), assemblyWithCommands, 
-                typeof(IHandleAggregateCommandMarker<>), assemblyWithAggregates);
+            var missing = FindMissing(typeof(ICommand), typeof(IEvent), typeof(TCommand).Assembly, 
+                typeof(IHandleAggregateCommandMarker<>), typeof(TAggregate).Assembly);
 
             Assert.Empty(missing);
         }
 
         //[RunnableInDebugOnly]
-        public void FindEventsWithoutProjectors(Assembly assemblyWithEvents, Assembly assemblyWithProjectors)
+        [Fact]
+        public void FindEventsWithoutProjectors()
         {
-            var missing = FindMissing(typeof(IEvent), null, assemblyWithEvents,
-                typeof(IProject<>), assemblyWithProjectors);
+            var missing = FindMissing(typeof(IEvent), null, typeof(TEvent).Assembly,
+                typeof(IProject<>), typeof(TProjector).Assembly);
 
             Assert.Empty(missing);
         }
@@ -40,6 +42,7 @@ namespace NEvilES.Testing
             var types = assemblyWithInterfaces.DefinedTypes
                 .Where(t =>
                 {
+                    if (t.IsAbstract) return false;
                     var interfaces = t.GetInterfaces();
                     var found = false;
                     foreach (var i in interfaces)
@@ -62,7 +65,7 @@ namespace NEvilES.Testing
             var missing = new List<TypeInfo>();
             foreach (var c in types)
             {
-                var cnt = handlers.Count(prj => prj.GetInterfaces()
+                var cnt = handlers.Count(h => h.GetInterfaces()
                     .Any(i => i.GenericTypeArguments.Any(t => t == c)));
 
                 if (cnt == 0)
@@ -70,14 +73,18 @@ namespace NEvilES.Testing
                     missing.Add(c);
                 }
             }
+            testOutputHelper.WriteLine($"{assemblyWithInterfaces.GetName().Name} Types - {types.Count()}");
+            testOutputHelper.WriteLine($"{assemblyWithHandlers.GetName().Name} Handlers - {handlers.Count(a => a.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == openType))}");
 
-            if (missing.Any())
+            if (!missing.Any())
             {
-                testOutputHelper.WriteLine($"Total missing - {missing.Count}");
-                foreach (var typeInfo in missing)
-                {
-                    testOutputHelper.WriteLine($"{typeInfo.FullName}");
-                }
+                return missing;
+            }
+
+            testOutputHelper.WriteLine($"\nAll of the following are not Handled!\nTotal unhandled {missing.Count}");
+            foreach (var typeInfo in missing)
+            {
+                testOutputHelper.WriteLine($"{typeInfo.FullName}");
             }
             return missing;
         }
