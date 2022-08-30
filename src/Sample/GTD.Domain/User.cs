@@ -14,17 +14,16 @@ namespace GTD.Domain
 
         public class Details
         {
-            public Details(string email, string password, string role, string name, string username = null)
+            public Details() { }
+            public Details(string email, string password, string role, string name)
             {
                 Email = email;
                 Password = password;
                 Role = role;
                 Name = name;
-                Username = username ?? email;
             }
 
             public string Email { get; set; }
-            public string Username { get; set; }
             public string Password { get; set; }
             public string Role { get; set; }
             public string Name { get; set; }

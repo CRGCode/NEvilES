@@ -40,7 +40,7 @@ namespace NEvilES.Tests
                     opts.DomainAssemblyTypes = new[]
                     {
                         typeof(Person.Created),
-                        typeof(Employee.Aggregate),
+                        //typeof(Employee.Aggregate),
                         typeof(Approval),
                         typeof(UniqueNameValidation)
                     };

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<configuration>
+	<connectionStrings>
+		<!--<add name="EventStore" connectionString="Data Source=G4-Web01\SQL2005;Initial Catalog=WA_ES3;User ID=ES_Server; Password=iloveit" providerName="System.Data.SqlClient" />-->
+		<!--<add name="EventStore" connectionString="Data Source=CRG-01\SQL2008;Initial Catalog=WA_ES3;User ID=ES_Server; Password=iloveit" providerName="System.Data.SqlClient" />-->
+		<add name="EventStore" connectionString="Data Source=(localDB)\Dev;Initial Catalog=WA_ES3;Integrated Security=true" providerName="System.Data.SqlClient"/>
+	</connectionStrings>
+	<appSettings>
+		<add key="BasePort" value="5600" />
+	</appSettings>
+	<system.net>
+		<mailSettings>
+			<smtp from="NoReply@crgsoftware.com.au" deliveryMethod="SpecifiedPickupDirectory">
+				<specifiedPickupDirectory pickupDirectoryLocation="D:\Temp\EmailPickup"/>
+			</smtp>
+		</mailSettings>
+	</system.net>
+	<startup>
+		<supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5"/>
+	</startup>
+</configuration>

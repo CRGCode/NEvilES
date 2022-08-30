@@ -1,0 +1,34 @@
+﻿@page "/signin"
+
+@inherits SignInBase
+
+<div class="sign-form">
+    <p class="welcome-text">Howdy @(string.IsNullOrWhiteSpace(Model.Email) ? "Stranger" : Model.Email) - today is @Day</p>
+    <EditForm EditContext="@EditContext">
+        <DataAnnotationsValidator />
+        @*<input type="text" class="sign-input form-control" placeholder="Email" @bind-value="Model.Email"/>*@
+        @*<InputText type="text" class="sign-input form-control" placeholder="Email" @bind-Value="Model.Email"/>
+            <ValidationMessage For="@(() => Model.Email)"></ValidationMessage>*@
+        <div class="sign-validation">
+            <ValidationInput placeholder="Email"
+                             @bind-Value="@Model.Email"
+                             Error="@GetError(() => Model.Email)"></ValidationInput>
+        </div>
+        @*<input type="text" class="sign-input form-control" placeholder="Password" @bind-value="Model.Password"/>*@
+        @*<InputText type="password" class="sign-input form-control" placeholder="Password" @bind-Value="Model.Password" />
+            <ValidationMessage For="@(() => Model.Password)"></ValidationMessage>*@
+        <div class="sign-validation">
+            <ValidationInput type="password"
+                             placeholder="Password"
+                             @bind-Value="@Model.Password" Error="@GetError(() => Model.Password)"></ValidationInput>
+        </div>
+
+        <button class="sign-button btn btn-primary" type="submit">Sign in</button>
+    </EditForm>
+
+    <div class="signup">
+        <a href="@(Model.Email != null ? $"/signup?email={Model.Email}" : "/signup")">Sign up</a>
+    </div>
+
+</div>
+
