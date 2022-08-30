@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
+using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 
 namespace NEvilES.Tests.CommonDomain.Sample
 {
@@ -9,32 +10,29 @@ namespace NEvilES.Tests.CommonDomain.Sample
         IProjectWithResult<Person.Created>,
         IProjectWithResult<Person.NameCorrectedV2>
     {
-        private readonly IReadModel db;
+        private readonly DocumentStoreGuid db;
 
-        public SampleProjector(IReadModel db)
+        public SampleProjector(DocumentStoreGuid db)
         {
             this.db = db;
         }
 
         public IProjectorResult Project(Person.Created message, IProjectorData data)
         {
-            db.People.Add(message.PersonId, message.Person);
-            return new ProjectorResult(message.Person);
+            var person = new PersonReadModel(message.PersonId, message.Person.FirstName, message.Person.LastName);
+            db.Insert(person);
+            return new ProjectorResult(person);
         }
 
         public IProjectorResult Project(Person.NameCorrectedV2 message, IProjectorData data)
         {
-            var person = db.People[message.PersonId];
+            var person = db.Get<PersonReadModel>(message.PersonId);
             person.FirstName = message.FirstName;
             person.LastName = message.LastName;
+            db.Update(person);
 
             return new ProjectorResult(person);
         }
-    }
-
-    public interface IReadModel
-    {
-        Dictionary<Guid, PersonalDetails> People { get; }
     }
 
     public class SampleProjector2 :

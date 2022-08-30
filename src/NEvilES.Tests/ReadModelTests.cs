@@ -31,7 +31,7 @@ namespace NEvilES.Tests
         {
             var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<string>>();
 
-            var dashboard = reader.Get<Dashboard>("1234");
+            var dashboard = reader.Get<Dashboard>("12345");
 
             Assert.Null(dashboard);
         }

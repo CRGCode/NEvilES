@@ -40,9 +40,9 @@ namespace NEvilES.Tests
                     opts.DomainAssemblyTypes = new[]
                     {
                         typeof(Person.Created),
-                        //typeof(Employee.Aggregate),
+                        typeof(Employee.Aggregate),
                         typeof(Approval),
-                        //typeof(UniqueNameValidation)
+                        typeof(UniqueNameValidation)
                     };
 
                     opts.GetUserContext = s => new CommandContext.User(CombGuid.NewGuid());
@@ -61,12 +61,18 @@ namespace NEvilES.Tests
                 return new CommandContext(user, transaction, null, "1.0");
             });
 
-            services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(InMemoryDocumentRepository<>).Assembly });
-            services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(InMemoryDocumentRepository<>).Assembly });
             services.AddScoped<IReadEventStore, SQLEventStoreReader>();
             //services.AddScoped(typeof(SQLDocumentRepository<>));
-            //services.AddScoped<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
-            //services.AddScoped<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
+
+            //services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(InMemoryDocumentRepository<>).Assembly });
+            //services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(InMemoryDocumentRepository<>).Assembly });
+            services.AddSingleton<DocumentStoreGuid>();
+            services.AddSingleton<IReadFromReadModel<Guid>>(s => s.GetRequiredService<DocumentStoreGuid>());
+            services.AddSingleton<IWriteReadModel<Guid>>(s => s.GetRequiredService<DocumentStoreGuid>());
+            services.AddSingleton<DocumentStoreString>();
+            services.AddSingleton<IReadFromReadModel<string>>(s => s.GetRequiredService<DocumentStoreString>());
+            services.AddSingleton<IWriteReadModel<string>>(s => s.GetRequiredService<DocumentStoreString>());
+
 
             services.AddScoped<IDbConnection>(c =>
             {
@@ -75,7 +81,6 @@ namespace NEvilES.Tests
                 return conn;
             });
 
-            services.AddSingleton<IReadModel, CommonDomain.Sample.ReadModel.TestReadModel>();
             services.AddScoped<TaxRuleEngine>();
             services.AddScoped<IApprovalWorkflowEngine, ApprovalWorkflowEngine>();
 

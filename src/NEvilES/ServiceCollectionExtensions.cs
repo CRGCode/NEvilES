@@ -33,13 +33,17 @@ namespace NEvilES
                 var name = interfaceType.Name;
                 foreach (var item in assemblyTypes)
                 {
-                    var interfaces = item.GetInterfaces().ToArray();
                     if (item.IsAbstract || !item.IsClass) 
+                        continue;
+                    var interfaces = item.GetInterfaces().ToArray();
+
+                    if(!interfaces.Any())
                         continue;
 
                     var matchingInterfaces = interfaces.Where(t => t.Name == name).ToArray();
 
-                    if (!matchingInterfaces.Any()) continue;
+                    if (!matchingInterfaces.Any()) 
+                        continue;
 
                     services = ConnectImplementingTypes(services, item, matchingInterfaces);
                 }
@@ -60,12 +64,12 @@ namespace NEvilES
             }
         }
 
-        public static IRegisteredTypesBuilder RegisterTypesFrom(this IServiceCollection services, params Type[] assemblyType)
-            => RegisterTypesFrom(services, assemblyType);
+        //public static IRegisteredTypesBuilder RegisterTypesFrom(this IServiceCollection services, params Type[] assemblyType)
+        //    => RegisterTypesFrom(services, assemblyType);
 
         public static IRegisteredTypesBuilder RegisterTypesFrom(this IServiceCollection services, IEnumerable<Type> assemblyType)
         {
-            var assemblies = new List<Assembly>();
+            var assemblies = new HashSet<Assembly>();
             lock (Types)
             {
                 foreach (var type in assemblyType)
@@ -73,12 +77,17 @@ namespace NEvilES
                     if (!Types.ContainsKey(type.Assembly))
                     {
                         Types.Add(type.Assembly, type.Assembly.GetTypes());
+                    }
+
+                    if (!assemblies.Contains(type.Assembly))
+                    {
                         assemblies.Add(type.Assembly);
                     }
                 }
             }
 
-            return new RegisteredTypesBuilder(assemblies.SelectMany<Assembly, Type>(x => Types[x]), services);
+            var assemblyTypes = assemblies.SelectMany(x => Types[x]).ToArray();
+            return new RegisteredTypesBuilder(assemblyTypes, services);
         }
 
         public static IServiceCollection ConnectImplementingType(this IServiceCollection services, Type interfaceType)

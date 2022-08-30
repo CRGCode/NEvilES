@@ -73,7 +73,7 @@ namespace NEvilES.Pipeline
 
                 foreach (dynamic commandHandler in commandHandlers)
                 {
-                    commandHandler.Handle(command);
+                    commandHandler.Handle(message);
                 }
                 // Version using reflection
                 //foreach (var commandHandler in commandHandlers)

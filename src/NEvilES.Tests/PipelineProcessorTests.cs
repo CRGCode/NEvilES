@@ -5,6 +5,7 @@ using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
+using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 using Xunit;
 
 namespace NEvilES.Tests
@@ -22,12 +23,13 @@ namespace NEvilES.Tests
             repository = scope.ServiceProvider.GetRequiredService<IRepository>();
         }
 
+
         [Fact]//(Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
         public void CommandWithDifferentEventHandlerOnAggregate()
         {
             var streamId = Guid.NewGuid();
 
-            var expected = commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+            var expected = commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
             Assert.Equal(streamId, expected.FilterEvents<Person.Created>().First().PersonId);
         }
 
@@ -46,7 +48,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var netAmount = 60000M;
-            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
             var expected = commandProcessor.Process(new Employee.PayPerson { EmployeeId = streamId, NetAmount = netAmount });
             var payPerson = expected.FilterEvents<Employee.PaidPerson>().First();
             Assert.Equal(streamId, payPerson.EmployeeId);
@@ -59,7 +61,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var bonus = 6000M;
-            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
             var expected = commandProcessor.Process(new Employee.PayBonus { EmployeeId = streamId, Amount = bonus });
             var payPerson = expected.FilterEvents<Employee.PaidBonus>().First();
             Assert.Equal(streamId, payPerson.EmployeeId);
@@ -89,33 +91,35 @@ namespace NEvilES.Tests
                 commandProcessor.Process(new Customer.BadStatelessEvent { CustomerId = streamId }));
         }
 
-        [Fact (Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
+        [Fact]
         public void WithProjector()
         {
             var streamId = Guid.NewGuid();
 
-            var results = commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
-            var projectedItem = results.FindProjectedItem<PersonalDetails>();
+            var results = commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
+            var projectedItem = results.FindProjectedItem<PersonReadModel>();
             Assert.True(projectedItem.FirstName == "John");
 
             results = commandProcessor.Process(new Person.CorrectName { PersonId = streamId, Name = "New Name" });
-            projectedItem = results.FindProjectedItem<PersonalDetails>();
+            projectedItem = results.FindProjectedItem<PersonReadModel>();
             Assert.True(projectedItem.FirstName == "New");
         }
 
-        [Fact(Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register INeedExternalValidation")]
+        [Fact]
         public void WithExternalValidator_Failure()
         {
-            var readModel = scope.ServiceProvider.GetRequiredService<IReadModel>();
-            readModel.People.Add(Guid.NewGuid(), new PersonalDetails("John", "Smith"));
-
-            var streamId = Guid.NewGuid();
+            var readModel = scope.ServiceProvider.GetRequiredService<DocumentStoreGuid>();
+            var personId = Guid.NewGuid();
+            var model = new PersonReadModel(personId, "John", "Smith");
+            readModel.Insert(model);
 
             Assert.Throws<CommandValidationException>(() =>
-                commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") }));
+                // below doesn't work because we don't register handlers for sub-types Employee descends from Person -> We only register INeedExternal
+                //commandProcessor.Process(new Person.Create { PersonId = personId, Person = new PersonalDetails("John", "Smith") }));
+                commandProcessor.Process(new Employee.Create { PersonId = personId, Person = model }));
         }
 
-        [Fact(Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
+        [Fact (Skip = "Worked with previous IOC but broken with .Net version - need to fix how we scope the pipeline, as a new scope starts for nested handlers")]
         public void OneCommandToManyAggregates()
         {
             var streamId = Guid.NewGuid();
