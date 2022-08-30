@@ -77,6 +77,7 @@ namespace NEvilES
                     if (!Types.ContainsKey(type.Assembly))
                     {
                         Types.Add(type.Assembly, type.Assembly.GetTypes());
+                    }
 
                     if (!assemblies.Contains(type.Assembly))
                     {
