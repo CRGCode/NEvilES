@@ -55,7 +55,10 @@ namespace NEvilES.DataStore.SQL
                 CreateParam(cmd, "@to", DbType.Int64, to);
             }
 
-            foreach (var aggregateCommit in AggregateCommits(cmd)) yield return aggregateCommit;
+            foreach (var aggregateCommit in AggregateCommits(cmd))
+            {
+                yield return aggregateCommit;
+            }
         }
 
         public IEnumerable<IAggregateCommit> Read(Guid streamId)

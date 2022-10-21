@@ -23,7 +23,6 @@ namespace NEvilES.DataStore.SQL.Tests
 
             services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
             services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
-
         }
     }
 }

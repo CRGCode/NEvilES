@@ -9,7 +9,8 @@ namespace NEvilES.Pipeline
 {
     public static class ReplayEvents
     {
-        public static void Replay(IFactory factory, IReadEventStore reader, long from = 0, long to = 0)
+        public static void Replay(IFactory factory, IReadEventStore reader, long from = 0,
+            long to = 0, bool writeLineException = false)
         {
             foreach (var commit in reader.Read(from, to))
             {
@@ -22,7 +23,12 @@ namespace NEvilES.Pipeline
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    if (writeLineException)
+                    {
+                        Console.WriteLine(e);
+                    }
+                    else
+                        throw;
                 }
             }
         }

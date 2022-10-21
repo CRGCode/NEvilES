@@ -58,6 +58,7 @@ namespace NEvilES.DataStore.SQL.Tests
             //services.AddScoped<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
             //services.AddScoped<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
 
+            // ReSharper disable once VirtualMemberCallInConstructor
             AddServices(services);
 
             Container = services.BuildServiceProvider();

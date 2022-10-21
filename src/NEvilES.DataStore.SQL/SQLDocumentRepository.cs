@@ -196,14 +196,28 @@ CREATE TABLE Doc.{0}(
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 ", docName);
 
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = createTable;
-                command.Transaction = transaction;
-                command.CommandType = CommandType.Text;
-                command.ExecuteNonQuery();
-            }
+            using var command = connection.CreateCommand();
+            command.CommandText = createTable;
+            command.Transaction = transaction;
+            command.CommandType = CommandType.Text;
+            command.ExecuteNonQuery();
             return docName;
+        }
+
+        public void WipeDocTypeIfExists<T>()
+        {
+            var docName = typeof(T).Name;
+
+            var connection = transaction.Connection;
+            var dropTable = string.Format(@"
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID('Doc.{0}') AND type in ('U'))
+DROP TABLE Doc.{0}", docName);
+
+            using var command = connection.CreateCommand();
+            command.CommandText = dropTable;
+            command.Transaction = transaction;
+            command.CommandType = CommandType.Text;
+            command.ExecuteNonQuery();
         }
     }
 

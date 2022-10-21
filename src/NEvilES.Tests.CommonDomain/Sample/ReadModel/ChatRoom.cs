@@ -24,7 +24,7 @@ namespace NEvilES.Tests.CommonDomain.Sample.ReadModel
             
             public IProjectorResult Project(Sample.ChatRoom.Created message, IProjectorData data)
             {
-                var chatRoom = new ChatRoom { Id = message.ChatRoomId };
+                var chatRoom = new ChatRoom { Id = message.ChatRoomId, Name = message.Name };
                 writer.Insert(chatRoom);
 
                 return new ProjectorResult(chatRoom);

@@ -14,6 +14,11 @@ using Xunit.Abstractions;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
+    //[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
+    [CollectionDefinition("Integration")]
+    //[Collection("Non-Parallel Collection")]
+    //[Collection("Serial")]
+    [Collection("Integration")]
     public class SQLEventStoreTests : IClassFixture<SQLTestContext>, IDisposable
     {
         private readonly SQLTestContext context;
@@ -28,13 +33,13 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
-        public void WipeAllEvents()
+        public void A1_WipeAllEvents()
         {
             new MSSQLEventStoreCreate().CreateOrWipeDb(connectionString);
         }
 
         [Fact]
-        public void Save_FirstEvent()
+        public void A2_Save_FirstEvent()
         {
             var chatRoom = new ChatRoom.Aggregate();
             chatRoom.RaiseEvent(new ChatRoom.Created
@@ -51,8 +56,78 @@ namespace NEvilES.DataStore.SQL.Tests
             Assert.NotNull(commit);
         }
 
+        private static readonly int[] BackOff = {10,20,20,50,50,50,100,100,200,200,300};
         [Fact]
-        public void ForceConcurrencyExceptions()
+        public void A3_RetryCommandProcessorOnConcurrencyExceptions()
+        {
+            var retries = BackOff.Count();
+            var chatRoom = Guid.NewGuid();
+            var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
+            commandProcessor.Process(new ChatRoom.Create
+            {
+                ChatRoomId = chatRoom,
+                InitialUsers = new HashSet<Guid> { },
+                Name = "Biz Room"
+            });
+
+            var done = new List<int>();
+            void IncludeUser(int userNumber, Guid guid, Guid userId)
+            {
+                var retry = 0;
+                do
+                {
+                    var serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
+                    using var serviceScope = serviceScopeFactory.CreateScope();
+                    try
+                    {
+                        var commandContext = serviceScope.ServiceProvider.GetRequiredService<ICommandContext>();
+                        var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(new ScopedServiceProviderFactory(serviceScope),commandContext);
+                        processor.Process(new ChatRoom.IncludeUserInRoom()
+                        {
+                            ChatRoomId = guid,
+                            UserId = userId
+                        });
+                        testOutputHelper.WriteLine($"Done User {userNumber} Retry[{retry}]");
+                        done.Add(userNumber);
+
+                        return;
+                    }
+                    catch (AggregateConcurrencyException)
+                    {
+                        var random = new Random(DateTime.Now.Millisecond);
+                        var delay = BackOff[random.Next(retries-1)] + random.Next(10) * (retries - retry);
+                        retry++;
+                        Thread.Sleep(delay);
+                        testOutputHelper.WriteLine($"User {userNumber} Retry[{retry}] - {delay}");
+                    }
+                } while (retry < retries);
+                testOutputHelper.WriteLine($"Exceeded Retries User {userNumber} Retry[{retry}]");
+            }
+
+            var tasks = new List<Task>();
+
+            for (var i = 1; i < 5; i++)
+            {
+                var userNumber = i;
+                tasks.Add(Task.Run(() => { IncludeUser(userNumber, chatRoom, Guid.NewGuid()); }));
+            }
+            Task.WaitAll(tasks.ToArray(), CancellationToken.None);
+
+            testOutputHelper.WriteLine($"All Done {done.Count}!");
+
+            Thread.Sleep(1000);
+
+            var reader = context.Container.GetRequiredService<IReadEventStore>();
+
+            var events = reader.Read(chatRoom).ToArray();
+            
+            testOutputHelper.WriteLine($"Reader!");
+
+            Assert.Equal(tasks.Count + 1, events.Length);
+        }
+
+        [Fact]
+        public void A4_ForceConcurrencyExceptions()
         {
             var chatRoom = Guid.NewGuid();
             var commandProcessor  = context.Container.GetRequiredService<ICommandProcessor>();
@@ -77,102 +152,23 @@ namespace NEvilES.DataStore.SQL.Tests
                 });
             }
 
-            var tasks = new[]
-            {
-                new Task(() => { IncludeUser(chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(chatRoom, Guid.NewGuid()); })
-            };
+            var tasks = new List<Task>();
 
             var ex = Assert.Throws<AggregateException>(() =>
             {
-                foreach (var task in tasks)
+                for (var i = 0; i < 20; i++)
                 {
-                    task.Start();
+                    tasks.Add(Task.Run(() => { IncludeUser(chatRoom, Guid.NewGuid()); }));
                 }
-
-                Task.WaitAll(tasks, CancellationToken.None);
+                Task.WaitAll(tasks.ToArray(), CancellationToken.None);
             });
 
-            Assert.Equal(3,ex.InnerExceptions.Count);
+            testOutputHelper.WriteLine($"ex.InnerExceptions.Count = {ex.InnerExceptions.Count}");
             Assert.All(ex.InnerExceptions, x=> Assert.IsType<AggregateConcurrencyException>(x));
         }
 
-        const int RETRIES = 10;
-        private static readonly int[] BackOff = {10,20,50,100,200,300,500,600,700,1000};
-
         [Fact]
-        public void RetryCommandProcessorOnConcurrencyExceptions()
-        {
-            var chatRoom = Guid.NewGuid();
-            var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
-            commandProcessor.Process(new ChatRoom.Create
-            {
-                ChatRoomId = chatRoom,
-                InitialUsers = new HashSet<Guid> { },
-                Name = "Biz Room"
-            });
-
-            void IncludeUser(int userNumber, Guid guid, Guid userId)
-            {
-                var retry = 0;
-                do
-                {
-                    var serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
-                    using (var serviceScope = serviceScopeFactory.CreateScope())
-                    {
-                        try
-                        {
-                            var commandContext = serviceScope.ServiceProvider.GetRequiredService<ICommandContext>();
-                            var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(new ScopedServiceProviderFactory(serviceScope),commandContext);
-                            processor.Process(new ChatRoom.IncludeUserInRoom()
-                            {
-                                ChatRoomId = guid,
-                                UserId = userId
-                            });
-                            return;
-
-                        }
-                        catch (AggregateConcurrencyException)
-                        {
-                            var delay = BackOff[retry++];
-                            Thread.Sleep(delay);
-                            testOutputHelper.WriteLine($"User {userNumber} Retry[{retry}] - {delay}");
-                        }
-                    }
-                    
-                } while (retry < RETRIES);
-            }
-
-            var tasks = new[]
-            {
-                new Task(() => { IncludeUser(1, chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(2, chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(3, chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(4, chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(5, chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(6, chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(7, chatRoom, Guid.NewGuid()); }),
-                new Task(() => { IncludeUser(8, chatRoom, Guid.NewGuid()); })
-            };
-
-            foreach (var task in tasks)
-            {
-                task.Start();
-            }
-
-            Task.WaitAll(tasks, CancellationToken.None);
-
-            var reader = context.Container.GetRequiredService<IReadEventStore>();
-
-            var events = reader.Read(chatRoom);
-
-            Assert.Equal(tasks.Length + 1, events.Count());
-        }
-
-        [Fact]
-        public void PipelineProcessorHandlesRetryOnConcurrencyExceptions()
+        public void A5_PipelineProcessorHandlesRetryOnConcurrencyExceptions()
         {
             var chatRoom = Guid.NewGuid();
             var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();

@@ -1,5 +1,5 @@
 version: 2.1.5
-image: Visual Studio 2019
+image: Visual Studio 2022
 nuget:
   account_feed: true
   project_feed: true
@@ -22,10 +22,11 @@ after_test:
 artifacts:
 - path: 'artifacts\*.nupkg'
   name: NEvilES
+
 deploy:
 - provider: NuGet
   api_key:
-    secure: 8XWgn4wCxRyerF/QwnrlZ84Txsxt9qT0PdViYBvHIiluSE6a+szrdOjS4d7SBkZm
+    secure: zfWdL/evMCOMhVHS3rMKvznhT0a7R3lFlPdXqhlhHZG+/zpsVqNsMvQCZOdzLcVK
   artifact: NEvilES
   on:
     branch: master
