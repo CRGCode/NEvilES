@@ -14,10 +14,13 @@ namespace NEvilES.Abstractions.Pipeline
     public interface IReadFromReadModel<in TId>
     {
         T Get<T>(TId id) where T : class, IHaveIdentity<TId>;
-
-        IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity<TId>;
-
         IEnumerable<T> Query<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>;
+    }
+
+    public interface IQueryFromReadModel<in TId>
+    {
+        IQueryable<T> GetAll<T>() where T : class, IHaveIdentity<TId>;
+        IQueryable<T> GetQuery<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>;
     }
 
     public interface IWriteReadModel<in TId>

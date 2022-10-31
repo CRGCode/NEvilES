@@ -40,6 +40,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
 
     public enum State
     {
+        Unknown,
         Vic,
         Nsw,
         Sa,

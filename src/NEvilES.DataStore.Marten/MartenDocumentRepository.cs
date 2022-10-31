@@ -7,7 +7,7 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.DataStore.Marten
 {
-    public abstract class MartenDocumentRepository<TId> : IReadFromReadModel<TId>, IWriteReadModel<TId> 
+    public abstract class MartenDocumentRepository<TId> : IReadFromReadModel<TId>, IWriteReadModel<TId>, IQueryFromReadModel<TId>
     {
         private readonly IDocumentSession session;
 
@@ -41,9 +41,9 @@ namespace NEvilES.DataStore.Marten
             return session.Load<T>(dynamicId);
         }
 
-        public IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity<TId>
+        public IQueryable<T> GetAll<T>() where T : class, IHaveIdentity<TId>
         {
-            throw new NotImplementedException("This is not a good idea and is only implemented - for ");
+            return session.Query<T>();
         }
 
         public IEnumerable<T> Query<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>
