@@ -7,14 +7,14 @@ namespace NEvilES.DataStore.Marten.Tests
 {
     public class TestContext
     {
+        public static string ConnString = "Host=localhost;Port=5454;Username=postgres;Password=postgres;Database=neviles";
         public IServiceProvider Services { get; }
 
         public TestContext()
         {
-            const string connString = "Host=localhost;Username=postgres;Password=password;Database=dataroom2";
 
             var services = new ServiceCollection()
-                .AddSingleton<IDocumentStore>(c => DocumentStore.For(connString) )
+                .AddSingleton<IDocumentStore>(c => DocumentStore.For(ConnString) )
                 .AddScoped(s => s.GetRequiredService<IDocumentStore>().OpenSession())
                 .AddScoped(s => s.GetRequiredService<IDocumentStore>().QuerySession());
 

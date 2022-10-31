@@ -63,7 +63,7 @@ namespace NEvilES.DataStore.Marten.Tests
         [Fact]
         public void EventStoreCreate()
         {
-            new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString("Host=localhost;Username=postgres;Password=password;Database=originations"));
+            new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(TestContext.ConnString));
         }
     }
 
