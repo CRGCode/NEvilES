@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace NEvilES.Abstractions.Pipeline
@@ -16,7 +17,7 @@ namespace NEvilES.Abstractions.Pipeline
 
         IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity<TId>;
 
-        IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity<TId>;
+        IEnumerable<T> Query<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>;
     }
 
     public interface IWriteReadModel<in TId>

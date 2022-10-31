@@ -16,7 +16,7 @@ namespace NEvilES.DataStore.Marten
             }
             var dbName = connString.Keys["Database"];
             
-            using (var connection = new NpgsqlConnection($@"Host={connString.Keys["Host"]};Port={connString.Keys["Port"]};Username=postgres;Password={connString.Keys["Password"]};Database=postgres"))
+            using (var connection = new NpgsqlConnection($@"Host={connString.Keys["Host"]};Port={connString.Keys["Port"]};Username={connString.Keys["Username"]};Password={connString.Keys["Password"]};Database=postgres"))
             {
                 connection.Open();
 

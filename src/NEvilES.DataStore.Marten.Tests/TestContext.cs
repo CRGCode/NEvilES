@@ -1,6 +1,7 @@
 using System;
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
+using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.DataStore.Marten.Tests
@@ -22,6 +23,8 @@ namespace NEvilES.DataStore.Marten.Tests
             services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });
 
             Services = services.BuildServiceProvider();
+
+            new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
         }
     }
 }

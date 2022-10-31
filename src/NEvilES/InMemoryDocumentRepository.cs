@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES
@@ -51,9 +52,10 @@ namespace NEvilES
             return data.Values.Where(x => x.GetType() == typeof(T)).Cast<T>();
         }
 
-        public IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity<TId>
+        public IEnumerable<T> Query<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>
         {
-            return data.Values.Where(x => x.GetType() == typeof(T)).Cast<T>().Where(p);
+            var predicate = p.Compile();  // TODO this will need to be cached....
+            return data.Values.Where(x => x.GetType() == typeof(T)).Cast<T>().Where(predicate);
         }
 
         public void Clear()

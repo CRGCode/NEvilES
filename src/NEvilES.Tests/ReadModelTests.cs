@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions.Pipeline;
 using Xunit;
@@ -63,6 +64,23 @@ namespace NEvilES.Tests
             var person = reader.Get<ChatRoom>(id);
 
             Assert.Equal(id, person.Id);
+        }
+
+        [Fact]
+        public void QueryForGuid()
+        {
+            var writer = scope.ServiceProvider.GetRequiredService<IWriteReadModel<Guid>>();
+
+            writer.Insert(new ChatRoom { Id = Guid.NewGuid(), Name = "Chat 1"});
+            writer.Insert(new ChatRoom { Id = Guid.NewGuid(), Name = "Chat 2"});
+            writer.Insert(new ChatRoom { Id = Guid.NewGuid(), Name = "Chat 3"});
+
+            var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<Guid>>();
+
+            var chats = reader.Query<ChatRoom>(c => c.Name == "Chat 1").ToList();
+
+            Assert.NotEmpty(chats);
+            Assert.Equal("Chat 1",chats.FirstOrDefault().Name);
         }
 
         [Fact]

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq.Expressions;
 using NEvilES.Abstractions.Pipeline;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -166,7 +167,7 @@ ELSE
             }
         }
 
-        public IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity<TId>
+        public IEnumerable<T> Query<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>
         {
             // layta mate
             return null;

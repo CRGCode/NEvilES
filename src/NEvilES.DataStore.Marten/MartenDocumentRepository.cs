@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Marten;
 using NEvilES.Abstractions.Pipeline;
 
@@ -45,7 +46,12 @@ namespace NEvilES.DataStore.Marten
             throw new NotImplementedException("This is not a good idea and is only implemented - for ");
         }
 
-        public IEnumerable<T> Query<T>(Func<T, bool> p) where T : class, IHaveIdentity<TId>
+        public IEnumerable<T> Query<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>
+        {
+            return session.Query<T>().Where(p);
+        }
+
+        public IQueryable<T> GetQuery<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>
         {
             return session.Query<T>().Where(p);
         }

@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
+using NEvilES.Testing;
 using Xunit;
 
 namespace NEvilES.DataStore.Marten.Tests
@@ -61,6 +63,21 @@ namespace NEvilES.DataStore.Marten.Tests
         }
 
         [Fact]
+        public void GetQuery()
+        {
+            var id = Guid.NewGuid();
+            var item = new Person(id, "John");
+            var writer = context.Services.GetRequiredService<IWriteReadModel<Guid>>();
+            writer.Insert(item);
+
+            var reader = context.Services.GetRequiredService<IReadFromReadModel<Guid>>();
+            var person = ((DocumentRepositoryWithKeyTypeGuid) reader).GetQuery<Person>(p => p.Name == "John");
+
+            Assert.Contains("->> 'Name'", person.ToCommand().CommandText);
+        }
+
+
+        [RunnableInDebugOnly]
         public void EventStoreCreate()
         {
             new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(TestContext.ConnString));
