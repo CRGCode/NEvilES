@@ -71,9 +71,12 @@ namespace NEvilES.DataStore.Marten.Tests
             writer.Insert(item);
 
             var reader = context.Services.GetRequiredService<IReadFromReadModel<Guid>>();
-            var person = ((DocumentRepositoryWithKeyTypeGuid) reader).GetQuery<Person>(p => p.Name == "John");
+            var person = ((DocumentRepositoryWithKeyTypeGuid) reader)
+                .GetQuery<Person>(p => p.Name == "John")
+                .OrderBy(x => x.Name);
 
             Assert.Contains("->> 'Name'", person.ToCommand().CommandText);
+            Assert.Contains("order by", person.ToCommand().CommandText);
         }
 
 
