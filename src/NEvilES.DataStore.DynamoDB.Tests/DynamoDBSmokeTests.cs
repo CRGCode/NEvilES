@@ -82,7 +82,6 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             var user2 = Guid.NewGuid();
             var user3 = Guid.NewGuid();
 
-
             var agg = new ChatRoom.Aggregate();
             agg.Handle(new ChatRoom.Create() { ChatRoomId = streamId, Name = "Bobs Chat", InitialUsers = new HashSet<Guid> { user1 } });
             agg.Handle(new ChatRoom.IncludeUserInRoom() { ChatRoomId = streamId, UserId = user2 });

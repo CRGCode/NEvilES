@@ -7,6 +7,7 @@ using Xunit;
 
 namespace NEvilES.Tests
 {
+    [Collection("Serial")]
     public class DataStoreSmokeTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
         private readonly IRepository repository;

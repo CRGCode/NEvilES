@@ -5,6 +5,8 @@ using Xunit;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
+    //[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
+    [Collection("Serial")]
     public class DocumentStoreSmokeTests : IClassFixture<SQLTestContext>
     {
         private readonly IReadFromReadModel<Guid> reader;

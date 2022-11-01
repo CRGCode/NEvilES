@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using NEvilES.Abstractions.Pipeline;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -12,7 +14,7 @@ namespace NEvilES.DataStore.SQL
     // NOTE 
     // TODO - This is not general and needs work as it has MS SQL specific T-SQL
 
-    public abstract class SQLDocumentRepository<TId> : IReadFromReadModel<TId>, IWriteReadModel<TId>
+    public abstract class SQLDocumentRepository<TId> : IReadFromReadModel<TId>, IWriteReadModel<TId>, IQueryFromReadModel<TId>
     {
         private readonly IDbTransaction transaction;
         private readonly HashSet<string> docTypes;
@@ -130,47 +132,52 @@ ELSE
             }
         }
 
-        public IEnumerable<T> GetAll<T>() where T : class, IHaveIdentity<TId>
+        public IQueryable<T> GetAll<T>() where T : class, IHaveIdentity<TId>
+        {
+            return new EnumerableQuery<T>(All<T>());
+        }
+
+        private IEnumerable<T> All<T>() where T : class, IHaveIdentity<TId>
         {
             var connection = transaction.Connection;
 
             var docName = typeof(T).Name;
             var sql = $"select Data from Doc.{docName}";
 
-            var serializerSetting = new JsonSerializerSettings()
+            var serializerSetting = new JsonSerializerSettings
             {
                 ContractResolver = new CamelCaseContractResolver()
             };
 
-            using (var command = connection.CreateCommand())
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.Transaction = transaction;
+            command.CommandType = CommandType.Text;
+
+            var reader = command.ExecuteReader();
+
+            var hasRows = reader.Read();
+            if (hasRows)
             {
-                command.CommandText = sql;
-                command.Transaction = transaction;
-                command.CommandType = CommandType.Text;
-
-                var reader = command.ExecuteReader();
-
-                var hasRows = reader.Read();
-
-                if (hasRows)
+                do
                 {
-                    do
-                    {
-                        var item = reader.GetString(0);
-                        yield return JsonConvert.DeserializeObject<T>(item, serializerSetting);
-                    } while (reader.Read());
-                }
-                else
-                {
-                    yield return default;
-                }
+                    var item = reader.GetString(0);
+                    yield return JsonConvert.DeserializeObject<T>(item, serializerSetting);
+                } while (reader.Read());
             }
+            reader.Close();
         }
 
         public IEnumerable<T> Query<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>
         {
             // layta mate
-            return null;
+            throw new NotImplementedException();
+        }
+
+        public IQueryable<T> GetQuery<T>(Expression<Func<T, bool>> p) where T : class, IHaveIdentity<TId>
+        {
+            // layta mate
+            throw new NotImplementedException();
         }
 
         private string CheckDocTypeExists<T>()

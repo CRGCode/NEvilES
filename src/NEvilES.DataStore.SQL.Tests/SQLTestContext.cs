@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
+using NEvilES.DataStore.MSSQL;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
@@ -14,6 +15,8 @@ namespace NEvilES.DataStore.SQL.Tests
 
         protected override void AddServices(IServiceCollection services)
         {
+            new MSSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
+
             services.AddScoped<IDbConnection>(c =>
             {
                 var conn = new SqlConnection(c.GetRequiredService<IConnectionString>().Data);

@@ -6,14 +6,10 @@ namespace NEvilES.DataStore.DynamoDB.Tests
 {
     public class TestContext
     {
-
         public IServiceProvider Services { get;private set; }
         public TestContext()
         {
-
-
             IServiceCollection services = new ServiceCollection();
-
 
             services.AddEventStoreAsync<DynamoDBEventStore, DynamoDBTransaction>(opts =>
              {
@@ -33,18 +29,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
             var dynamoDbClient = new AmazonDynamoDBClient(clientConfig);
             services.AddScoped<IAmazonDynamoDB>(s => dynamoDbClient);
 
-
-
             Services = services.BuildServiceProvider();
-
-            // var num1 = fS.GetService<IProjectAsync<TestAggregate.AddTransaction>>();
-            // var num2 = fS.GetService<IProjectAsync<TestAggregate.AmountChanged>>();
-            // var id = CombGuid.NewGuid();
-            // var id = Guid.Parse("53a62c22-4dde-4854-a4ff-aa23018559fc");
-
-
-
-
         }
     }
 }

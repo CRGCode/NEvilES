@@ -31,5 +31,21 @@ namespace NEvilES.Tests.CommonDomain.Sample.ReadModel
             }
 
         }
+
+        public override bool Equals(object obj)
+        {
+            var other = ((ChatRoom)obj)!;
+            return Id == other.Id && Name == other.Name;
+        }
+
+        protected bool Equals(ChatRoom other)
+        {
+            return Id.Equals(other.Id) && Name == other.Name;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Name);
+        }
     }
 }

@@ -8,10 +8,12 @@ using Newtonsoft.Json.Converters;
 using Xunit;
 using NEvilES.Pipeline;
 using NEvilES.Abstractions;
+using NEvilES.Testing;
 using NEvilES.Tests.CommonDomain.Sample;
 
 namespace NEvilES.Tests
 {
+    [Collection("Serial")]
     public class ApprovalWorkflowEngineTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
         private static readonly Type ApproverType = typeof(ApprovalWorkflowEngine);
@@ -171,17 +173,6 @@ namespace NEvilES.Tests
         public void Dispose()
         {
             scope?.Dispose();
-        }
-    }
-
-    public sealed class RunnableInDebugOnlyAttribute : FactAttribute
-    {
-        public RunnableInDebugOnlyAttribute()
-        {
-            if (!Debugger.IsAttached)
-            {
-                Skip = "Only running in interactive mode.";
-            }
         }
     }
 

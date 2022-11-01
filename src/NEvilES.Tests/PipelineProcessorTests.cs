@@ -10,6 +10,7 @@ using Xunit;
 
 namespace NEvilES.Tests
 {
+    [Collection("Serial")]
     public class PipelineProcessorTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
         private readonly ICommandProcessor commandProcessor;

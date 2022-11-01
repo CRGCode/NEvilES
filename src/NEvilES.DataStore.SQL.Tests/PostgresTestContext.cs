@@ -1,13 +1,16 @@
 using System.Data;
+using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
+using NEvilES.DataStore.Marten;
 using Npgsql;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
     public class PostgresTestContext : BaseTestContext
     {
-        public PostgresTestContext() : base("Host=localhost;Username=postgres;Password=password;Database=originations")
+        public PostgresTestContext() : base("Host=localhost;Port=5454;Username=postgres;Password=postgres;Database=neviles")
         {
         }
 
@@ -19,6 +22,15 @@ namespace NEvilES.DataStore.SQL.Tests
                 conn.Open();
                 return conn;
             });
+            services
+                .AddSingleton<IDocumentStore>(c => DocumentStore.For(ConnString) )
+                .AddScoped(s => s.GetRequiredService<IDocumentStore>().OpenSession())
+                .AddScoped(s => s.GetRequiredService<IDocumentStore>().QuerySession());
+
+            services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });
+            services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });
+
+            new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
         }
     }
 }

@@ -55,6 +55,12 @@ namespace NEvilES.DataStore.Marten
         {
             return session.Query<T>().Where(p);
         }
+
+        
+        public void WipeDocTypeIfExists<T>()
+        {
+            session.DocumentStore.Advanced.Clean.DeleteDocumentsByType(typeof(T));
+        }
     }
 
     public class DocumentRepositoryWithKeyTypeGuid : MartenDocumentRepository<Guid>
@@ -62,6 +68,7 @@ namespace NEvilES.DataStore.Marten
         public DocumentRepositoryWithKeyTypeGuid(IDocumentSession documentSession) : base(documentSession)
         {
         }
+
     }
 
     public class DocumentRepositoryWithKeyTypeString : MartenDocumentRepository<string>

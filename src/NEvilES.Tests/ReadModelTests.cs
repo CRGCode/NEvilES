@@ -9,6 +9,7 @@ namespace NEvilES.Tests
 {
     using CommonDomain.Sample.ReadModel;
 
+    [Collection("Serial")]
     public class ReadModelTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
         private readonly IServiceScope scope;

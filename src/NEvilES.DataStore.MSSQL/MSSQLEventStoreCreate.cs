@@ -37,6 +37,7 @@ EXEC ('CREATE DATABASE [{0}] ON PRIMARY
                 var command = connection.CreateCommand();
                 command.CommandText = createDb;
                 command.ExecuteNonQuery();
+                connection.Close();
             }
 
             using (var connection = new SqlConnection(connString.Data))
@@ -64,6 +65,7 @@ CREATE TABLE events(
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 ";
                 cmd.ExecuteNonQuery();
+                connection.Close();
             }
         }
     }

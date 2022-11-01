@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.DataStore.MSSQL;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
 using Xunit;
@@ -14,11 +13,8 @@ using Xunit.Abstractions;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
-    //[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
-    [CollectionDefinition("Integration")]
-    //[Collection("Non-Parallel Collection")]
-    //[Collection("Serial")]
-    [Collection("Integration")]
+
+    [Collection("Serial")]
     public class SQLEventStoreTests : IClassFixture<SQLTestContext>, IDisposable
     {
         private readonly SQLTestContext context;
@@ -33,13 +29,7 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
-        public void A1_WipeAllEvents()
-        {
-            new MSSQLEventStoreCreate().CreateOrWipeDb(connectionString);
-        }
-
-        [Fact]
-        public void A2_Save_FirstEvent()
+        public void Save_Event()
         {
             var chatRoom = new ChatRoom.Aggregate();
             chatRoom.RaiseEvent(new ChatRoom.Created
@@ -58,7 +48,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
         private static readonly int[] BackOff = {10,20,20,50,50,50,100,100,200,200,300};
         [Fact]
-        public void A3_RetryCommandProcessorOnConcurrencyExceptions()
+        public void RetryCommandProcessorOnConcurrencyExceptions()
         {
             var retries = BackOff.Count();
             var chatRoom = Guid.NewGuid();
@@ -127,7 +117,7 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
-        public void A4_ForceConcurrencyExceptions()
+        public void ForceConcurrencyExceptions()
         {
             var chatRoom = Guid.NewGuid();
             var commandProcessor  = context.Container.GetRequiredService<ICommandProcessor>();
@@ -142,7 +132,6 @@ namespace NEvilES.DataStore.SQL.Tests
             void IncludeUser(Guid guid, Guid userId)
             {
                 using var scope = context.Container.CreateScope();
-                //var processor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
                 var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                 var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(new ScopedServiceProviderFactory(scope), commandContext);
                 processor.Process(new ChatRoom.IncludeUserInRoom()
@@ -168,7 +157,7 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
-        public void A5_PipelineProcessorHandlesRetryOnConcurrencyExceptions()
+        public void PipelineProcessorHandlesRetryOnConcurrencyExceptions()
         {
             var chatRoom = Guid.NewGuid();
             var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
