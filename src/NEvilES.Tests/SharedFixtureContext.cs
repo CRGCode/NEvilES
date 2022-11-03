@@ -4,6 +4,8 @@ using System.Data.SqlClient;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore.SQL;
@@ -32,7 +34,7 @@ namespace NEvilES.Tests
                 .AddSingleton<IConnectionString>(c => new ConnectionString(configuration.GetConnectionString(connString)))
                 .AddScoped(c =>
                 {
-                    var conn = c.GetService<IDbConnection>();
+                    var conn = c.GetRequiredService<IDbConnection>();
                     return conn.BeginTransaction();
                 })
                 .AddEventStore<SQLEventStore, PipelineTransaction>(opts =>
@@ -53,6 +55,8 @@ namespace NEvilES.Tests
                     };
                 });
 
+            services.AddLogging(configure => configure.SetMinimumLevel(LogLevel.Information));
+            
             services.AddSingleton<IUser>(c => new CommandContext.User(Guid.Parse("00000001-0007-4852-9D2D-111111111111")));
             services.AddScoped<ICommandContext, CommandContext>(s =>
             {
@@ -61,11 +65,8 @@ namespace NEvilES.Tests
                 return new CommandContext(user, transaction, null, "1.0");
             });
 
+            services.AddScoped<IFactory, ServiceProviderFactory>();
             services.AddScoped<IReadEventStore, SQLEventStoreReader>();
-            //services.AddScoped(typeof(SQLDocumentRepository<>));
-
-            //services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(InMemoryDocumentRepository<>).Assembly });
-            //services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(InMemoryDocumentRepository<>).Assembly });
             services.AddSingleton<DocumentStoreGuid>();
             services.AddSingleton<IReadFromReadModel<Guid>>(s => s.GetRequiredService<DocumentStoreGuid>());
             services.AddSingleton<IWriteReadModel<Guid>>(s => s.GetRequiredService<DocumentStoreGuid>());

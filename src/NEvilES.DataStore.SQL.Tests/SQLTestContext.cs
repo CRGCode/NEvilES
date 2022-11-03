@@ -15,8 +15,6 @@ namespace NEvilES.DataStore.SQL.Tests
 
         protected override void AddServices(IServiceCollection services)
         {
-            new MSSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
-
             services.AddScoped<IDbConnection>(c =>
             {
                 var conn = new SqlConnection(c.GetRequiredService<IConnectionString>().Data);
@@ -26,6 +24,8 @@ namespace NEvilES.DataStore.SQL.Tests
 
             services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
             services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
+
+            new MSSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
         }
     }
 }

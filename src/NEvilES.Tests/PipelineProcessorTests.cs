@@ -7,6 +7,7 @@ using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
 using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NEvilES.Tests
 {
@@ -17,7 +18,7 @@ namespace NEvilES.Tests
         private readonly IRepository repository;
         private readonly IServiceScope scope;
 
-        public PipelineProcessorTests(SharedFixtureContext context)
+        public PipelineProcessorTests(SharedFixtureContext context, ITestOutputHelper output)
         {
             scope = context.Container.CreateScope();
             commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
@@ -97,11 +98,11 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var results = commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
-            var projectedItem = results.FindProjectedItem<PersonReadModel>();
+            PersonalDetails projectedItem = results.FindProjectedItem<PersonReadModel>();
             Assert.True(projectedItem.FirstName == "John");
 
             results = commandProcessor.Process(new Person.CorrectName { PersonId = streamId, Name = "New Name" });
-            projectedItem = results.FindProjectedItem<PersonReadModel>();
+            projectedItem = results.FindProjectedItem<PersonalDetails>();
             Assert.True(projectedItem.FirstName == "New");
         }
 
@@ -119,12 +120,12 @@ namespace NEvilES.Tests
                 commandProcessor.Process(new Employee.Create { PersonId = personId, Person = model }));
         }
 
-        [Fact (Skip = "Worked with previous IOC but broken with .Net version - need to fix how we scope the pipeline, as a new scope starts for nested handlers")]
+        [Fact] // (Skip = "Worked with previous IOC but broken with .Net version - need to fix how we scope the pipeline, as a new scope starts for nested handlers")]
         public void OneCommandToManyAggregates()
         {
             var streamId = Guid.NewGuid();
 
-            var command = new Person.SendInvite(streamId, new PersonalDetails("John", "Smith"), "john@gmail.com");
+            var command = new Person.SendInvite(streamId, new PersonalDetails("John", $"Smith+{Guid.NewGuid()}"), "john@gmail.com");
             var expected = commandProcessor.Process(command);
 
             Assert.Equal(2, expected.UpdatedAggregates.Count);

@@ -10,19 +10,22 @@ using NEvilES.Pipeline;
 using NEvilES.Abstractions;
 using NEvilES.Testing;
 using NEvilES.Tests.CommonDomain.Sample;
+using Xunit.Abstractions;
 
 namespace NEvilES.Tests
 {
     [Collection("Serial")]
     public class ApprovalWorkflowEngineTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
+        private readonly ITestOutputHelper output;
         private static readonly Type ApproverType = typeof(ApprovalWorkflowEngine);
         private readonly IServiceScope scope;
         private readonly IServiceProvider container;
         private readonly IApprovalWorkflowEngine approvalWorkflowEngine;
 
-        public ApprovalWorkflowEngineTests(SharedFixtureContext context)
+        public ApprovalWorkflowEngineTests(SharedFixtureContext context, ITestOutputHelper output)
         {
+            this.output = output;
             scope = context.Container.CreateScope();
             container = scope.ServiceProvider;
             approvalWorkflowEngine = container.GetRequiredService<IApprovalWorkflowEngine>();
@@ -41,16 +44,16 @@ namespace NEvilES.Tests
             stopwatch.Start();
             var cmd = func(approver, innerCommand);
             stopwatch.Stop();
-            Console.WriteLine("1st call : {0}ms", stopwatch.ElapsedMilliseconds);
+            output.WriteLine("1st call : {0}ms", stopwatch.ElapsedMilliseconds);
 
             var loop = 20;
-            Console.WriteLine("Running ({0}) calls....", loop);
+            output.WriteLine("Running ({0}) calls....", loop);
             for (var i = 0; i < loop; i++)
             {
                 stopwatch.Restart();
                 var x = func(approver, innerCommand);
                 stopwatch.Stop();
-                Console.WriteLine("Call ({1}) : {0}us", stopwatch.ElapsedMicroSeconds(), i + 1);
+                output.WriteLine("Call ({1}) : {0}us", stopwatch.ElapsedMicroSeconds(), i + 1);
             }
 
             stopwatch.Restart();
@@ -60,7 +63,7 @@ namespace NEvilES.Tests
                 var x = func(approver, innerCommand);
             }
             stopwatch.Stop();
-            Console.WriteLine("Many ({1}) calls : {0}us/call", (decimal)stopwatch.ElapsedMicroSeconds() / loop, loop);
+            output.WriteLine("Many ({1}) calls : {0}us/call", (decimal)stopwatch.ElapsedMicroSeconds() / loop, loop);
         }
 
         [RunnableInDebugOnly]
@@ -116,10 +119,10 @@ namespace NEvilES.Tests
             Assert.Equal("blah", stateChangedEvent.State);
         }
 
-        [Fact(Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
+        [Fact]
         public void ApprovalWorkflowEngine_Transition_Approve()
         {
-            var command = new Employee.Create { PersonId = Guid.NewGuid(), Person = new PersonalDetails("John", "Smith") };
+            var command = new Employee.Create { PersonId = Guid.NewGuid(), Person = new PersonalDetails("John", $"Smith{Guid.NewGuid()}") };
             var result = approvalWorkflowEngine.Initiate(command);
             var approvalRequest = result.FilterEvents<Approval.Created>().First();
 
@@ -144,7 +147,7 @@ namespace NEvilES.Tests
             Assert.NotNull(message.InnerCommand);
         }
 
-        [Fact(Skip = "Worked with previous IOC but broken now....... look at the type registration")]
+        [Fact]//(Skip = "Worked with previous IOC but broken now....... look at the type registration")]
         public void ApprovalWorkflowEngine_Transition_Approve_RunComplexCommands()
         {
             // Arrange

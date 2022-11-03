@@ -27,7 +27,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 .AddSingleton<IConnectionString>(c => new ConnectionString(ConnString))
                 .AddScoped(c =>
                 {
-                    var conn = c.GetService<IDbConnection>();
+                    var conn = c.GetRequiredService<IDbConnection>();
                     return conn.BeginTransaction();
                 })
                 .AddEventStore<SQLEventStore, PipelineTransaction>(opts =>

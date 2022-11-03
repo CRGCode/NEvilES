@@ -22,6 +22,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 conn.Open();
                 return conn;
             });
+
             services
                 .AddSingleton<IDocumentStore>(c => DocumentStore.For(ConnString) )
                 .AddScoped(s => s.GetRequiredService<IDocumentStore>().OpenSession())
@@ -29,6 +30,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
             services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });
             services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });
+            services.AddAllGenericTypes(typeof(IQueryFromReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });
 
             new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
         }

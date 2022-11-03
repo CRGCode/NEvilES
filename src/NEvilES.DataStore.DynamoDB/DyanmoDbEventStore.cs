@@ -14,12 +14,13 @@ using Newtonsoft.Json.Converters;
 
 namespace NEvilES.DataStore.DynamoDB
 {
-    public class DynamoDBEventStore : IAsyncRepository, IAsyncAggregateHistory
+    public class DynamoDbEventStore : IAsyncRepository, IAsyncAggregateHistory
     {
-        private readonly IDynamoDBContext _context;
-        private readonly IAmazonDynamoDB _dynamoDbClient;
-        private readonly IEventTypeLookupStrategy _eventTypeLookupStrategy;
-        private readonly ICommandContext _commandContext;
+        private readonly IDynamoDBContext context;
+        private readonly IAmazonDynamoDB dynamoDbClient;
+        private readonly IEventTypeLookupStrategy eventTypeLookupStrategy;
+        private readonly ICommandContext commandContext;
+
         public static JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
             DefaultValueHandling = DefaultValueHandling.Populate,
@@ -28,16 +29,16 @@ namespace NEvilES.DataStore.DynamoDB
             Converters = new JsonConverter[] { new StringEnumConverter() }
         };
 
-        public DynamoDBEventStore(
+        public DynamoDbEventStore(
             IAmazonDynamoDB dynamoDbClient,
             IEventTypeLookupStrategy eventTypeLookupStrategy,
             ICommandContext commandContext
         )
         {
-            _dynamoDbClient = dynamoDbClient;
-            _context = new DynamoDBContext(_dynamoDbClient);
-            _eventTypeLookupStrategy = eventTypeLookupStrategy;
-            _commandContext = commandContext;
+            this.dynamoDbClient = dynamoDbClient;
+            context = new DynamoDBContext(this.dynamoDbClient);  // TODO this looks dodgy use DI scopes and register as singleton
+            this.eventTypeLookupStrategy = eventTypeLookupStrategy;
+            this.commandContext = commandContext;
         }
 
         public async Task<TAggregate> GetAsync<TAggregate>(Guid id) where TAggregate : IAggregate
@@ -67,7 +68,7 @@ namespace NEvilES.DataStore.DynamoDB
                 expression.ExpressionStatement += $" AND {nameof(DynamoDBEvent.Version)} >= :v";
             }
 
-            var query = _context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
+            var query = context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
             {
                 ConsistentRead = true,
                 KeyExpression = expression
@@ -82,13 +83,13 @@ namespace NEvilES.DataStore.DynamoDB
                 return emptyAggregate;
             }
 
-            var aggregate = (IAggregate)Activator.CreateInstance(_eventTypeLookupStrategy.Resolve(events[0].Category));
+            var aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(events[0].Category));
 
             foreach (var eventDb in events.OrderBy(x => x.Version))
             {
                 var message =
                     (IEvent)
-                    JsonConvert.DeserializeObject(eventDb.Body, _eventTypeLookupStrategy.Resolve(eventDb.BodyType), SerializerSettings);
+                    JsonConvert.DeserializeObject(eventDb.Body, eventTypeLookupStrategy.Resolve(eventDb.BodyType), SerializerSettings);
                 //message.StreamId = eventDb.StreamId;
                 aggregate.ApplyEvent(message);
             }
@@ -114,7 +115,7 @@ namespace NEvilES.DataStore.DynamoDB
             };
 
 
-            var query = _context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
+            var query = context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
             {
                 ConsistentRead = true,
                 KeyExpression = expression,
@@ -144,7 +145,7 @@ namespace NEvilES.DataStore.DynamoDB
             }
             else
             {
-                aggregate = (IAggregate)Activator.CreateInstance(_eventTypeLookupStrategy.Resolve(category));
+                aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(category));
             }
             ((AggregateBase)aggregate).SetState(id, version ?? 0);
 
@@ -153,10 +154,10 @@ namespace NEvilES.DataStore.DynamoDB
 
         private TransactWriteItem GetDynamoDbTransactItem(IAggregate aggregate, int version, IEventData eventData)
         {
-            var _when = DateTimeOffset.Now;
+            var when = DateTimeOffset.Now;
             // TimeSpan t = _when.UtcDateTime - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-            var _whenTimeStamp = (ulong)_when.ToUnixTimeMilliseconds();
+            var whenTimeStamp = (ulong)when.ToUnixTimeMilliseconds();
 
             var item = new TransactWriteItem
             {
@@ -174,16 +175,16 @@ namespace NEvilES.DataStore.DynamoDB
                         },
                         {nameof(DynamoDBEvent.CommmitedAt), new AttributeValue
                             {
-                                N = _whenTimeStamp.ToString()
+                                N = whenTimeStamp.ToString()
                             }
                         },
-                        {nameof(DynamoDBEvent.TransactionId), new AttributeValue(_commandContext.Transaction.Id.ToString()) },
-                        {nameof(DynamoDBEvent.AppVersion),  new AttributeValue(_commandContext.AppVersion)},
-                        {nameof(DynamoDBEvent.When), new AttributeValue(_when.ToString("o"))},
+                        {nameof(DynamoDBEvent.TransactionId), new AttributeValue(commandContext.Transaction.Id.ToString()) },
+                        {nameof(DynamoDBEvent.AppVersion),  new AttributeValue(commandContext.AppVersion)},
+                        {nameof(DynamoDBEvent.When), new AttributeValue(when.ToString("o"))},
                         {nameof(DynamoDBEvent.Body),  new AttributeValue(JsonConvert.SerializeObject(eventData.Event, SerializerSettings))},
                         {nameof(DynamoDBEvent.Category), new AttributeValue(aggregate.GetType().FullName)},
                         {nameof(DynamoDBEvent.BodyType), new AttributeValue(eventData.Type.FullName)},
-                        {nameof(DynamoDBEvent.Who), new AttributeValue( (_commandContext.ImpersonatorBy?.GuidId ?? _commandContext.By.GuidId).ToString())},
+                        {nameof(DynamoDBEvent.Who), new AttributeValue( (commandContext.ImpersonatorBy?.GuidId ?? commandContext.By.GuidId).ToString())},
                     }
                 }
             };
@@ -218,7 +219,7 @@ namespace NEvilES.DataStore.DynamoDB
                     }
 
 
-                    var abc = await _dynamoDbClient.TransactWriteItemsAsync(new TransactWriteItemsRequest
+                    var abc = await dynamoDbClient.TransactWriteItemsAsync(new TransactWriteItemsRequest
                     {
                         TransactItems = items
                     });
@@ -231,7 +232,7 @@ namespace NEvilES.DataStore.DynamoDB
             }
 
             aggregate.ClearUncommittedEvents();
-            return new AggregateCommit(aggregate.Id, _commandContext.By.GuidId, uncommittedEvents);
+            return new AggregateCommit(aggregate.Id, commandContext.By.GuidId, uncommittedEvents);
         }
 
         public async Task<IEnumerable<IAggregateCommit>> ReadAsync(long from = 0, long to = 0)
@@ -254,7 +255,7 @@ namespace NEvilES.DataStore.DynamoDB
                 expression.ExpressionAttributeValues.Add(":cmitTo", to);
             }
 
-            var scan = _context.FromScanAsync<DynamoDBEvent>(new ScanOperationConfig
+            var scan = context.FromScanAsync<DynamoDBEvent>(new ScanOperationConfig
             {
                 FilterExpression = expression
             });
@@ -273,7 +274,7 @@ namespace NEvilES.DataStore.DynamoDB
         private IEventData ReadToIEventData(Guid streamId, DynamoDBEvent row)
         {
 
-            var type = _eventTypeLookupStrategy.Resolve(row.BodyType);
+            var type = eventTypeLookupStrategy.Resolve(row.BodyType);
             var @event = (IEvent)JsonConvert.DeserializeObject(row.Body, type);
             //@event.StreamId = streamId;
 
@@ -308,7 +309,7 @@ namespace NEvilES.DataStore.DynamoDB
                 }
             };
 
-            var query = _context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
+            var query = context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
             {
                 ConsistentRead = true,
                 KeyExpression = expression
@@ -332,7 +333,7 @@ namespace NEvilES.DataStore.DynamoDB
                 }
             };
 
-            var query = _context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
+            var query = context.FromQueryAsync<DynamoDBEvent>(new QueryOperationConfig()
             {
                 ConsistentRead = true,
                 KeyExpression = expression,

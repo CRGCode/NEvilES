@@ -11,7 +11,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
         {
             IServiceCollection services = new ServiceCollection();
 
-            services.AddEventStoreAsync<DynamoDBEventStore, DynamoDBTransaction>(opts =>
+            services.AddEventStoreAsync<DynamoDbEventStore, DynamoDBTransaction>(opts =>
              {
                  opts.DomainAssemblyTypes = new[]
                  {

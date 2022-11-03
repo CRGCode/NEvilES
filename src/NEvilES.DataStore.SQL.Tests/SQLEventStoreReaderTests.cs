@@ -6,6 +6,7 @@ using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
@@ -13,31 +14,37 @@ namespace NEvilES.DataStore.SQL.Tests
     [Collection("Serial")]
     public class SQLEventStoreReaderTests : IClassFixture<SQLTestContext>, IDisposable
     {
+        private readonly ITestOutputHelper output;
         private readonly IServiceScope scope;
         private readonly IFactory factory;
         private readonly IServiceScopeFactory serviceScopeFactory;
 
-        public SQLEventStoreReaderTests(SQLTestContext context)
+        public SQLEventStoreReaderTests(SQLTestContext context, ITestOutputHelper output)
         {
+            this.output = output;
             serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
             scope = serviceScopeFactory.CreateScope();
             factory = scope.ServiceProvider.GetRequiredService<IFactory>();
 
             {
-                var commandProcessor = context.Container.GetRequiredService<ICommandProcessor>();
+                using var s = serviceScopeFactory.CreateScope();
+
+                var commandProcessor = s.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                var chatRoomId = Guid.NewGuid();
                 commandProcessor.Process(new NEvilES.Tests.CommonDomain.Sample.ChatRoom.Create
                 {
-                    ChatRoomId = Guid.NewGuid(),
+                    ChatRoomId = chatRoomId,
                     InitialUsers = new HashSet<Guid> { },
                     Name = "Biz Room"
                 });
+                output.WriteLine($"{chatRoomId}");
             }
         }
     
         [Fact]
         public void Read()
         {
-            var reader = serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IReadEventStore>();
+            var reader = scope.ServiceProvider.GetRequiredService<IReadEventStore>();
             var events = reader.Read().ToArray();
 
             Assert.True(events.Length > 0);

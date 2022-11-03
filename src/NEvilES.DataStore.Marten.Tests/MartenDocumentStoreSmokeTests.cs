@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
-using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Testing;
 using NEvilES.Tests.CommonDomain.Sample;
@@ -13,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace NEvilES.DataStore.Marten.Tests
 {
+    [Collection("Integration")]
     public class MartenDocumentStoreSmokeTests : IClassFixture<TestContext>
     {
         private readonly TestContext context;
@@ -96,14 +94,6 @@ namespace NEvilES.DataStore.Marten.Tests
 
             var results = query.ToArray();
             Assert.Single(results);
-        }
-
-
-
-        [RunnableInDebugOnly]
-        public void EventStoreCreate()
-        {
-            new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(TestContext.ConnString));
         }
     }
 

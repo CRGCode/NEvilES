@@ -28,13 +28,15 @@ namespace NEvilES.Tests
                 ThenFailWith<DomainAggregateException>());
         }
 
-        [RunnableInDebugOnly]
+        [Fact]
         public void FailsExpectedEvent()
         {
             var streamId = Guid.NewGuid();
             Test(Given(new Customer.Created { CustomerId = streamId, Name = "Customer 1" }),
                 When(x => x.Handle(new Customer.Complain { CustomerId = streamId, Reason = "Not Happy" })),
-                Then(new Customer.Complaint { CustomerId = streamId, Reason = "Not Happy" }));
+                Then(new Customer.Complaint { CustomerId = streamId, Reason = "Not Happy" },
+                    new Customer.NoteAdded { CustomerId = streamId, Text = "Not Happy" }
+                    ));
         }
     }
 

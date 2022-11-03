@@ -45,15 +45,11 @@ namespace NEvilES.Testing
         {
             return got =>
             {
-                if (got is Exception)
+                switch (got)
                 {
-                    throw (Exception) got;
-                }
-
-                var gotEvents = got as object[];
-                if (gotEvents != null)
-                {
-                    if (gotEvents.Length == expectedEvents.Length)
+                    case Exception exception:
+                        throw exception;
+                    case object[] gotEvents when gotEvents.Length == expectedEvents.Length:
                     {
                         for (var i = 0; i < gotEvents.Length; i++)
                         {
@@ -63,23 +59,25 @@ namespace NEvilES.Testing
                                 $"Incorrect event in results; expected a {expectedType.Name} but got a {actualType.Name}");
                             Assert.Equal(JsonConvert.SerializeObject(expectedEvents[i]), JsonConvert.SerializeObject(gotEvents[i]));
                         }
+
+                        break;
                     }
-                    else
+                    case object[] gotEvents when gotEvents.Length > expectedEvents.Length:
                     {
-                        if (gotEvents.Length > expectedEvents.Length)
-                        {
-                            var diff = string.Join(", ", EventDiff(gotEvents, expectedEvents));
-                            Assert.True(false, $"Expected event(s) missing: {diff}");
-                        }
-                        else
-                        {
-                            var diff = string.Join(", ", EventDiff(expectedEvents, gotEvents));
-                            Assert.True(false, $"Unexpected event(s) emitted: {diff}");
-                        }
+                        var diff = string.Join(", ", EventDiff(gotEvents, expectedEvents));
+                        Assert.True(false, $"Expected event(s) missing: {diff}");
+                        break;
                     }
+                    case object[] gotEvents:
+                    {
+                        var diff = string.Join(", ", EventDiff(expectedEvents, gotEvents));
+                        Assert.True(false, $"Unexpected event(s) emitted: {diff}");
+                        break;
+                    }
+                    default:
+                        Assert.True(false, $"Expected events, but got exception {got.GetType().Name}");
+                        break;
                 }
-                else
-                    Assert.True(false, $"Expected events, but got exception {got.GetType().Name}");
             };
         }
 

@@ -10,9 +10,10 @@ namespace NEvilES.DataStore.LiteDb
 {
     public class LiteDbEventStore : IRepository
     {
-        private readonly LiteDatabase _db;
-        private readonly IEventTypeLookupStrategy _eventTypeLookupStrategy;
-        private readonly ICommandContext _commandContext;
+        private readonly LiteDatabase db;
+        private readonly IEventTypeLookupStrategy eventTypeLookupStrategy;
+        private readonly ICommandContext commandContext;
+
         private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
             DefaultValueHandling = DefaultValueHandling.Populate,
@@ -27,9 +28,9 @@ namespace NEvilES.DataStore.LiteDb
             ICommandContext commandContext
         )
         {
-            _db = db;
-            _eventTypeLookupStrategy = eventTypeLookupStrategy;
-            _commandContext = commandContext;
+            this.db = db;
+            this.eventTypeLookupStrategy = eventTypeLookupStrategy;
+            this.commandContext = commandContext;
         }
 
         public TAggregate Get<TAggregate>(Guid id) where TAggregate : IAggregate
@@ -48,7 +49,7 @@ namespace NEvilES.DataStore.LiteDb
         public IAggregate Get(Type type, Guid id, long? version)
         {
 
-            var collection = _db.GetCollection<LiteDbEventTable>("eventstore");
+            var collection = db.GetCollection<LiteDbEventTable>("eventstore");
 
             var events = collection.Find(Query.EQ(nameof(LiteDbEventTable.StreamId), new BsonValue(id))).ToList();
 
@@ -59,13 +60,13 @@ namespace NEvilES.DataStore.LiteDb
                 return emptyAggregate;
             }
 
-            var aggregate = (IAggregate)Activator.CreateInstance(_eventTypeLookupStrategy.Resolve(events[0].Category));
+            var aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(events[0].Category));
 
             foreach (var eventDb in events.OrderBy(x => x.Version))
             {
                 var message =
                     (IEvent)
-                    JsonConvert.DeserializeObject(eventDb.Body, _eventTypeLookupStrategy.Resolve(eventDb.BodyType), SerializerSettings);
+                    JsonConvert.DeserializeObject(eventDb.Body, eventTypeLookupStrategy.Resolve(eventDb.BodyType), SerializerSettings);
                 //message.StreamId = eventDb.StreamId;
                 aggregate.ApplyEvent(message);
             }
@@ -92,19 +93,19 @@ namespace NEvilES.DataStore.LiteDb
 
             try
             {
-                var col = _db.GetCollection<LiteDbEventTable>("eventstore");
+                var col = db.GetCollection<LiteDbEventTable>("eventstore");
                 col.EnsureIndex(x => x.StreamId, false);
 
                 col.InsertBulk(uncommittedEvents.Select(x => new LiteDbEventTable
                 {
                     StreamId = aggregate.Id,
                     Version = x.Version,
-                    TransactionId = _commandContext.Transaction.Id,
-                    AppVersion = _commandContext.AppVersion,
+                    TransactionId = commandContext.Transaction.Id,
+                    AppVersion = commandContext.AppVersion,
                     When = x.TimeStamp,
                     Body = JsonConvert.SerializeObject(x.Event, SerializerSettings),
                     Category = aggregate.GetType().FullName,
-                    Who = _commandContext.ImpersonatorBy?.GuidId ?? _commandContext.By.GuidId,
+                    Who = commandContext.ImpersonatorBy?.GuidId ?? commandContext.By.GuidId,
                     BodyType = x.Type.FullName
                 }));
             }
@@ -115,7 +116,7 @@ namespace NEvilES.DataStore.LiteDb
             }
 
             aggregate.ClearUncommittedEvents();
-            return new AggregateCommit(aggregate.Id, _commandContext.By.GuidId, uncommittedEvents);
+            return new AggregateCommit(aggregate.Id, commandContext.By.GuidId, uncommittedEvents);
         }
     }
 }
