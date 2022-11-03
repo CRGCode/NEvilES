@@ -7,7 +7,7 @@ namespace NEvilES.Pipeline
 {
     public class ProjectorResult : IProjectorResult
     {
-        public object[] Items { get; private set; }
+        public object[] Items { get; }
 
         public ProjectorResult(IEnumerable<object> updatedObjects)
         {
@@ -31,13 +31,12 @@ namespace NEvilES.Pipeline
             Version = version;
         }
 
-        public Guid StreamId { get; private set; }
+        public Guid StreamId { get; }
         public ICommandContext CommandContext { get; set; }
         public IUser By => CommandContext.By;
-        public Type Type { get; private set; }
-        public object Event { get; private set; }
-        public DateTime TimeStamp { get; private set; }
-        public int Version { get; private set; }
-        public Guid TranId => CommandContext.Transaction.Id;
+        public Type Type { get; }
+        public object Event { get; }
+        public DateTime TimeStamp { get; }
+        public int Version { get; }
     }
 }

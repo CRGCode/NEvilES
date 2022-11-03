@@ -152,7 +152,7 @@ namespace NEvilES
             services.AddScoped(typeof(ITransaction), typeof(TTransaction));
             services.AddScoped<ICommandContext>(s =>
                 new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
-
+ 
             services.AddScoped<IAsyncCommandProcessor, AsyncPipelineProcessor>();
             services.AddScoped<ISecurityContext, SecurityContext>();
             services.AddScoped(typeof(IAsyncRepository), typeof(TRepository));
@@ -190,7 +190,8 @@ namespace NEvilES
             //services.AddScoped<ICommandContext>(s => 
             //    new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
 
-            services.AddScoped<ICommandProcessor, PipelineProcessor>();
+            services.AddTransient<IPipelineProcessor, PipelineProcessor>();
+            services.AddScoped<ICommandProcessor, CommandProcessor>();
             services.AddScoped<ISecurityContext, SecurityContext>();
             services.AddScoped(typeof(IRepository), typeof(TRepository));
             services.AddScoped(typeof(IReadEventStore), typeof(TRepository));

@@ -38,6 +38,5 @@ namespace NEvilES.Abstractions.Pipeline
         object Event { get; }
         DateTime TimeStamp { get; }
         int Version { get; }
-        Guid TranId { get; }
     }
 }

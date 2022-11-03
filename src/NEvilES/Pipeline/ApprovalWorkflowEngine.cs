@@ -1,6 +1,7 @@
 using System;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
+using Newtonsoft.Json;
 
 namespace NEvilES.Pipeline
 {
@@ -33,6 +34,10 @@ namespace NEvilES.Pipeline
             return innerCommand.Command;
         }
 
+        public static T UnwrapCommand<T>(Approval.InnerCommand innerCommand)
+        {
+            return (T)innerCommand.Command;
+        }
         const string ApprovalEntryPoint = "Approved";
         public ICommandResult Transition(Guid id, string toState)
         {

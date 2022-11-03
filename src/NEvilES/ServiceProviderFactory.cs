@@ -35,37 +35,31 @@ namespace NEvilES
         }
     }
 
-    public class ScopedServiceProviderFactory : IFactory, IDisposable
-    {
-        private readonly IServiceScope scope;
+    //public class ScopedServiceProviderFactory : IFactory
+    //{
+    //    private readonly IServiceProvider scope;
 
-        public ScopedServiceProviderFactory(IServiceScope scope)
-        {
-            this.scope = scope;
-        }
+    //    public ScopedServiceProviderFactory(IServiceProvider serviceProvider)
+    //    {
+    //        scope = serviceProvider;
+    //    }
 
-        public object Get(Type type)
-        {
-            return scope.ServiceProvider.GetService(type);
-        }
+    //    public object Get(Type type)
+    //    {
+    //        return scope.GetService(type);
+    //    }
 
-        public object TryGet(Type type)
-        {
-            var instance = scope.ServiceProvider.GetService(type);
-            return instance;
-        }
+    //    public object TryGet(Type type)
+    //    {
+    //        var instance = scope.GetService(type);
+    //        return instance;
+    //    }
 
-        public IEnumerable GetAll(Type type)
-        {
-            var typeToResolve = typeof(IEnumerable<>).MakeGenericType(type);
-            var resolve = scope.ServiceProvider.GetService(typeToResolve);
-            return resolve as Array;
-        }
-
-        public void Dispose()
-        {
-            scope?.Dispose();
-        }
-    }
-
+    //    public IEnumerable GetAll(Type type)
+    //    {
+    //        var typeToResolve = typeof(IEnumerable<>).MakeGenericType(type);
+    //        var resolve = scope.GetService(typeToResolve);
+    //        return resolve as Array;
+    //    }
+    //}
 }

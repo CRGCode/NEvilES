@@ -47,12 +47,21 @@ namespace NEvilES.Pipeline
 
         public T FindProjectedItem<T>() where T : class
         {
-            return ReadModelItems.Where(x => x.GetType() == typeof(T)).Cast<T>().FirstOrDefault();
+            return ReadModelItems.Where(x =>
+            {
+                var memberInfo = typeof(T);
+                var type = x.GetType();
+                return type == memberInfo || type.IsSubclassOf(memberInfo);
+            }).Cast<T>().FirstOrDefault();
         }
 
         public IEnumerable<T> FindProjectedItems<T>() where T : class
         {
-            return ReadModelItems.Where(x => x.GetType() == typeof(T)).Cast<T>();
+            return ReadModelItems.Where(x => {
+                var memberInfo = typeof(T);
+                var type = x.GetType();
+                return type == memberInfo || type.IsSubclassOf(memberInfo);
+            }).Cast<T>();
         }
     }
 

@@ -21,8 +21,10 @@ namespace NEvilES.DataStore.SQL
             Converters = new JsonConverter[] { new StringEnumConverter() }
         };
 
-        public SQLEventStore(IDbTransaction transaction, IEventTypeLookupStrategy eventTypeLookupStrategy,
-            ICommandContext commandContext) : base(transaction, eventTypeLookupStrategy)
+        public SQLEventStore(
+            ICommandContext commandContext, 
+            IDbTransaction transaction, 
+            IEventTypeLookupStrategy eventTypeLookupStrategy) : base(transaction, eventTypeLookupStrategy)
         {
             this.commandContext = commandContext;
         }
