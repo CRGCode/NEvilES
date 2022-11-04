@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 
@@ -11,11 +12,13 @@ namespace NEvilES.Pipeline
     {
         private readonly IFactory factory;
         private readonly ICommandContext commandContext;
+        private readonly ILogger logger;
 
-        public CommandProcessor(IFactory factory, ICommandContext commandContext)
+        public CommandProcessor(IFactory factory, ICommandContext commandContext, ILogger logger) 
         {
             this.factory = factory;
             this.commandContext = commandContext;
+            this.logger = logger;
         }
 
         public virtual ICommandResult Process(TCommand command)
@@ -36,6 +39,7 @@ namespace NEvilES.Pipeline
             {
                 var streamId = command.GetStreamId();
                 var type = typeof(IHandleAggregateCommandMarker<>).MakeGenericType(commandType);
+                
                 var aggHandlers = factory.GetAll(type).Cast<IAggregateHandlers>().ToList();
                 if (aggHandlers.Any())
                 {
@@ -51,13 +55,20 @@ namespace NEvilES.Pipeline
                     var parameters = handler.GetParameters();
                     var dependencies = new object[] { command }.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
 
+                    logger.LogTrace($"{agg.GetType().ReflectedType?.Name ?? agg.GetType().Name }.Handle<{commandType.Name}>({string.Join(',',dependencies.Select(x => x.GetType().Name).Skip(1))})");
                     try
                     {
                         handler.Invoke(agg, dependencies);
                     }
                     catch (TargetInvocationException e) when (e.InnerException != null)
                     {
+                        logger.LogError(e, $"Error {e.Message}");
                         throw e.InnerException;
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogTrace(e, $"Error {e.Message}");
+                        throw;
                     }
                     var commit = repo.Save(agg);
                     commandResult.Append(commit);
@@ -87,6 +98,7 @@ namespace NEvilES.Pipeline
                 var type = typeof(IHandleStatelessEvent<>).MakeGenericType(commandType);
                 var singleAggHandler = factory.TryGet(type);
                 var streamId = message.GetStreamId();
+                logger.LogTrace($"IHandleStatelessEvent<{commandType.Name}>");
 
                 var agg = repo.GetStateless(singleAggHandler?.GetType(), streamId);
                 // // TODO don't like the cast below of message to IEvent

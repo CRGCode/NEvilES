@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Tests.CommonDomain.Sample;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NEvilES.Tests
 {
@@ -13,8 +14,9 @@ namespace NEvilES.Tests
         private readonly IRepository repository;
         private readonly IServiceScope scope;
 
-        public DataStoreSmokeTests(SharedFixtureContext context)
+        public DataStoreSmokeTests(SharedFixtureContext context, ITestOutputHelper output)
         {
+            context.OutputHelper = output;
             scope = context.Container.CreateScope();
             repository = scope.ServiceProvider.GetRequiredService<IRepository>();
         }

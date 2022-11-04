@@ -10,6 +10,7 @@ using Xunit;
 namespace NEvilES.DataStore.SQL.Tests
 {
     using NEvilES.Tests.CommonDomain.Sample;
+    using Xunit.Abstractions;
     using ReadModel = NEvilES.Tests.CommonDomain.Sample.ReadModel;
 
     [Collection("Serial")]
@@ -19,8 +20,9 @@ namespace NEvilES.DataStore.SQL.Tests
         private readonly IFactory factory;
         private readonly IServiceScopeFactory serviceScopeFactory;
 
-        public PostgresTests(PostgresTestContext context)
+        public PostgresTests(PostgresTestContext context, ITestOutputHelper output)
         {
+            context.OutputHelper = output;
             serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
             scope = serviceScopeFactory.CreateScope();
             factory = scope.ServiceProvider.GetRequiredService<IFactory>();

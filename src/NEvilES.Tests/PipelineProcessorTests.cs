@@ -20,12 +20,13 @@ namespace NEvilES.Tests
 
         public PipelineProcessorTests(SharedFixtureContext context, ITestOutputHelper output)
         {
+            context.OutputHelper = output;
             scope = context.Container.CreateScope();
             commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
             repository = scope.ServiceProvider.GetRequiredService<IRepository>();
         }
 
-        [Fact]//(Skip = "Worked with previous IOC but broken with .Net version - need to fix how we register the handlers")]
+        [Fact]
         public void CommandWithDifferentEventHandlerOnAggregate()
         {
             var streamId = Guid.NewGuid();

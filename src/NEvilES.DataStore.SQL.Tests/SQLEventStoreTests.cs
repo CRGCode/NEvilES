@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
@@ -17,13 +18,12 @@ namespace NEvilES.DataStore.SQL.Tests
     [Collection("Serial")]
     public class SQLEventStoreTests : IClassFixture<SQLTestContext>, IDisposable
     {
-        private readonly SQLTestContext context;
         private readonly ITestOutputHelper output;
         private readonly IServiceScopeFactory serviceScopeFactory;
 
         public SQLEventStoreTests(SQLTestContext context, ITestOutputHelper output)
         {
-            this.output = output;
+            context.OutputHelper = this.output = output;
             serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
         }
 
@@ -75,7 +75,9 @@ namespace NEvilES.DataStore.SQL.Tests
                     {
                         var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                         var factory = scope.ServiceProvider.GetRequiredService<IFactory>();
-                        var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(factory,commandContext);
+                        var logger = scope.ServiceProvider.GetRequiredService<ILogger<ChatRoom.IncludeUserInRoom>>();
+                        var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(factory,commandContext,logger);
+                        output.WriteLine($"Processing User {userNumber} [{userId}]");
                         processor.Process(new ChatRoom.IncludeUserInRoom()
                         {
                             ChatRoomId = guid,
@@ -92,7 +94,7 @@ namespace NEvilES.DataStore.SQL.Tests
                         var delay = BackOff[random.Next(retries-1)] + random.Next(10) * (retries - retry);
                         retry++;
                         Thread.Sleep(delay);
-                        output.WriteLine($"User {userNumber} Retry[{retry}] - {delay}");
+                        output.WriteLine($"User {userNumber} Retry[{retry}] in {delay}ms");
                     }
                 } while (retry < retries);
                 output.WriteLine($"Exceeded Retries User {userNumber} Retry[{retry}]");
@@ -144,7 +146,8 @@ namespace NEvilES.DataStore.SQL.Tests
                 using var scope = serviceScopeFactory.CreateScope();
                 var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                 var factory = scope.ServiceProvider.GetRequiredService<IFactory>();
-                var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(factory,commandContext);
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<ChatRoom.IncludeUserInRoom>>();
+                var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(factory,commandContext,logger);
                 processor.Process(new ChatRoom.IncludeUserInRoom()
                 {
                     ChatRoomId = guid,
@@ -170,6 +173,7 @@ namespace NEvilES.DataStore.SQL.Tests
         [Fact]
         public void PipelineProcessorHandlesRetryOnConcurrencyExceptions()
         {
+            
             var chatRoom = Guid.NewGuid();
 
             {

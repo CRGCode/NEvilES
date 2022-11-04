@@ -16,7 +16,7 @@ namespace NEvilES.Pipeline
             this.scopeFactory = scopeFactory;
         }
         const int RETRIES = 10;
-        private static readonly int[] BackOff = { 10, 20, 50, 100, 200, 300, 500, 600, 700, 1000 };
+        private static readonly int[] BackOff = { 2, 20, 50, 100, 200, 300, 500, 600, 700, 1000 };
         public ICommandResult Process<T>(T command) where T : IMessage
         {
             var retry = 0;
@@ -26,6 +26,7 @@ namespace NEvilES.Pipeline
                 var processor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<PipelineProcessor>>();
                 var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
+                logger.LogInformation($"Processing[{command.GetStreamId()}] for {typeof(T).Name}");
 
                 try
                 {
@@ -36,8 +37,8 @@ namespace NEvilES.Pipeline
                 {
                     commandContext.Transaction.Rollback();
                     scope?.Dispose();
-                    var delay = BackOff[retry++];
-                    logger.LogDebug($"Retry[{retry}] for command {typeof(T).Name} with backoff delay {delay}");
+                    var delay = BackOff[retry++] + new Random().Next(10);
+                    logger.LogInformation($"Retry[{retry}] for Command[{command.GetStreamId()}] {typeof(T).Name} with backoff delay {delay}");
                     Thread.Sleep(delay);
                 }
                 catch (Exception exception)
@@ -60,24 +61,29 @@ namespace NEvilES.Pipeline
         private readonly ICommandContext commandContext;
         private readonly ISecurityContext securityContext;
         private readonly IFactory factory;
+        private readonly ILogger<CommandProcessor> logger;
 
         public CommandProcessor(
             ICommandContext commandContext, 
             ISecurityContext securityContext,
-            IFactory factory)
+            IFactory factory,
+            ILogger<CommandProcessor> logger)
         {
             this.commandContext = commandContext;
             this.securityContext = securityContext;
             this.factory = factory;
+            this.logger = logger;
         }
 
         public ICommandResult Process<T>(T command) where T : IMessage
         {
-            var commandProcessor = new CommandProcessor<T>(factory, commandContext);
-            var validationProcessor = new ValidationProcessor<T>(factory, commandProcessor);
-            var securityProcessor = new SecurityProcessor<T>(securityContext, validationProcessor);
+            var commandProcessor = new CommandProcessor<T>(factory, commandContext, logger);
+            var validationProcessor = new ValidationProcessor<T>(factory, commandProcessor, logger);
+            //var securityProcessor = new SecurityProcessor<T>(securityContext, validationProcessor, logger);
 
-            var commandResult = securityProcessor.Process(command);
+            logger.LogTrace($"Processing[{command.GetStreamId()}]");
+            var commandResult = validationProcessor.Process(command);
+            //var commandResult = securityProcessor.Process(command);
             return commandResult;
         }
 

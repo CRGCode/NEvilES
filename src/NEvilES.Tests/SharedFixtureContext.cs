@@ -2,21 +2,23 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using MartinCostello.Logging.XUnit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
+using Xunit.Abstractions;
 
 namespace NEvilES.Tests
 {
-    public class SharedFixtureContext 
+    public class SharedFixtureContext :  ITestOutputHelperAccessor
     {
         public IServiceProvider Container { get; }
+        public ITestOutputHelper OutputHelper { get; set; }
 
         private static bool runOnce = true;
 
@@ -55,7 +57,7 @@ namespace NEvilES.Tests
                     };
                 });
 
-            services.AddLogging(configure => configure.SetMinimumLevel(LogLevel.Information));
+            services.AddLogging(configure => configure.AddXUnit(this).SetMinimumLevel(LogLevel.Trace));
             
             services.AddSingleton<IUser>(c => new CommandContext.User(Guid.Parse("00000001-0007-4852-9D2D-111111111111")));
             services.AddScoped<ICommandContext, CommandContext>(s =>
@@ -202,5 +204,6 @@ PRIMARY KEY CLUSTERED
                 command.ExecuteNonQuery();
             }
         }
+
     }
 }

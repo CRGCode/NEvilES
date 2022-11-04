@@ -21,7 +21,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
         public SQLEventStoreReaderTests(SQLTestContext context, ITestOutputHelper output)
         {
-            this.output = output;
+            context.OutputHelper = this.output = output;
             serviceScopeFactory = context.Container.GetRequiredService<IServiceScopeFactory>();
             scope = serviceScopeFactory.CreateScope();
             factory = scope.ServiceProvider.GetRequiredService<IFactory>();

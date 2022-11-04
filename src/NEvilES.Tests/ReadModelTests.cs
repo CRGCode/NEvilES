@@ -8,14 +8,16 @@ using Xunit;
 namespace NEvilES.Tests
 {
     using CommonDomain.Sample.ReadModel;
+    using Xunit.Abstractions;
 
     [Collection("Serial")]
     public class ReadModelTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
         private readonly IServiceScope scope;
 
-        public ReadModelTests(SharedFixtureContext context)
+        public ReadModelTests(SharedFixtureContext context, ITestOutputHelper output)
         {
+            context.OutputHelper = output;
             scope = context.Container.CreateScope();
         }
 

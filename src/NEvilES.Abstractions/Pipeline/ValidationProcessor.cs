@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security;
+using Microsoft.Extensions.Logging;
 
 namespace NEvilES.Abstractions.Pipeline
 {
@@ -10,16 +11,19 @@ namespace NEvilES.Abstractions.Pipeline
     {
         private readonly IFactory factory;
         private readonly IProcessPipelineStage<T> innerCommand;
+        private readonly ILogger logger;
 
-        public ValidationProcessor(IFactory factory, IProcessPipelineStage<T> innerCommand)
+        public ValidationProcessor(IFactory factory, IProcessPipelineStage<T> innerCommand, ILogger logger)
         {
             this.factory = factory;
             this.innerCommand = innerCommand;
+            this.logger = logger;
         }
 
         public ICommandResult Process(T command)
         {
             var validators = factory.GetAll(typeof(INeedExternalValidation<T>)).Cast<INeedExternalValidation<T>>().ToArray();
+
             if (!validators.Any())
             {
                 return innerCommand.Process(command);
@@ -31,6 +35,7 @@ namespace NEvilES.Abstractions.Pipeline
             {
                 try
                 {
+                    logger.LogTrace($"{validator.GetType().Name}");
                     results.Add(validator.Dispatch(command));
                 }
                 catch (SecurityException)

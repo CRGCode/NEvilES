@@ -25,7 +25,7 @@ namespace NEvilES.Tests
 
         public ApprovalWorkflowEngineTests(SharedFixtureContext context, ITestOutputHelper output)
         {
-            this.output = output;
+            context.OutputHelper = this.output = output;
             scope = context.Container.CreateScope();
             container = scope.ServiceProvider;
             approvalWorkflowEngine = container.GetRequiredService<IApprovalWorkflowEngine>();
@@ -152,6 +152,7 @@ namespace NEvilES.Tests
         {
             // Arrange
             var streamId = Guid.NewGuid();
+            output.WriteLine(streamId.ToString());
 
             var command = new Person.SendInvite(streamId, new PersonalDetails("John", "Smith"), "john@gmail.com");
             var result = approvalWorkflowEngine.Initiate(command);

@@ -1,20 +1,22 @@
 using System;
 using System.Data;
-using System.Data.SqlClient;
+using MartinCostello.Logging.XUnit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
+using Xunit.Abstractions;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
-    public abstract class BaseTestContext
+    public abstract class BaseTestContext :  ITestOutputHelperAccessor
     {
         protected readonly string ConnString;
         public IServiceProvider Container { get; }
 
         protected abstract void AddServices(IServiceCollection services);
+        public ITestOutputHelper OutputHelper { get; set; }
 
         protected BaseTestContext(string connString)
         {
@@ -45,6 +47,11 @@ namespace NEvilES.DataStore.SQL.Tests
                     };
                 });
 
+            services.AddLogging(configure =>
+            {
+                configure.AddXUnit(this);
+                configure.SetMinimumLevel(LogLevel.Trace);
+            });
             services.AddSingleton<IUser>(c => new CommandContext.User(Guid.Parse("00000001-0007-4852-9D2D-111111111111")));
             services.AddScoped<ICommandContext, CommandContext>(s =>
             {
@@ -63,5 +70,6 @@ namespace NEvilES.DataStore.SQL.Tests
 
             Container = services.BuildServiceProvider();
         }
+
     }
 }
