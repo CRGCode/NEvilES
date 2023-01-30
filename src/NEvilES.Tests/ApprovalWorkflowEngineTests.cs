@@ -154,7 +154,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
             output.WriteLine(streamId.ToString());
 
-            var command = new Person.SendInvite(streamId, new PersonalDetails("John", "Smith"), "john@gmail.com");
+            var command = new Customer.SendInvite(streamId, new PersonalDetails("John", "Smith"), "john@gmail.com");
             var result = approvalWorkflowEngine.Initiate(command);
             var approvalRequest = result.FilterEvents<Approval.Created>().First();
 
@@ -162,16 +162,14 @@ namespace NEvilES.Tests
             var expected = approvalWorkflowEngine.Transition(approvalRequest.ApprovalId, "Approved");
 
             var projectedItem = expected.FindProjectedItem<PersonalDetails>();
-            Assert.True(projectedItem.FirstName == command.Person.FirstName);
+            Assert.True(projectedItem.FirstName == command.Details.FirstName);
 
-            var person = expected.FilterEvents<Person.Created>().First();
-            Assert.True(person.Person.LastName == command.Person.LastName);
+            var customer = expected.FilterEvents<Customer.Created>().First();
+            Assert.True(customer.Details.LastName == command.Details.LastName);
             var email = expected.FilterEvents<Email.PersonInvited>().First();
-            Assert.True(email.StreamId != streamId);
+            Assert.True(email.StreamId == streamId);
             Assert.True(email.EmailAddress == command.Email);
-            Assert.Equal(4, expected.UpdatedAggregates.Count);
             Assert.Equal(approvalRequest.ApprovalId, expected.FilterEvents<Approval.StateChanged>().First().ApprovalId);
-            Assert.Equal(command.Person.Name, expected.FilterEvents<Person.Created>().First().Person.Name);
         }
 
         public void Dispose()

@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
+using NEvilES.Abstractions.Pipeline.Async;
 using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
@@ -94,14 +95,14 @@ namespace NEvilES.Tests
 
             //////////
             //var lookup = new EventTypeLookupStrategy();
-            //lookup.ScanAssemblyOfType(typeof(Person.Created));
+            //lookup.ScanAssemblyOfType(typeof(Details.Created));
             //lookup.ScanAssemblyOfType(typeof(Approval));
 
             //Container = new Container(x =>
             //{
             //    x.Scan(s =>
             //    {
-            //        s.AssemblyContainingType<Person.Created>();
+            //        s.AssemblyContainingType<Details.Created>();
             //        s.AssemblyContainingType<Approval.Create>();
             //        s.AssemblyContainingType<ICommandProcessor>();
 

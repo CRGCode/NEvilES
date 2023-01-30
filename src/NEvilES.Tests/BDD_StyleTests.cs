@@ -13,16 +13,20 @@ namespace NEvilES.Tests
         public void CanCreateNewSample()
         {
             var streamId = Guid.NewGuid();
-            var cmd = new Customer.Create  {CustomerId = streamId, Name = "Testing" };
+            var cmd = new Customer.Create
+            {
+                CustomerId = streamId,
+                Details = new PersonalDetails("Chat", "Last")
+            };
             Test(Given(),
                 When(x => x.Handle(cmd, new Customer.Validate())),
-                Then(new Customer.Created {CustomerId = streamId, Name = cmd.Name}));
+                Then(new Customer.Created {CustomerId = streamId, Details = cmd.Details}));
         }
 
         [Fact]
         public void NoNameFails_Create()
         {
-            var cmd = new Customer.Create { CustomerId = Guid.NewGuid() };
+            var cmd = new Customer.Create { CustomerId = Guid.NewGuid(), Details = new PersonalDetails(string.Empty,string.Empty)};
             Test(Given(),
                 When(x => x.Handle(cmd, new Customer.Validate())),
                 ThenFailWith<DomainAggregateException>());
@@ -32,7 +36,7 @@ namespace NEvilES.Tests
         public void FailsExpectedEvent()
         {
             var streamId = Guid.NewGuid();
-            Test(Given(new Customer.Created { CustomerId = streamId, Name = "Customer 1" }),
+            Test(Given(new Customer.Created { CustomerId = streamId, Details =  new PersonalDetails("Chat", "Last") }),
                 When(x => x.Handle(new Customer.Complain { CustomerId = streamId, Reason = "Not Happy" })),
                 Then(new Customer.Complaint { CustomerId = streamId, Reason = "Not Happy" },
                     new Customer.NoteAdded { CustomerId = streamId, Text = "Not Happy" }

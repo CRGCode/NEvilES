@@ -17,7 +17,7 @@ namespace NEvilES.Abstractions
         public IDictionary<Type, MethodInfo> HandlerMethods { get; set; }
     }
 
-    public abstract class AggregateBase : IAggregate, IEquatable<IAggregate>, IAggregateHandlers
+    public abstract class AggregateBase : IAggregate, IEquatable<IAggregate>, IAggregateHandlers, IHandleStatelessEvent<PatchEvent>
     {
         private static readonly IDictionary<Type, AggregateMethodCache> AggregateTypes =
             new Dictionary<Type, AggregateMethodCache>();

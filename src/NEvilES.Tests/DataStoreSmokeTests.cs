@@ -37,7 +37,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
+            agg.Handle(new Customer.Create { CustomerId = streamId, Details = new PersonalDetails("Test","Last") }, new Customer.Validate());
 
             var expected = repository.Save(agg);
             Assert.NotNull(expected);
@@ -50,8 +50,8 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
-            agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
+            agg.Handle(new Customer.Create { CustomerId = streamId, Details = new PersonalDetails("Test","Last") }, new Customer.Validate());
+            agg.RaiseStatelessEvent(new Customer.Refunded{CustomerId = streamId, Amount  = 800.80M});
 
             var expected = repository.Save(agg);
             Assert.NotNull(expected);
@@ -88,7 +88,7 @@ namespace NEvilES.Tests
         //        _commandProcessor.Process(new Employee.Create
         //        {
         //            Id = streamId,
-        //            Person = new PersonalDetails("John", "God")
+        //            Details = new PersonalDetails("John", "God")
         //        }));
         // }
         public void Dispose()

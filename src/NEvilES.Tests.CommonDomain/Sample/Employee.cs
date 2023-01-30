@@ -1,5 +1,8 @@
 using System;
+using System.Reflection;
 using NEvilES.Abstractions;
+using NEvilES.Abstractions.Pipeline;
+using static NEvilES.Tests.CommonDomain.Sample.Customer;
 
 namespace NEvilES.Tests.CommonDomain.Sample
 {
@@ -17,28 +20,28 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public decimal Tax { get; set; }
         }
 
-        public class PaidPerson : PayPerson, IEvent { }
+        public class PaidPerson : PayPerson, IEvent
+        {
+        }
 
         public class PayBonus : Id, ICommand
         {
             public decimal Amount { get; set; }
         }
 
-        public class PaidBonus : PayBonus, IEvent { }
+        public class BonusPaid : Id, IEvent
+        {
+            public decimal Amount { get; set; }
+        }
 
-        public class Create : Person.Create, ICommand { }
+        public class Create : Person.Create { }
 
         public class Aggregate : Person.Aggregate,
-            IHandleAggregateCommand<Create,UniqueNameValidation>,
+            IHandleAggregateCommand<Create, UniqueNameValidation>,
+            IHandleAggregateCommand<PayPerson, TaxRuleEngine>,
             IHandleAggregateCommand<PayBonus>,
-            IHandleAggregateCommand<PayPerson, TaxRuleEngine>
+            IHandleStatelessEvent<BonusPaid>
         {
-            public void Handle(PayBonus command)
-            {
-                //RaiseEvent<PaidBonus>(command);
-                Raise<PaidBonus>(command);
-            }
-
             public void Handle(PayPerson c, TaxRuleEngine taxCalculator)
             {
                 // Use the RuleEngine to do something....
@@ -51,18 +54,24 @@ namespace NEvilES.Tests.CommonDomain.Sample
             {
                 if (validator.Dispatch(command).IsValid)
                 {
-                   Handle(command);
+                    Handle(command);
                 }
+            }
+
+            public void Handle(PayBonus c)
+            {
+                Raise<BonusPaid>(c);
             }
 
             //---------------------------------------------------------------------
             // ReSharper disable UnusedMember.Local
             public decimal Bonus;
 
-            private void Apply(PaidBonus ev)
+            private void Apply(BonusPaid ev)
             {
                 Bonus = ev.Amount;
             }
+
         }
     }
 }

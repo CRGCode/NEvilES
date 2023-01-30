@@ -153,7 +153,7 @@ namespace NEvilES
             services.AddScoped<ICommandContext>(s =>
                 new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
  
-            services.AddScoped<IAsyncCommandProcessor, AsyncPipelineProcessor>();
+            //services.AddScoped<IAsyncCommandProcessor, AsyncPipelineProcessor>();
             services.AddScoped<ISecurityContext, SecurityContext>();
             services.AddScoped(typeof(IAsyncRepository), typeof(TRepository));
             services.AddSingleton<IEventTypeLookupStrategy>(lookup);
@@ -178,21 +178,27 @@ namespace NEvilES
             services
                 .RegisterTypesFrom(opts.DomainAssemblyTypes)
                 .ConnectImplementingType(typeof(IProcessCommand<>))
+                .ConnectImplementingType(typeof(IProcessCommandAsync<>))
                 .ConnectImplementingType(typeof(IHandleStatelessEvent<>))
                 .ConnectImplementingType(typeof(IHandleAggregateCommandMarker<>))
                 .ConnectImplementingType(typeof(INeedExternalValidation<>));
 
             services.RegisterTypesFrom(opts.ReadModelAssemblyTypes)
                 .ConnectImplementingType(typeof(IProject<>))
-                .ConnectImplementingType(typeof(IProjectWithResult<>));
+                .ConnectImplementingType(typeof(IProjectAsync<>))
+                .ConnectImplementingType(typeof(IProjectWithResult<>))
+                .ConnectImplementingType(typeof(IProjectWithResultAsync<>));
 
             services.AddScoped(typeof(ITransaction), typeof(TTransaction));
             //services.AddScoped<ICommandContext>(s => 
             //    new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
 
             services.AddTransient<IPipelineProcessor, PipelineProcessor>();
+            services.AddTransient<IAsyncCommandProcessor, PipelineProcessor>();
+
             services.AddScoped<ICommandProcessor, CommandProcessor>();
             services.AddScoped<ISecurityContext, SecurityContext>();
+            services.AddScoped(typeof(IAsyncRepository), typeof(TRepository));
             services.AddScoped(typeof(IRepository), typeof(TRepository));
             services.AddScoped(typeof(IReadEventStore), typeof(TRepository));
             services.AddSingleton<IEventTypeLookupStrategy>(lookup);

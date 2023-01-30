@@ -24,7 +24,7 @@ namespace NEvilES.DataStore.SQL.Tests
             var services = new ServiceCollection()
                 .AddLogging(loggingBuilder =>
                 {
-                    loggingBuilder.SetMinimumLevel(LogLevel.Information);
+                    loggingBuilder.SetMinimumLevel(LogLevel.Error);
                 })
                 .AddSingleton<IConnectionString>(c => new ConnectionString(ConnString))
                 .AddScoped(c =>

@@ -7,7 +7,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class Person
     {
-        public abstract class Id : IMessage
+        public abstract class Id 
         {
             public Guid GetStreamId() => PersonId;
             public Guid PersonId { get; set; }

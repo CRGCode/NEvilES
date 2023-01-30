@@ -16,7 +16,7 @@ namespace NEvilES.Tests
             agg.Raise<Customer.Created>(new Customer.Create
             {
                 CustomerId = streamId,
-                Name = "Chat 1"
+                Details = new PersonalDetails("Chat","Last")
             });
             var iAgg = (IAggregate) agg;
 
@@ -32,9 +32,9 @@ namespace NEvilES.Tests
             agg.Raise<Customer.Created>(new Customer.Create
             {
                 CustomerId = streamId,
-                Name = "Chat 1"
+                Details = new PersonalDetails("Chat","Last")
             });
-            agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 600));
+            agg.RaiseStatelessEvent(new Customer.Refunded{CustomerId = streamId,Amount = 600});
 
             var iAgg = (IAggregate)agg;
 
@@ -93,7 +93,11 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Raise<Customer.Created>(new Customer.Create { CustomerId = streamId, Name = "Customer 1" });
+            agg.Raise<Customer.Created>(new Customer.Create
+            {
+                CustomerId = streamId,
+                Details = new PersonalDetails("Customer", "One")
+            });
             agg.Handle(new Customer.Complain { CustomerId = streamId, Reason = "Not Happy"});
             var iAgg = (IAggregate)agg;
             Assert.Equal(3, iAgg.Version);

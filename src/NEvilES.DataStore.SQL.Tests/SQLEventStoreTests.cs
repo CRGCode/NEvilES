@@ -65,7 +65,7 @@ namespace NEvilES.DataStore.SQL.Tests
             }
             output.WriteLine($"Chat Room {chatRoom}");
             var done = new List<int>();
-            void IncludeUser(int userNumber, Guid guid, Guid userId)
+            async Task IncludeUser(int userNumber, Guid guid, Guid userId)
             {
                 var retry = 0;
                 do
@@ -78,7 +78,7 @@ namespace NEvilES.DataStore.SQL.Tests
                         var logger = scope.ServiceProvider.GetRequiredService<ILogger<ChatRoom.IncludeUserInRoom>>();
                         var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(factory,commandContext,logger);
                         output.WriteLine($"Processing User {userNumber} [{userId}]");
-                        processor.Process(new ChatRoom.IncludeUserInRoom()
+                        await processor.ProcessAsync(new ChatRoom.IncludeUserInRoom()
                         {
                             ChatRoomId = guid,
                             UserId = userId
@@ -93,7 +93,7 @@ namespace NEvilES.DataStore.SQL.Tests
                         var random = new Random(DateTime.Now.Millisecond);
                         var delay = BackOff[random.Next(retries-1)] + random.Next(10) * (retries - retry);
                         retry++;
-                        Thread.Sleep(delay);
+                        await Task.Delay(delay);
                         output.WriteLine($"User {userNumber} Retry[{retry}] in {delay}ms");
                     }
                 } while (retry < retries);
@@ -105,10 +105,9 @@ namespace NEvilES.DataStore.SQL.Tests
             for (var i = 1; i < 10; i++)
             {
                 var userNumber = i;
-                tasks.Add(Task.Run(() => { IncludeUser(userNumber, chatRoom, Guid.NewGuid()); }));
+                tasks.Add(Task.Run(async () => {await IncludeUser(userNumber, chatRoom, Guid.NewGuid()); }));
             }
             Task.WaitAll(tasks.ToArray(), CancellationToken.None);
-
             output.WriteLine($"All Done {done.Count}!");
 
             Thread.Sleep(1000);
@@ -147,7 +146,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                 var factory = scope.ServiceProvider.GetRequiredService<IFactory>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<ChatRoom.IncludeUserInRoom>>();
-                var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(factory,commandContext,logger);
+                var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(factory, commandContext, logger);
                 processor.Process(new ChatRoom.IncludeUserInRoom()
                 {
                     ChatRoomId = guid,

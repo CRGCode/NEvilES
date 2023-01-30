@@ -1,13 +1,15 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
+using NEvilES.Abstractions.Pipeline.Async;
 
 namespace NEvilES.Pipeline
 {
-    public class PipelineProcessor : IPipelineProcessor
+    public class PipelineProcessor : IPipelineProcessor, IAsyncCommandProcessor
     {
         private readonly IServiceScopeFactory scopeFactory;
 
@@ -36,7 +38,7 @@ namespace NEvilES.Pipeline
                 catch (AggregateConcurrencyException)
                 {
                     commandContext.Transaction.Rollback();
-                    scope?.Dispose();
+                    //scope.Dispose();
                     var delay = BackOff[retry++] + new Random().Next(10);
                     logger.LogInformation($"Retry[{retry}] for Command[{command.GetStreamId()}] {typeof(T).Name} with backoff delay {delay}");
                     Thread.Sleep(delay);
@@ -46,6 +48,43 @@ namespace NEvilES.Pipeline
                     logger.LogError(exception, $"Command {typeof(T).FullName} error");
 
                     commandContext.Transaction.Rollback();
+                    //scope.Dispose();
+                    throw;
+                }
+
+            } while (retry < RETRIES);
+
+            throw new PipelineProcessorRetryException(command, retry);
+        }
+
+        public Task<ICommandResult> ProcessAsync<T>(T command) where T : IMessage
+        {
+            var retry = 0;
+            do
+            {
+                using var scope = scopeFactory.CreateScope();
+                var processor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<PipelineProcessor>>();
+                var context = scope.ServiceProvider.GetRequiredService<ICommandContext>();
+                logger.LogInformation($"Processing[{command.GetStreamId()}] for {typeof(T).Name}");
+
+                try
+                {
+                    return processor.ProcessAsync(command);
+                }
+                catch (AggregateConcurrencyException)
+                {
+                    context.Transaction.Rollback();
+                    scope.Dispose();
+                    var delay = BackOff[retry++] + new Random().Next(10);
+                    logger.LogInformation($"Retry[{retry}] for Command[{command.GetStreamId()}] {typeof(T).Name} with backoff delay {delay}");
+                    Thread.Sleep(delay);
+                }
+                catch (Exception exception)
+                {
+                    logger.LogError(exception, $"Command {typeof(T).FullName} error");
+
+                    context.Transaction.Rollback();
                     scope.Dispose();
                     throw;
                 }
@@ -85,6 +124,16 @@ namespace NEvilES.Pipeline
             var commandResult = validationProcessor.Process(command);
             //var commandResult = securityProcessor.Process(command);
             return commandResult;
+        }
+
+        public Task<ICommandResult> ProcessAsync<T>(T command) where T : IMessage
+        {
+            var commandProcessor = new CommandProcessor<T>(factory, commandContext, logger);
+            var validationProcessor = new ValidationProcessor<T>(factory, commandProcessor, logger);
+            var securityProcessor = new SecurityProcessor<T>(securityContext, validationProcessor, logger);
+
+            logger.LogTrace($"Processing[{command.GetStreamId()}]");
+            return securityProcessor.ProcessAsync(command);;
         }
 
         public static void AddStage<TCommand>(IProcessPipelineStage<TCommand> stage)

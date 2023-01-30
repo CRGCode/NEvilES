@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
@@ -37,6 +38,17 @@ namespace NEvilES.Pipeline
             logger.LogTrace("Security Checked");
 
             return innerCommand.Process(command);
+        }
+
+        public Task<ICommandResult> ProcessAsync(TCommand command)
+        {
+            if (!securityContext.CheckSecurity())
+            {
+                throw new Exception("Security Issues.......");
+            }
+            logger.LogTrace("Security Checked");
+
+            return innerCommand.ProcessAsync(command);
         }
     }
 }

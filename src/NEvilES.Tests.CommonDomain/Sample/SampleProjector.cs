@@ -8,6 +8,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
 {
     public class SampleProjector :
         IProjectWithResult<Person.Created>,
+        IProjectWithResult<Customer.Created>,
         IProjectWithResult<Person.NameCorrectedV2>
     {
         private readonly DocumentStoreGuid db;
@@ -17,9 +18,9 @@ namespace NEvilES.Tests.CommonDomain.Sample
             this.db = db;
         }
 
-        public IProjectorResult Project(Person.Created message, IProjectorData data)
+        public IProjectorResult Project(Customer.Created message, IProjectorData data)
         {
-            var person = new PersonReadModel(message.PersonId, message.Person.FirstName, message.Person.LastName);
+            var person = new PersonReadModel(message.CustomerId, message.Details.FirstName, message.Details.LastName);
             db.Insert(person);
             return new ProjectorResult(person);
         }
@@ -33,11 +34,18 @@ namespace NEvilES.Tests.CommonDomain.Sample
 
             return new ProjectorResult(person);
         }
+
+        public IProjectorResult Project(Person.Created message, IProjectorData data)
+        {       
+            var person = new PersonReadModel(message.PersonId, message.Person.FirstName, message.Person.LastName);
+            db.Insert(person);
+            return new ProjectorResult(person);
+        }
     }
 
     public class SampleProjector2 :
         IProject<Person.Created>,
-        IProject<Employee.PaidBonus>,
+        IProject<Employee.BonusPaid>,
         IProject<Customer.EmailSent>
     {
         public void Project(Person.Created message, IProjectorData data)
@@ -45,7 +53,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
             // do something....
         }
 
-        public void Project(Employee.PaidBonus message, IProjectorData data)
+        public void Project(Employee.BonusPaid message, IProjectorData data)
         {
             data.CommandContext.Result.ReadModelItems.Add(message.Amount);
         }

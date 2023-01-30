@@ -33,7 +33,7 @@ namespace NEvilES.DataStore.DynamoDB.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
+            agg.Handle(new Customer.Create { CustomerId = streamId, Details = new PersonalDetails("First","Last") }, new Customer.Validate());
 
             var expected = await repository.SaveAsync(agg);
             Assert.NotNull(expected);
@@ -46,8 +46,8 @@ namespace NEvilES.DataStore.DynamoDB.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
-            agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
+            agg.Handle(new Customer.Create { CustomerId = streamId,  Details = new PersonalDetails("First","Last") }, new Customer.Validate());
+            agg.RaiseStatelessEvent(new Customer.Refunded{CustomerId = streamId, Amount = 800.80M});
 
             var expected = await repository.SaveAsync(agg);
             Assert.NotNull(expected);
@@ -60,8 +60,8 @@ namespace NEvilES.DataStore.DynamoDB.Tests
         {
             var streamId = Guid.NewGuid();
             var agg = new Customer.Aggregate();
-            agg.Handle(new Customer.Create { CustomerId = streamId, Name = "Test" }, new Customer.Validate());
-            agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 800.80M));
+            agg.Handle(new Customer.Create { CustomerId = streamId, Details = new PersonalDetails("First","Last") }, new Customer.Validate());
+            agg.RaiseStatelessEvent(new Customer.Refunded{CustomerId = streamId, Amount = 800.80M});
 
             var res = await repository.SaveAsync(agg);
             Assert.Equal(res.StreamId, streamId);

@@ -10,6 +10,5 @@ namespace NEvilES.Abstractions.Pipeline.Async
     public interface IAsyncCommandProcessor
     {
         Task<ICommandResult> ProcessAsync<T>(T command) where T : IMessage;
-        ICommandContext Context { get; }
     }
 }

@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
+using NEvilES.Abstractions.Pipeline.Async;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
 using NEvilES.Tests.CommonDomain.Sample.ReadModel;
@@ -27,6 +29,15 @@ namespace NEvilES.Tests
         }
 
         [Fact]
+        public void CommandWithSeparateHandler()
+        {
+            var streamId = Guid.NewGuid();
+
+            var expected = commandProcessor.Process(new Customer.SendInvite(streamId, new PersonalDetails("John", $"Smith{streamId}"),""));
+            Assert.Equal(streamId, expected.FilterEvents<Customer.Created>().First().CustomerId);
+        }
+
+        [Fact]
         public void CommandWithDifferentEventHandlerOnAggregate()
         {
             var streamId = Guid.NewGuid();
@@ -34,6 +45,7 @@ namespace NEvilES.Tests
             var expected = commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
             Assert.Equal(streamId, expected.FilterEvents<Person.Created>().First().PersonId);
         }
+
 
         [Fact]
         public void CommandWithDifferentEventHandlerOnAggregateWithException()
@@ -58,14 +70,15 @@ namespace NEvilES.Tests
         }
 
         [Fact]
-        public void CommandWithHandlerDependenciesResultingInAggregateStateChange()
+        public async Task CommandWithHandlerDependenciesResultingInAggregateStateChange()
         {
             var streamId = Guid.NewGuid();
 
             var bonus = 6000M;
-            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
-            var expected = commandProcessor.Process(new Employee.PayBonus { EmployeeId = streamId, Amount = bonus });
-            var payPerson = expected.FilterEvents<Employee.PaidBonus>().First();
+            await commandProcessor.ProcessAsync(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
+
+            var expected = await commandProcessor.ProcessAsync(new Employee.PayBonus { EmployeeId = streamId, Amount = bonus });
+            var payPerson = expected.FilterEvents<Employee.BonusPaid>().First();
             Assert.Equal(streamId, payPerson.EmployeeId);
             Assert.Equal(bonus, payPerson.Amount);
 
@@ -85,6 +98,18 @@ namespace NEvilES.Tests
         }
 
         [Fact]
+        public void ProcessPatch()
+        {
+            var streamId = Guid.NewGuid();
+
+            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+
+            var expected = commandProcessor.Process(new PatchEvent(streamId, "", ""));
+            Assert.Equal(streamId, expected.FilterEvents<PatchEvent>().First().GetStreamId());
+        }
+
+
+        [Fact]
         public void BadProcessStatelessEvent_Throws()
         {
             var streamId = Guid.NewGuid();
@@ -98,7 +123,11 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var results = commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
+            var results = commandProcessor.Process(new Employee.Create()
+            {
+                PersonId = streamId,
+                Person = new PersonalDetails("John", $"Smith{streamId}")
+            });
             PersonalDetails projectedItem = results.FindProjectedItem<PersonReadModel>();
             Assert.True(projectedItem.FirstName == "John");
 
@@ -116,28 +145,28 @@ namespace NEvilES.Tests
             readModel.Insert(model);
 
             Assert.Throws<CommandValidationException>(() =>
-                // below doesn't work because we don't register handlers for sub-types Employee descends from Person -> We only register INeedExternal
-                //commandProcessor.Process(new Person.Create { PersonId = personId, Person = new PersonalDetails("John", "Smith") }));
+                // below doesn't work because we don't register handlers for sub-types Employee descends from Details -> We only register INeedExternal
+                //commandProcessor.Process(new Details.Create { PersonId = personId, Details = new PersonalDetails("John", "Smith") }));
                 commandProcessor.Process(new Employee.Create { PersonId = personId, Person = model }));
         }
 
-        [Fact] // (Skip = "Worked with previous IOC but broken with .Net version - need to fix how we scope the pipeline, as a new scope starts for nested handlers")]
+        [Fact] 
         public void OneCommandToManyAggregates()
         {
             var streamId = Guid.NewGuid();
 
-            var command = new Person.SendInvite(streamId, new PersonalDetails("John", $"Smith+{Guid.NewGuid()}"), "john@gmail.com");
+            var command = new Customer.SendInvite(streamId, new PersonalDetails("John", $"Smith+{Guid.NewGuid()}"), "john@gmail.com");
             var expected = commandProcessor.Process(command);
 
-            Assert.Equal(2, expected.UpdatedAggregates.Count);
+            Assert.Equal(2, expected.UpdatedAggregates.SelectMany(x => x.UpdatedEvents).Count());
 
             var projectedItem = expected.FindProjectedItem<PersonalDetails>();
-            Assert.True(projectedItem.FirstName == command.Person.FirstName);
+            Assert.True(projectedItem.FirstName == command.Details.FirstName);
 
-            var person = expected.FilterEvents<Person.Created>().First();
-            Assert.True(person.Person.LastName == command.Person.LastName);
+            var person = expected.FilterEvents<Customer.Created>().First();
+            Assert.True(person.Details.LastName == command.Details.LastName);
             var email = expected.FilterEvents<Email.PersonInvited>().First();
-            Assert.True(email.StreamId != streamId);
+            Assert.True(email.StreamId == streamId);
             Assert.True(email.EmailAddress == command.Email);
         }
 

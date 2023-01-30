@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
@@ -57,9 +58,9 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
-        public void Save_FirstEvent()
+        public async Task Save_FirstEvent()
         {
-            var repository = scope.ServiceProvider.GetRequiredService<IRepository>();
+            var repository = scope.ServiceProvider.GetRequiredService<IAsyncRepository>();
 
             var chatRoom = new ChatRoom.Aggregate();
             chatRoom.RaiseEvent(new ChatRoom.Created
@@ -68,7 +69,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 InitialUsers = new HashSet<Guid> { },
                 Name = "Biz Room"
             });
-            var commit = repository.Save(chatRoom);
+            var commit = await repository.SaveAsync(chatRoom);
 
             Assert.NotNull(commit);
         }

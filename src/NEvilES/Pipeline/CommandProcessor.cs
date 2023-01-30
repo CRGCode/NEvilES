@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
@@ -14,7 +15,7 @@ namespace NEvilES.Pipeline
         private readonly ICommandContext commandContext;
         private readonly ILogger logger;
 
-        public CommandProcessor(IFactory factory, ICommandContext commandContext, ILogger logger) 
+        public CommandProcessor(IFactory factory, ICommandContext commandContext, ILogger logger)
         {
             this.factory = factory;
             this.commandContext = commandContext;
@@ -39,7 +40,7 @@ namespace NEvilES.Pipeline
             {
                 var streamId = command.GetStreamId();
                 var type = typeof(IHandleAggregateCommandMarker<>).MakeGenericType(commandType);
-                
+
                 var aggHandlers = factory.GetAll(type).Cast<IAggregateHandlers>().ToList();
                 if (aggHandlers.Any())
                 {
@@ -48,14 +49,16 @@ namespace NEvilES.Pipeline
 
                     if (aggHandler == null)
                     {
-                        throw new Exception($"Possible attempt to create stream from abstract aggregate with command: {commandType}");
+                        throw new Exception(
+                            $"Possible attempt to create stream from abstract aggregate with command: {commandType}");
                     }
 
                     var handler = aggHandler.Handlers[commandType];
                     var parameters = handler.GetParameters();
-                    var dependencies = new object[] { command }.Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
+                    var dependencies = new object[] { command }
+                        .Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
 
-                    logger.LogTrace($"{agg.GetType().ReflectedType?.Name ?? agg.GetType().Name }.Handle<{commandType.Name}>({string.Join(',',dependencies.Select(x => x.GetType().Name).Skip(1))})");
+                    logger.LogTrace($"{agg.GetType().ReflectedType?.Name ?? agg.GetType().Name}.Handle<{commandType.Name}>({string.Join(',', dependencies.Select(x => x.GetType().Name).Skip(1))})");
                     try
                     {
                         handler.Invoke(agg, dependencies);
@@ -70,6 +73,7 @@ namespace NEvilES.Pipeline
                         logger.LogTrace(e, $"Error {e.Message}");
                         throw;
                     }
+
                     var commit = repo.Save(agg);
                     commandResult.Append(commit);
                 }
@@ -79,7 +83,8 @@ namespace NEvilES.Pipeline
 
                 if (!aggHandlers.Any() && !commandHandlers.Any())
                 {
-                    throw new Exception($"Cannot find a matching IHandleAggregateCommand<> or IProcessCommand<> for {commandType}");
+                    throw new Exception(
+                        $"Cannot find a matching IHandleAggregateCommand<> or IProcessCommand<> for {commandType}");
                 }
 
                 foreach (dynamic commandHandler in commandHandlers)
@@ -104,6 +109,110 @@ namespace NEvilES.Pipeline
                 // // TODO don't like the cast below of message to IEvent
                 agg.RaiseStatelessEvent((IEvent)message);
                 var commit = repo.Save(agg);
+                commandResult.Append(commit);
+            }
+
+            return commandResult;
+        }
+
+        public virtual async Task<ICommandResult> ProcessAsync(TCommand command)
+        {
+            var result = await ExecuteAsync(command);
+
+            var projectResults = await ReplayEvents.ProjectAsync(result, factory, commandContext);
+            return commandContext.Result.Add(projectResults);
+        }
+
+        public async Task<CommandResult> ExecuteAsync<T>(T message) where T : IMessage
+        {
+            var commandResult = new CommandResult();
+            var commandType = message.GetType();
+            var repo = (IAsyncRepository)factory.Get(typeof(IAsyncRepository));
+            logger.LogTrace($"ExecuteAsync<{commandType.Name}>");
+
+            if (message is ICommand command)
+            {
+                var streamId = command.GetStreamId();
+                var type = typeof(IHandleAggregateCommandMarker<>).MakeGenericType(commandType);
+                var aggHandlers = factory.GetAll(type).Cast<IAggregateHandlers>().ToList();
+                if (aggHandlers.Any())
+                {
+                    var agg = await repo.GetAsync(aggHandlers.First().GetType(), streamId);
+                    logger.LogTrace($"GetAsync<{commandType.Name}>");
+                    var aggHandler = aggHandlers.SingleOrDefault(x => x.GetType() == agg.GetType());
+
+                    if (aggHandler == null)
+                    {
+                        throw new Exception(
+                            $"Possible attempt to create stream from abstract aggregate with command: {commandType}");
+                    }
+
+                    var handler = aggHandler.Handlers[commandType];
+                    var parameters = handler.GetParameters();
+                    var deps = new object[] { command }
+                        .Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
+
+                    logger.LogTrace($"{agg.GetType().ReflectedType?.Name ?? agg.GetType().Name}.Handle<{commandType.Name}>({string.Join(',', deps.Select(x => x.GetType().Name).Skip(1))})");
+
+                    try
+                    {
+                        handler.Invoke(agg, deps);
+                        //await (Task)handler.Invoke(agg, deps);
+                    }
+                    catch (TargetInvocationException e) when (e.InnerException != null)
+                    {
+                        throw e.InnerException;
+                    }
+
+                    var commit = await repo.SaveAsync(agg);
+                    commandResult.Append(commit);
+                }
+
+
+                var commandProcessorType = typeof(IProcessCommandAsync<>).MakeGenericType(commandType);
+                var commandHandlers = factory.GetAll(commandProcessorType).Cast<object>().ToArray();
+
+                if (!aggHandlers.Any() && !commandHandlers.Any())
+                {
+                    throw new Exception(
+                        $"Cannot find a matching IHandleAggregateCommand<> or IProcessCommandAsync<> for {commandType}");
+                }
+
+                //foreach (var commandHandler in commandHandlers)
+                //{
+
+                //    Task result = (Task)commandHandler.HandleAsync(command);
+                //    await result;
+                //    //await commandHandler.HandleAsync(command);
+                //}
+                //Version using reflection
+                foreach (var commandHandler in commandHandlers)
+                {
+                    var method = commandHandler.GetType().GetMethod("HandleAsync");
+                    logger.LogTrace($"commandHandler<{commandHandler}>");
+
+                    try
+                    {
+                        await (Task)method!.Invoke(commandHandler, new object[] { message });
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError($"IProcessCommandAsync<{commandType.Name}> Error - {e.Message}>");
+
+                        throw;
+                    }
+     
+                }
+            }
+            else
+            {
+                var type = typeof(IHandleStatelessEvent<>).MakeGenericType(commandType);
+                var singleAggHandler = factory.TryGet(type);
+
+                var agg = await repo.GetStatelessAsync(singleAggHandler?.GetType(), ((IEvent)message).GetStreamId());
+                // TODO don't like the cast below of message to IEvent
+                agg.RaiseStatelessEvent((IEvent)message);
+                var commit = await repo.SaveAsync(agg);
                 commandResult.Append(commit);
             }
 
