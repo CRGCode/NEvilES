@@ -102,7 +102,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith2") });
 
             var expected = commandProcessor.Process(new PatchEvent(streamId, "", ""));
             Assert.Equal(streamId, expected.FilterEvents<PatchEvent>().First().GetStreamId());
