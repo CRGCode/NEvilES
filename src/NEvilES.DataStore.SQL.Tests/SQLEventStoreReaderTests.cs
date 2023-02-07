@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 using Xunit;

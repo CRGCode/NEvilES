@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using NEvilES.Abstractions.Pipeline;
+﻿using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 

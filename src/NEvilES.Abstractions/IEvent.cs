@@ -13,7 +13,7 @@ namespace NEvilES.Abstractions
 
     public interface IPatch :IEvent
     {
-        string JSONPath { get; }
+        string Path { get; }
         public string Value { get; }
     }
 
@@ -21,11 +21,13 @@ namespace NEvilES.Abstractions
     {
         private readonly Guid streamId;
 
-        public PatchEvent(Guid streamId, string path, string value)
+        public PatchEvent(Guid streamId, string path, string value, string tag = null, string operation = null)
         {
             this.streamId = streamId;
-            JSONPath = path;
+            Path = path;
             Value = value;
+            Tag = tag;
+            Operation = operation;
         }
 
         public Guid GetStreamId()
@@ -33,8 +35,10 @@ namespace NEvilES.Abstractions
             return streamId;
         }
 
-        public string JSONPath { get; }
+        public string Path { get; }
         public string Value { get; }
+        public string Tag { get; }
+        public string Operation { get; }
     }
 
 

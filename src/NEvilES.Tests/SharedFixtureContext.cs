@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Abstractions.Pipeline.Async;
 using NEvilES.DataStore.SQL;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;

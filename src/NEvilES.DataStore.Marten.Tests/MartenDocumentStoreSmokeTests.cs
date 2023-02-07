@@ -3,7 +3,6 @@ using System.Linq;
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Testing;
 using NEvilES.Tests.CommonDomain.Sample;
 using Xunit;
 using Xunit.Abstractions;

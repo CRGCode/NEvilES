@@ -61,6 +61,19 @@ namespace NEvilES.DataStore.SQL
             }
         }
 
+        public IEnumerable<IAggregateCommit> ReadNewestLimit(int limit = 50)
+        {
+            using var cmd = Transaction.Connection.CreateCommand();
+            cmd.Transaction = Transaction;
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText = "SELECT streamid, bodytype, body, who, _when, version FROM events ORDER BY id DESC";
+            foreach (var aggregateCommit in AggregateCommits(cmd))
+            {
+                yield return aggregateCommit;
+                if(limit-- ==0 ) { break; }  // Force limit - Note Can't use SQL TOP as MySql uses LIMIT
+            }
+        }
+
         public IEnumerable<IAggregateCommit> Read(Guid streamId)
         {
             using var cmd = Transaction.Connection.CreateCommand();

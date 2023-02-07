@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Abstractions.Pipeline.Async;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
 using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 using Xunit;
 using Xunit.Abstractions;
+using ChatRoom = NEvilES.Tests.CommonDomain.Sample.ReadModel.ChatRoom;
 
 namespace NEvilES.Tests
 {
@@ -102,9 +102,11 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith2") });
+            commandProcessor.Process(new CommonDomain.Sample.ChatRoom.Create() { Name = "Chatter Box", ChatRoomId = streamId, State = "VIC"});
 
-            var expected = commandProcessor.Process(new PatchEvent(streamId, "", ""));
+            var expected = commandProcessor.Process(new PatchEvent(streamId, "Location.State", "NSW"));
+            Assert.Equal(streamId, expected.FilterEvents<PatchEvent>().First().GetStreamId());
+            var chatRoom = expected.FindProjectedItem<ChatRoom>();
             Assert.Equal(streamId, expected.FilterEvents<PatchEvent>().First().GetStreamId());
         }
 

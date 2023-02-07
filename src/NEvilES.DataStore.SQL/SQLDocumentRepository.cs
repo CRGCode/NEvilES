@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using NEvilES.Abstractions.Pipeline;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;

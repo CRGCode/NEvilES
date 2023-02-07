@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using NEvilES.Testing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit.Abstractions;
 using Xunit;
-using Xunit.Sdk;
 
 namespace NEvilES.Tests
 {

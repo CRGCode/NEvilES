@@ -15,6 +15,8 @@ namespace NEvilES.Tests.CommonDomain.Sample
         public class Create : Id, ICommand
         {
             public string Name { get; set; }
+            public string State { get; set; }
+
             public HashSet<Guid> InitialUsers { get; set; }
 
             public Create()

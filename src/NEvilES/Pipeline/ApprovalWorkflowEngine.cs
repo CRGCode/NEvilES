@@ -1,7 +1,6 @@
 using System;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using Newtonsoft.Json;
 
 namespace NEvilES.Pipeline
 {

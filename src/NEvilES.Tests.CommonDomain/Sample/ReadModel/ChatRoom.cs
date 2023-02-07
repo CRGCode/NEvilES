@@ -10,26 +10,23 @@ namespace NEvilES.Tests.CommonDomain.Sample.ReadModel
 
         public string Name { get; set; }
 
-        public class Projector :
+        public Location Location { get; set; }
+
+        public class Projector : BaseProjector<ChatRoom>,
             IProjectWithResult<Sample.ChatRoom.Created>
         {
-            private readonly IReadFromReadModel<Guid> reader;
-            private readonly IWriteReadModel<Guid> writer;
-
-            public Projector(IReadFromReadModel<Guid> reader, IWriteReadModel<Guid> writer)
+            public Projector(IReadFromReadModel<Guid> reader, IWriteReadModel<Guid> writer) : base(reader, writer)
             {
-                this.reader = reader;
-                this.writer = writer;
             }
-            
+
             public IProjectorResult Project(Sample.ChatRoom.Created message, IProjectorData data)
             {
-                var chatRoom = new ChatRoom { Id = message.ChatRoomId, Name = message.Name };
-                writer.Insert(chatRoom);
+                var chatRoom = new ChatRoom
+                    { Id = message.ChatRoomId, Name = message.Name, Location = new Location { State = message.State } };
+                Writer.Insert(chatRoom);
 
                 return new ProjectorResult(chatRoom);
             }
-
         }
 
         public override bool Equals(object obj)
@@ -47,5 +44,10 @@ namespace NEvilES.Tests.CommonDomain.Sample.ReadModel
         {
             return HashCode.Combine(Id, Name);
         }
+    }
+
+    public class Location
+    {
+        public string State { get; set; }
     }
 }

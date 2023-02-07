@@ -31,6 +31,9 @@
         <ProjectReference Include="..\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj" />
         <ProjectReference Include="..\NEvilES.Abstractions\NEvilES.Abstractions.csproj" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+        <PackageReference Include="FluentAssertions" Version="5.1.2" />
+        <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />
+        <PackageReference Include="MSTest.TestFramework" Version="1.2.0" />
         <PackageReference Include="xunit" Version="2.4.2" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
           <PrivateAssets>all</PrivateAssets>
