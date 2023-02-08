@@ -31,8 +31,8 @@ namespace NEvilES
             var r = new Resolver();
             var result = (Property)r.Resolve(item, message.Path);
             result.SetValue(message.Value);
+            Writer.Update(item);
             return new ProjectorResult(item);
         }
-
     }
 }

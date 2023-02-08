@@ -218,6 +218,46 @@ namespace NEvilES.DataStore.SQL.Tests
             }
         }
 
+        [Fact]
+        public void PatchFailsWithTransactionRollback()
+        {
+            var chatRoom = Guid.NewGuid();
+
+            {
+                using var scope = serviceScopeFactory.CreateScope();
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<IPipelineProcessor>();
+                commandProcessor.Process(new ChatRoom.Create
+                {
+                    ChatRoomId = chatRoom,
+                    InitialUsers = new HashSet<Guid>(),
+                    Name = "Biz Room",
+                    State = "NSW",  
+                });
+            }
+            
+            {
+                using var scope = serviceScopeFactory.CreateScope();
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<IPipelineProcessor>();
+                try
+                {
+                    commandProcessor.Process(new PatchEvent(chatRoom, "Bad.Path", "VIC"));
+                }
+                catch (Exception e)
+                {
+                    Assert.Equal(typeof(ProjectorException),e.GetType());
+                }
+            }
+
+            {
+                using var scope = serviceScopeFactory.CreateScope();
+                var reader = scope.ServiceProvider.GetRequiredService<IReadEventStore>();
+
+                var events = reader.Read(chatRoom);
+
+                Assert.Equal(1, events.Count());
+            }
+        }
+
         public void Dispose()
         {
         }

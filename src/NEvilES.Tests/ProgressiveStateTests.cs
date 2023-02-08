@@ -31,17 +31,6 @@ namespace NEvilES.Tests
             Assert.Equal(value,x.Value);
         }
 
-        //[Fact]
-        public void Add_Array()
-        {
-            var json = JsonConvert.SerializeObject(Application.NewEmpty());
-            var jo = Set("Assets", "+", json);
-
-            var app = jo.ToObject<Application>()!;
-
-            Assert.NotEmpty(app.Assets);
-        }
-
         private static JObject Set(string path, string value, string json)
         {
             var jo = JObject.Parse(json);

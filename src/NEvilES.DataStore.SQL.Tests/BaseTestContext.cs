@@ -37,6 +37,7 @@ namespace NEvilES.DataStore.SQL.Tests
                     opts.DomainAssemblyTypes = new[]
                     {
                         typeof(NEvilES.Tests.CommonDomain.Sample.Address),
+                        typeof(PatchEvent)
                     };
 
                     opts.GetUserContext = s => new CommandContext.User(CombGuid.NewGuid());

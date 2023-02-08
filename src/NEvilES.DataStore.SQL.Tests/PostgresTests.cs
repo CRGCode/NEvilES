@@ -34,7 +34,8 @@ namespace NEvilES.DataStore.SQL.Tests
                 {
                     ChatRoomId = Guid.NewGuid(),
                     InitialUsers = new HashSet<Guid> { },
-                    Name = "Biz Room"
+                    Name = "Biz Room",
+                    State = "VIC"
                 });
             }
         }

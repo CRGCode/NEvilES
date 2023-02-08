@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 
 namespace NEvilES.Abstractions.ObjectPath.PathElements
@@ -48,6 +49,30 @@ namespace NEvilES.Abstractions.ObjectPath.PathElements
 
         public void SetValue(object value)
         {
+            var pt = pi.PropertyType;
+            if (pt.IsEnum)
+            {
+                pi.SetValue(target, Enum.Parse(pt, (string) value), null);
+                return;
+            }
+            if (pt  == typeof(decimal))
+            {
+                pi.SetValue(target, decimal.Parse((string) value), null);
+                return;
+            }
+
+            if (pt  == typeof(int))
+            {
+                pi.SetValue(target, int.Parse((string) value), null);
+                return;
+            }
+
+            if (pt  == typeof(DateTime))
+            {
+                pi.SetValue(target, DateTime.Parse((string) value), null);
+                return;
+            }
+    
             pi.SetValue(target,value);
         }
     }

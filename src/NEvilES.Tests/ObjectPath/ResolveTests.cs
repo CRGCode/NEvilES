@@ -280,7 +280,7 @@ namespace NEvilES.Tests.ObjectPath
         }
 
         [TestMethod]
-        public void xxxxx()
+        public void SetValue_string_enum()
         {
             var r = new Resolver();
             var complex = new
@@ -302,6 +302,11 @@ namespace NEvilES.Tests.ObjectPath
                                     {
                                         new TermOption { Min = 5, Max = 60 },
                                         new TermOption { Min = 12, Max = 120 }
+                                    },
+                                    FrequencyOptions = new List<FrequencyOption>()
+                                    {
+                                        new FrequencyOption { Frequency = RepaymentFrequency.Monthly },
+                                        new FrequencyOption { Frequency = RepaymentFrequency.Quarterly },
                                     }
                                 }
                             }
@@ -314,13 +319,73 @@ namespace NEvilES.Tests.ObjectPath
                 }
             };
 
-            var path = "Programs[0].Products[0].RepaymentPlan.Terms[1].Max";
+            var path = "Programs[0].Products[0].RepaymentPlan.FrequencyOptions[1].Frequency";
 
             var result = r.Resolve(complex, path);
             result.Should().NotBeNull();
-            //result.Should().BeEquivalentTo(120);
-            ((Property)result).SetValue(200);
-            complex.Programs[0].Products[0].RepaymentPlan.Terms[1].Max.Should().Be(200);
+            ((Property)result).SetValue("Weekly");
+            complex.Programs[0].Products[0].RepaymentPlan.FrequencyOptions[1].Frequency.Should().Be(RepaymentFrequency.Weekly);
+        }
+
+        [TestMethod]
+        public void SetValue_string_DateTime()
+        {
+            var r = new Resolver();
+            var complex = new
+            {
+                Name = "Base Name",
+                Programs = new Program[]
+                {
+                    new Program() { Name = "Prog1", Date = new DateTime(2022,1,1) }
+                }
+            };
+
+            var path = "Programs[0].Date";
+
+            var result = r.Resolve(complex, path);
+            ((Property)result).SetValue("30-1-2020");
+            complex.Programs[0].Date.Should().Be(new DateTime(2020,1,30));
+        }
+
+        [TestMethod]
+        public void SetValue_string_int()
+        {
+            var r = new Resolver();
+            var complex = new
+            {
+                Name = "Base Name",
+                Programs = new Program[]
+                {
+                    new Program() { Name = "Prog1", Number = 2 }
+                }
+            };
+
+            var path = "Programs[0].Number";
+
+            var result = r.Resolve(complex, path);
+            ((Property)result).SetValue("5");
+            complex.Programs[0].Number.Should().Be(5);
+        }
+
+        [TestMethod]
+        public void SetValue_string_decimal()
+        {
+            var r = new Resolver();
+            var complex = new
+            {
+                Name = "Base Name",
+                Programs = new Program[]
+                {
+                    new Program() { Name = "Prog1", Money = 2.5M },
+                    new Program() { Name = "Prog2", Money = 3.5M },
+                }
+            };
+
+            var path = "Programs[0].Money";
+
+            var result = r.Resolve(complex, path);
+            ((Property)result).SetValue("25.0");
+            complex.Programs[0].Money.Should().Be(25.0M);
         }
 
         public class TermOption
@@ -329,9 +394,23 @@ namespace NEvilES.Tests.ObjectPath
             public int Max { get; set; }
         }
 
+        public enum RepaymentFrequency
+        {
+            Weekly,
+            Monthly,
+            Quarterly,
+            Annually
+        }
+
+        public class FrequencyOption
+        {
+            public RepaymentFrequency Frequency { get; set; }
+        }
+
         public class RepaymentPlan
         {
             public TermOption[] Terms { get; set; }
+            public List<FrequencyOption> FrequencyOptions { get; set; }
         }
 
         public class Fee
@@ -350,6 +429,9 @@ namespace NEvilES.Tests.ObjectPath
         {
             public Product[] Products { get; set; }
             public string Name { get; set; }
+            public decimal Money { get; set; }
+            public int Number { get; set; }
+            public DateTime Date { get; set; }
             public Fee[] Fees { get; set; }
         }
     }
