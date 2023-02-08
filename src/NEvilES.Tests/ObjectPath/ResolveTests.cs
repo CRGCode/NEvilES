@@ -343,8 +343,9 @@ namespace NEvilES.Tests.ObjectPath
             var path = "Programs[0].Date";
 
             var result = r.Resolve(complex, path);
-            ((Property)result).SetValue("30-1-2020");
-            complex.Programs[0].Date.Should().Be(new DateTime(2020,1,30));
+            var expected = new DateTime(2020,1,30);
+            ((Property)result).SetValue(expected.ToShortDateString());
+            complex.Programs[0].Date.Should().Be(expected);
         }
 
         [TestMethod]
