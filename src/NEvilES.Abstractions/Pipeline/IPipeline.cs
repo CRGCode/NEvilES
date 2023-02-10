@@ -2,11 +2,10 @@ using System.Threading.Tasks;
 
 namespace NEvilES.Abstractions.Pipeline
 {
-    public interface IPipelineProcessor
+    public interface IRetryPipelineProcessor
     {
-        ICommandResult Process<T>(T command) where T : IMessage;
-        Task<ICommandResult> ProcessAsync<T>(T command) where T : IMessage;
-
+        ICommandResult ProcessWithRetry<T>(T command) where T : IMessage;
+        Task<ICommandResult> ProcessWithRetryAsync<T>(T command) where T : IMessage;
     }
     
     public interface IProcessPipelineStage<T> where T : IMessage
@@ -19,6 +18,5 @@ namespace NEvilES.Abstractions.Pipeline
     {
         ICommandResult Process<T>(T command) where T : IMessage;
         Task<ICommandResult> ProcessAsync<T>(T command) where T : IMessage;
-
     }
 }

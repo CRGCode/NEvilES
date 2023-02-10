@@ -9,8 +9,6 @@ namespace NEvilES.Tests.CommonDomain.Sample
         public async Task HandleAsync(Employee.PayBonus command)
         {
             await Task.Run(() => Thread.Sleep(200));
-
-            //await processor.ProcessAsync(new Employee.BonusPaid(){EmployeeId = command.EmployeeId, Amount = 55M});
         }
     }
 }

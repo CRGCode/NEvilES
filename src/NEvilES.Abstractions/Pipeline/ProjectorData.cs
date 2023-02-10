@@ -39,4 +39,12 @@ namespace NEvilES.Pipeline
         public DateTime TimeStamp { get; }
         public int Version { get; }
     }
+    
+    public class ProjectorException : Exception
+    {
+        public ProjectorException(Exception exception, string message, params object[] args)
+            : base(string.Format(message, args), exception)
+        {
+        }
+    }
 }

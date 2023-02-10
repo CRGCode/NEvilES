@@ -5,34 +5,33 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Abstractions.Pipeline.Async;
 
 namespace NEvilES.Pipeline
 {
-    public class PipelineProcessor : IPipelineProcessor, IAsyncCommandProcessor
+    public class PipelineProcessorWithScopedRetry : IRetryPipelineProcessor
     {
         private readonly IServiceScopeFactory scopeFactory;
 
-        public PipelineProcessor(IServiceScopeFactory scopeFactory)
+        public PipelineProcessorWithScopedRetry(IServiceScopeFactory scopeFactory)
         {
             this.scopeFactory = scopeFactory;
         }
         const int RETRIES = 10;
         private static readonly int[] BackOff = { 2, 20, 50, 100, 200, 300, 500, 600, 700, 1000 };
-        public ICommandResult Process<T>(T command) where T : IMessage
+        public ICommandResult ProcessWithRetry<T>(T command) where T : IMessage
         {
             var retry = 0;
             do
             {
                 using var scope = scopeFactory.CreateScope();
-                var processor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<PipelineProcessor>>();
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<PipelineProcessorWithScopedRetry>>();
                 var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                 logger.LogInformation($"Processing[{command.GetStreamId()}] for {typeof(T).Name}");
 
                 try
                 {
-                    var commandResult = processor.Process(command);
+                    var commandResult = commandProcessor.Process(command);
                     return commandResult;
                 }
                 catch (AggregateConcurrencyException)
@@ -57,20 +56,20 @@ namespace NEvilES.Pipeline
             throw new PipelineProcessorRetryException(command, retry);
         }
 
-        public Task<ICommandResult> ProcessAsync<T>(T command) where T : IMessage
+        public Task<ICommandResult> ProcessWithRetryAsync<T>(T command) where T : IMessage
         {
             var retry = 0;
             do
             {
                 using var scope = scopeFactory.CreateScope();
-                var processor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<PipelineProcessor>>();
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<PipelineProcessorWithScopedRetry>>();
                 var context = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                 logger.LogInformation($"Processing[{command.GetStreamId()}] for {typeof(T).Name}");
 
                 try
                 {
-                    return processor.ProcessAsync(command);
+                    return commandProcessor.ProcessAsync(command);
                 }
                 catch (AggregateConcurrencyException)
                 {
@@ -116,9 +115,10 @@ namespace NEvilES.Pipeline
 
         public ICommandResult Process<T>(T command) where T : IMessage
         {
-            var commandProcessor = new CommandProcessor<T>(factory, commandContext, logger);
-            var validationProcessor = new ValidationProcessor<T>(factory, commandProcessor, logger);
-            //var securityProcessor = new SecurityProcessor<T>(securityContext, validationProcessor, logger);
+            var readModelProcessor = new ReadModelPipelineProcess<T>(factory, logger);
+            var commandProcessor = new CommandPipelineProcessor<T>(factory, readModelProcessor, logger);
+            var validationProcessor = new ValidationPipelineProcessor<T>(factory, commandProcessor, logger);
+            //var securityProcessor = new SecurityPipelineProcessor<T>(securityContext, validationProcessor, logger);
 
             logger.LogTrace($"Processing[{command.GetStreamId()}]");
             var commandResult = validationProcessor.Process(command);
@@ -128,9 +128,10 @@ namespace NEvilES.Pipeline
 
         public Task<ICommandResult> ProcessAsync<T>(T command) where T : IMessage
         {
-            var commandProcessor = new CommandProcessor<T>(factory, commandContext, logger);
-            var validationProcessor = new ValidationProcessor<T>(factory, commandProcessor, logger);
-            var securityProcessor = new SecurityProcessor<T>(securityContext, validationProcessor, logger);
+            var readModelProcessor = new ReadModelPipelineProcess<T>(factory, logger);
+            var commandProcessor = new CommandPipelineProcessor<T>(factory, readModelProcessor, logger);
+            var validationProcessor = new ValidationPipelineProcessor<T>(factory, commandProcessor, logger);
+            var securityProcessor = new SecurityPipelineProcessor<T>(securityContext, validationProcessor, logger);
 
             logger.LogTrace($"Processing[{command.GetStreamId()}]");
             return securityProcessor.ProcessAsync(command);;

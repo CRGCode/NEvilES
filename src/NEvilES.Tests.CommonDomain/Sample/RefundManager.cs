@@ -3,7 +3,7 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Tests.CommonDomain.Sample
 {
-    public class RefundManager : IProcessCommand<Customer.Refund>
+    public class RefundManager : IHandleCommand<Customer.Refund>
     {
         private readonly ICommandProcessor processor;
 

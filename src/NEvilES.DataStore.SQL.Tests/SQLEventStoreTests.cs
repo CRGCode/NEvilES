@@ -34,7 +34,7 @@ namespace NEvilES.DataStore.SQL.Tests
             chatRoom.RaiseEvent(new ChatRoom.Created
             {
                 ChatRoomId = Guid.NewGuid(),
-                InitialUsers = new HashSet<Guid> { }, 
+                InitialUsers = new HashSet<Guid> { },
                 Name = "Biz Room"
             });
 
@@ -45,7 +45,7 @@ namespace NEvilES.DataStore.SQL.Tests
             Assert.NotNull(commit);
         }
 
-        private static readonly int[] BackOff = {10,20,20,50,50,50,100,100,200,200,300};
+        private static readonly int[] BackOff = { 10, 20, 20, 50, 50, 50, 100, 100, 200, 200, 300 };
 
 
         [Fact]
@@ -73,10 +73,9 @@ namespace NEvilES.DataStore.SQL.Tests
                     using var scope = serviceScopeFactory.CreateScope();
                     try
                     {
-                        var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                         var factory = scope.ServiceProvider.GetRequiredService<IFactory>();
                         var logger = scope.ServiceProvider.GetRequiredService<ILogger<ChatRoom.IncludeUserInRoom>>();
-                        var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(factory,commandContext,logger);
+                        var processor = new CommandPipelineProcessor<ChatRoom.IncludeUserInRoom>(factory, null, logger);
                         output.WriteLine($"Processing User {userNumber} [{userId}]");
                         await processor.ProcessAsync(new ChatRoom.IncludeUserInRoom()
                         {
@@ -91,7 +90,7 @@ namespace NEvilES.DataStore.SQL.Tests
                     catch (AggregateConcurrencyException)
                     {
                         var random = new Random(DateTime.Now.Millisecond);
-                        var delay = BackOff[random.Next(retries-1)] + random.Next(10) * (retries - retry);
+                        var delay = BackOff[random.Next(retries - 1)] + random.Next(10) * (retries - retry);
                         retry++;
                         await Task.Delay(delay);
                         output.WriteLine($"User {userNumber} Retry[{retry}] in {delay}ms");
@@ -105,7 +104,7 @@ namespace NEvilES.DataStore.SQL.Tests
             for (var i = 1; i < 10; i++)
             {
                 var userNumber = i;
-                tasks.Add(Task.Run(async () => {await IncludeUser(userNumber, chatRoom, Guid.NewGuid()); }));
+                tasks.Add(Task.Run(async () => { await IncludeUser(userNumber, chatRoom, Guid.NewGuid()); }));
             }
             Task.WaitAll(tasks.ToArray(), CancellationToken.None);
             output.WriteLine($"All Done {done.Count}!");
@@ -146,7 +145,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                 var factory = scope.ServiceProvider.GetRequiredService<IFactory>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<ChatRoom.IncludeUserInRoom>>();
-                var processor = new CommandProcessor<ChatRoom.IncludeUserInRoom>(factory, commandContext, logger);
+                var processor = new CommandPipelineProcessor<ChatRoom.IncludeUserInRoom>(factory, null, logger);
                 processor.Process(new ChatRoom.IncludeUserInRoom()
                 {
                     ChatRoomId = guid,
@@ -166,19 +165,19 @@ namespace NEvilES.DataStore.SQL.Tests
             });
 
             output.WriteLine($"ex.InnerExceptions.Count = {ex.InnerExceptions.Count}");
-            Assert.All(ex.InnerExceptions, x=> Assert.IsType<AggregateConcurrencyException>(x));
+            Assert.All(ex.InnerExceptions, x => Assert.IsType<AggregateConcurrencyException>(x));
         }
 
         [Fact]
         public void PipelineProcessorHandlesRetryOnConcurrencyExceptions()
         {
-            
+
             var chatRoom = Guid.NewGuid();
 
             {
                 using var scope = serviceScopeFactory.CreateScope();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<IPipelineProcessor>();
-                commandProcessor.Process(new ChatRoom.Create
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<IRetryPipelineProcessor>();
+                commandProcessor.ProcessWithRetry(new ChatRoom.Create
                 {
                     ChatRoomId = chatRoom,
                     InitialUsers = new HashSet<Guid>(),
@@ -189,8 +188,8 @@ namespace NEvilES.DataStore.SQL.Tests
             void IncludeUser(int userNumber, Guid guid, Guid userId)
             {
                 using var scope = serviceScopeFactory.CreateScope();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<IPipelineProcessor>();
-                commandProcessor.Process(new ChatRoom.IncludeUserInRoom()
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<IRetryPipelineProcessor>();
+                commandProcessor.ProcessWithRetry(new ChatRoom.IncludeUserInRoom()
                 {
                     ChatRoomId = guid,
                     UserId = userId
@@ -225,26 +224,26 @@ namespace NEvilES.DataStore.SQL.Tests
 
             {
                 using var scope = serviceScopeFactory.CreateScope();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<IPipelineProcessor>();
-                commandProcessor.Process(new ChatRoom.Create
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<IRetryPipelineProcessor>();
+                commandProcessor.ProcessWithRetry(new ChatRoom.Create
                 {
                     ChatRoomId = chatRoom,
                     InitialUsers = new HashSet<Guid>(),
                     Name = "Biz Room",
-                    State = "NSW",  
+                    State = "NSW",
                 });
             }
-            
+
             {
                 using var scope = serviceScopeFactory.CreateScope();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<IPipelineProcessor>();
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<IRetryPipelineProcessor>();
                 try
                 {
-                    commandProcessor.Process(new PatchEvent(chatRoom, "Bad.Path", "VIC"));
+                    commandProcessor.ProcessWithRetry(new PatchEvent(chatRoom, "Bad.Path", "VIC"));
                 }
                 catch (Exception e)
                 {
-                    Assert.Equal(typeof(ProjectorException),e.GetType());
+                    Assert.Equal(typeof(ProjectorException), e.GetType());
                 }
             }
 
@@ -254,7 +253,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
                 var events = reader.Read(chatRoom);
 
-                Assert.Equal(1, events.Count());
+                Assert.Single(events);
             }
         }
 

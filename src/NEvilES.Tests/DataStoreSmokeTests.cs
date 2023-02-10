@@ -85,7 +85,7 @@ namespace NEvilES.Tests
         // {
         //    var streamId = Guid.NewGuid();
         //    Assert.Throws<DomainAggregateException>(() =>
-        //        _commandProcessor.Process(new Employee.Create
+        //        _commandProcessor.ProcessWithRetry(new Employee.Create
         //        {
         //            Id = streamId,
         //            Details = new PersonalDetails("John", "God")

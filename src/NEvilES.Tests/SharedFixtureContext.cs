@@ -89,49 +89,6 @@ namespace NEvilES.Tests
 
             Container = services.BuildServiceProvider();
 
-
-
-
-            //////////
-            //var lookup = new EventTypeLookupStrategy();
-            //lookup.ScanAssemblyOfType(typeof(Details.Created));
-            //lookup.ScanAssemblyOfType(typeof(Approval));
-
-            //Container = new Container(x =>
-            //{
-            //    x.Scan(s =>
-            //    {
-            //        s.AssemblyContainingType<Details.Created>();
-            //        s.AssemblyContainingType<Approval.Create>();
-            //        s.AssemblyContainingType<ICommandProcessor>();
-
-            //        s.ConnectImplementationsToTypesClosing(typeof(IProcessCommand<>));
-            //        s.ConnectImplementationsToTypesClosing(typeof(IHandleStatelessEvent<>));
-            //        s.ConnectImplementationsToTypesClosing(typeof(IHandleAggregateCommandMarker<>));
-            //        s.ConnectImplementationsToTypesClosing(typeof(INeedExternalValidation<>));
-            //        s.ConnectImplementationsToTypesClosing(typeof(IProject<>));
-            //        s.ConnectImplementationsToTypesClosing(typeof(IProjectWithResult<>));
-
-            //        s.WithDefaultConventions();
-            //        s.SingleImplementationsOfInterface();
-            //    });
-
-            //    x.For<IApprovalWorkflowEngine>().Use<ApprovalWorkflowEngine>();
-            //    x.For<ICommandProcessor>().Use<PipelineProcessor>();
-            //    x.For<ISecurityContext>().Use<SecurityContext>();
-            //    x.For<ICommandProcessor>().Use<PipelineProcessor>();
-            //    x.For<IEventTypeLookupStrategy>().Add(lookup).Singleton();
-            //    x.For<IRepository>().Use<InMemoryEventStore>();
-            //    // x.For<IRepository>().Use<SQLEventStore>();
-            //    x.For<IReadModel>().Use<TestReadModel>();
-            //    x.For<IFactory>().Use<Factory>();
-
-            //    x.For<IConnectionString>().Use(s => new ConnectionString(configuration.GetConnectionString(connString))).Singleton();
-            //    x.For<ICommandContext>().Use("CommandContext", s => new CommandContext(new CommandContext.User(Guid.NewGuid(), 666), new Transaction(Guid.NewGuid()), new CommandContext.User(Guid.NewGuid(), 007), ""));
-            //    x.For<IDbConnection>().Use("Connection", s => new SqlConnection(s.GetRequiredService<IConnectionString>().Data));
-            //    x.For<IDbTransaction>().Use("Transaction", s => s.GetRequiredService<IDbConnection>().BeginTransaction());
-            //});
-
             if (runOnce)
             {
                 runOnce = false;

@@ -137,7 +137,7 @@ namespace NEvilES
 
             services
                 .RegisterTypesFrom(opts.DomainAssemblyTypes)
-                .ConnectImplementingType(typeof(IProcessCommand<>))
+                .ConnectImplementingType(typeof(IHandleCommand<>))
                 .ConnectImplementingType(typeof(IHandleStatelessEvent<>))
                 .ConnectImplementingType(typeof(IHandleAggregateCommandMarker<>))
                 .ConnectImplementingType(typeof(INeedExternalValidation<>));
@@ -153,8 +153,10 @@ namespace NEvilES
             services.AddScoped<ICommandContext>(s =>
                 new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
  
-            //services.AddScoped<IAsyncCommandProcessor, AsyncPipelineProcessor>();
+            services.AddScoped<ICommandProcessor, CommandProcessor>();
+            services.AddScoped(s => s.GetRequiredService<ICommandContext>().Result);
             services.AddScoped<ISecurityContext, SecurityContext>();
+
             services.AddScoped(typeof(IAsyncRepository), typeof(TRepository));
             services.AddSingleton<IEventTypeLookupStrategy>(lookup);
             services.AddScoped<IFactory, ServiceProviderFactory>();
@@ -177,7 +179,7 @@ namespace NEvilES
 
             services
                 .RegisterTypesFrom(opts.DomainAssemblyTypes)
-                .ConnectImplementingType(typeof(IProcessCommand<>))
+                .ConnectImplementingType(typeof(IHandleCommand<>))
                 .ConnectImplementingType(typeof(IProcessCommandAsync<>))
                 .ConnectImplementingType(typeof(IHandleStatelessEvent<>))
                 .ConnectImplementingType(typeof(IHandleAggregateCommandMarker<>))
@@ -193,11 +195,12 @@ namespace NEvilES
             //services.AddScoped<ICommandContext>(s => 
             //    new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
 
-            services.AddTransient<IPipelineProcessor, PipelineProcessor>();
-            services.AddTransient<IAsyncCommandProcessor, PipelineProcessor>();
+            services.AddTransient<IRetryPipelineProcessor, PipelineProcessorWithScopedRetry>();
 
             services.AddScoped<ICommandProcessor, CommandProcessor>();
+            services.AddScoped(s => s.GetRequiredService<ICommandContext>().Result);
             services.AddScoped<ISecurityContext, SecurityContext>();
+
             services.AddScoped(typeof(IAsyncRepository), typeof(TRepository));
             services.AddScoped(typeof(IRepository), typeof(TRepository));
             services.AddScoped(typeof(IReadEventStore), typeof(TRepository));

@@ -9,8 +9,7 @@ namespace NEvilES.Abstractions.Pipeline.Async
         Task<T> GetAsync<T>(Guid id) where T : IHaveIdentity<TId>;
         Task<IEnumerable<T>> QueryAsync<T>(Func<T, bool> p);
     }
-
-
+    
     public interface IWriteReadModelAsync<in TId>
     {
         Task InsertAsync<T>(T item) where T : class, IHaveIdentity<TId>;

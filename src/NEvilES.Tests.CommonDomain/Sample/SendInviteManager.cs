@@ -3,7 +3,7 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Tests.CommonDomain.Sample
 {
-    public class SendInviteManager : IProcessCommand<Person.SendInvite>
+    public class SendInviteManager : IHandleCommand<Person.SendInvite>
     {
         private readonly ICommandProcessor processor;
 

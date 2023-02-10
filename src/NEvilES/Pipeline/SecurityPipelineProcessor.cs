@@ -14,14 +14,14 @@ namespace NEvilES.Pipeline
         }
     }
 
-     public class SecurityProcessor<TCommand> : IProcessPipelineStage<TCommand>
+     public class SecurityPipelineProcessor<TCommand> : IProcessPipelineStage<TCommand>
         where TCommand : IMessage
     {
         private readonly ISecurityContext securityContext;
         private readonly IProcessPipelineStage<TCommand> innerCommand;
         private readonly ILogger logger;
 
-        public SecurityProcessor(ISecurityContext securityContext, IProcessPipelineStage<TCommand> innerCommand, ILogger logger)
+        public SecurityPipelineProcessor(ISecurityContext securityContext, IProcessPipelineStage<TCommand> innerCommand, ILogger logger)
         {
             this.securityContext = securityContext;
             this.innerCommand = innerCommand;

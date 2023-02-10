@@ -8,33 +8,47 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Pipeline
 {
-    public class CommandProcessor<TCommand> : IProcessPipelineStage<TCommand>
+    public class CommandPipelineProcessor<TCommand> : IProcessPipelineStage<TCommand>
         where TCommand : IMessage
     {
         private readonly IFactory factory;
-        private readonly ICommandContext commandContext;
+        private readonly IProcessPipelineStage<TCommand> nextPipelineStage;
         private readonly ILogger logger;
 
-        public CommandProcessor(IFactory factory, ICommandContext commandContext, ILogger logger)
+        public CommandPipelineProcessor(IFactory factory, IProcessPipelineStage<TCommand> nextPipelineStage, ILogger logger)
         {
             this.factory = factory;
-            this.commandContext = commandContext;
+            this.nextPipelineStage = nextPipelineStage;
             this.logger = logger;
         }
 
         public virtual ICommandResult Process(TCommand command)
         {
             var result = Execute(command);
+            if (nextPipelineStage == null)
+            {
+                return result;
+            }
+                
+            return nextPipelineStage.Process(command);
+        }
 
-            var projectResults = ReplayEvents.Project(result, factory, commandContext);
-            return commandContext.Result.Add(projectResults);
+        public virtual async Task<ICommandResult> ProcessAsync(TCommand command)
+        {
+            var result = await ExecuteAsync(command);
+            if (nextPipelineStage == null)
+            {
+                return result;
+            }
+
+            return await nextPipelineStage.ProcessAsync(command);
         }
 
         public ICommandResult Execute<T>(T message) where T : IMessage
         {
-            var commandResult = new CommandResult();
             var commandType = message.GetType();
             var repo = (IRepository)factory.Get(typeof(IRepository));
+            var commandResult = (ICommandResult)factory.Get(typeof(ICommandResult));
 
             if (message is ICommand command)
             {
@@ -42,6 +56,7 @@ namespace NEvilES.Pipeline
                 var type = typeof(IHandleAggregateCommandMarker<>).MakeGenericType(commandType);
 
                 var aggHandlers = factory.GetAll(type).Cast<IAggregateHandlers>().ToList();
+
                 if (aggHandlers.Any())
                 {
                     var agg = repo.Get(aggHandlers.First().GetType(), streamId);
@@ -77,14 +92,18 @@ namespace NEvilES.Pipeline
                     var commit = repo.Save(agg);
                     commandResult.Append(commit);
                 }
+                else
+                {
+                    // not sure what happen with commandResult as it will be empty and below handlers don't change this?
+                }
 
-                var commandProcessorType = typeof(IProcessCommand<>).MakeGenericType(commandType);
+                var commandProcessorType = typeof(IHandleCommand<>).MakeGenericType(commandType);
                 var commandHandlers = factory.GetAll(commandProcessorType).Cast<object>().ToArray();
 
                 if (!aggHandlers.Any() && !commandHandlers.Any())
                 {
                     throw new Exception(
-                        $"Cannot find a matching IHandleAggregateCommand<> or IProcessCommand<> for {commandType}");
+                        $"Cannot find a matching IHandleAggregateCommand<> or IHandleCommand<> for {commandType}");
                 }
 
                 foreach (dynamic commandHandler in commandHandlers)
@@ -97,6 +116,7 @@ namespace NEvilES.Pipeline
                 //    var method = commandHandler.GetType().GetMethod("Handle");
                 //    method.Invoke(commandHandler, new object[] { message });
                 //}
+                
             }
             else
             {
@@ -115,20 +135,11 @@ namespace NEvilES.Pipeline
             return commandResult;
         }
 
-        public virtual async Task<ICommandResult> ProcessAsync(TCommand command)
-        {
-            var result = await ExecuteAsync(command);
-
-            var projectResults = await ReplayEvents.ProjectAsync(result, factory, commandContext);
-            return commandContext.Result.Add(projectResults);
-        }
-
         public async Task<CommandResult> ExecuteAsync<T>(T message) where T : IMessage
         {
             var commandResult = new CommandResult();
             var commandType = message.GetType();
             var repo = (IAsyncRepository)factory.Get(typeof(IAsyncRepository));
-            logger.LogTrace($"ExecuteAsync<{commandType.Name}>");
 
             if (message is ICommand command)
             {
