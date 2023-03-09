@@ -96,7 +96,6 @@ namespace NEvilES.Pipeline
 
     public class CommandProcessor : ICommandProcessor
     {
-        private readonly ICommandContext commandContext;
         private readonly ISecurityContext securityContext;
         private readonly IFactory factory;
         private readonly ILogger<CommandProcessor> logger;
@@ -107,7 +106,6 @@ namespace NEvilES.Pipeline
             IFactory factory,
             ILogger<CommandProcessor> logger)
         {
-            this.commandContext = commandContext;
             this.securityContext = securityContext;
             this.factory = factory;
             this.logger = logger;
@@ -134,7 +132,7 @@ namespace NEvilES.Pipeline
             var securityProcessor = new SecurityPipelineProcessor<T>(securityContext, validationProcessor, logger);
 
             logger.LogTrace($"Processing[{command.GetStreamId()}]");
-            return securityProcessor.ProcessAsync(command);;
+            return securityProcessor.ProcessAsync(command);
         }
 
         public static void AddStage<TCommand>(IProcessPipelineStage<TCommand> stage)

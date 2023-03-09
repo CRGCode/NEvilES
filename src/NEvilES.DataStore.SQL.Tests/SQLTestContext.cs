@@ -9,7 +9,7 @@ namespace NEvilES.DataStore.SQL.Tests
 {
     public class SQLTestContext : BaseTestContext
     {
-        public SQLTestContext() : base("Server=AF-004;Database=ES_Test;Trusted_Connection=True;MultipleActiveResultSets=True")
+        public SQLTestContext() : base("Server=AF-174;Database=ES_Test;Trusted_Connection=True;MultipleActiveResultSets=True")
         {
         }
 
