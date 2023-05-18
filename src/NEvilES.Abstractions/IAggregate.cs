@@ -8,19 +8,19 @@ namespace NEvilES.Abstractions
         Guid Id { get; }
         int Version { get; }
 
-        void ApplyEvent<T>(T @event) where T : IMessage;
+        T ApplyEvent<T>(T @event) where T : IMessage;
         ICollection GetUncommittedEvents();
         void ClearUncommittedEvents();
 
-        void Raise<TEvent>(object command) where TEvent : IEvent, new();
-        void RaiseEvent<T>(T evt) where T : IEvent;
-        void RaiseStateless<TEvent>(object command) where TEvent : IEvent, new();
-        void RaiseStatelessEvent<T>(T evt) where T : IEvent;
+        TEvent Raise<TEvent>(object command) where TEvent : IEvent, new();
+        TEvent RaiseEvent<TEvent>(TEvent evt) where TEvent : IEvent;
+        TEvent RaiseStateless<TEvent>(object command) where TEvent : IEvent, new();
+        TEvent RaiseStatelessEvent<TEvent>(TEvent evt) where TEvent : IEvent;
     }
 
     public interface IStatelessAggregate
     {
-        void RaiseStatelessEvent<T>(T msg) where T : IMessage;
+        T RaiseStatelessEvent<T>(T msg) where T : IMessage;
     }
 
 

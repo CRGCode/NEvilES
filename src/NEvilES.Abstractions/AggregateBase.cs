@@ -49,17 +49,19 @@ namespace NEvilES.Abstractions
         public Guid Id { get; protected set; }
         public int Version { get; private set; }
 
-        void IAggregate.ApplyEvent<T>(T @event)
+        TEvent IAggregate.ApplyEvent<TEvent>(TEvent evt)
         {
-            var type = @event.GetType();
+            var type = evt.GetType();
             var foundHandlers = FindApplyHandler(type);
 
             foreach (var handler in foundHandlers)
             {
-                handler.Invoke(this, @event);
+                handler.Invoke(this, evt);
             }
 
             Version++;
+
+            return evt;
         }
 
         private IEnumerable<Action<IAggregate, object>> FindApplyHandler(Type type)
@@ -158,22 +160,26 @@ namespace NEvilES.Abstractions
             }
         }
 
-        public void Raise<TEvent>(object command) where TEvent : IEvent, new()
+        public TEvent Raise<TEvent>(object command) where TEvent : IEvent, new()
         {
             var evt = SimpleMapper.Map<TEvent>(command);
 
             RaiseEvent(evt);
+
+            return evt;
         }
 
-        public virtual void RaiseEvent<T>(T evt) where T : IEvent
+        public virtual TEvent RaiseEvent<TEvent>(TEvent evt) where TEvent : IEvent
         {
-            var type = typeof(T);
+            var type = typeof(TEvent);
             if (!FindApplyHandler(type).Any())
             {
                 throw new Exception($"You have forgotten to add private event method for '{type}' to aggregate '{GetType()}'");
             }
             ((IAggregate) this).ApplyEvent(evt);
             uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
+
+            return evt;
         }
 
         public virtual void Raise<TEvent,TCommand>(TCommand cmd)
@@ -191,14 +197,15 @@ namespace NEvilES.Abstractions
             uncommittedEvents.Add(new EventData(type, evt, DateTime.UtcNow, Version));
         }
 
-        public void RaiseStateless<TEvent>(object command) where TEvent : IEvent, new()
+        public TEvent RaiseStateless<TEvent>(object command) where TEvent : IEvent, new()
         {
             var evt = SimpleMapper.Map<TEvent>(command);
 
             RaiseStatelessEvent(evt);
+            return evt;
         }
 
-        public void RaiseStatelessEvent<T>(T msg) where T : IEvent
+        public TEvent RaiseStatelessEvent<TEvent>(TEvent msg) where TEvent : IEvent
         {
             var type = msg.GetType();
             if (FindApplyHandler(type).Any())
@@ -207,6 +214,8 @@ namespace NEvilES.Abstractions
             }
             Version++;
             uncommittedEvents.Add(new EventData(type, msg, DateTime.UtcNow, Version));
+
+            return msg;
         }
 
         public override int GetHashCode()
