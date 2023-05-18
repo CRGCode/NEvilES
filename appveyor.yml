@@ -1,4 +1,4 @@
-version: 2.3.1
+version: 2.3.1.1
 image: Visual Studio 2022
 nuget:
   account_feed: true
