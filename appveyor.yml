@@ -19,6 +19,7 @@ after_test:
 - cmd: dotnet pack .\src\NEvilES.DataStore.DynamoDB\NEvilES.DataStore.DynamoDB.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 - cmd: dotnet pack .\src\NEvilES.DataStore.LiteDb\NEvilES.DataStore.LiteDb.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 - cmd: dotnet pack .\src\NEvilES.Testing\NEvilES.Testing.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack .\src\Outbox\Outbox.Abstractions.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 artifacts:
 - path: 'artifacts\*.nupkg'
   name: NEvilES
