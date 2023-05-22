@@ -128,6 +128,11 @@ namespace NEvilES
             var opts = new EventStoreOptions();
             options(opts);
 
+            foreach (var pipelineStage in opts.PipelineStages)
+            {
+                PipelineProcessor.AddStage(pipelineStage);
+            }
+
             var lookup = new EventTypeLookupStrategy();
             foreach (var t in opts.DomainAssemblyTypes)
             {
@@ -170,6 +175,11 @@ namespace NEvilES
             var opts = new EventStoreOptions();
             options(opts);
 
+            foreach (var pipelineStage in opts.PipelineStages)
+            {
+                PipelineProcessor.AddStage(pipelineStage);
+            }
+
             var lookup = new EventTypeLookupStrategy();
             foreach (var t in opts.DomainAssemblyTypes)
             {
@@ -191,8 +201,6 @@ namespace NEvilES
                 .ConnectImplementingType(typeof(IProjectWithResultAsync<>));
 
             services.AddScoped(typeof(ITransaction), typeof(TTransaction));
-            //services.AddScoped<ICommandContext>(s => 
-            //    new CommandContext(s.GetRequiredService<IUser>(), s.GetRequiredService<ITransaction>(), null, "1.0"));
 
             services.AddTransient<ICommandProcessor, PipelineProcessorWithScopedRetry>();
 
@@ -257,5 +265,6 @@ namespace NEvilES
         public IEnumerable<Type> DomainAssemblyTypes { get; set; }
         public IEnumerable<Type> ReadModelAssemblyTypes { get; set; }
         public Func<IServiceProvider, IUser> GetUserContext { get; set; }
+        public IEnumerable<Type> PipelineStages { get; set; }
     }
 }

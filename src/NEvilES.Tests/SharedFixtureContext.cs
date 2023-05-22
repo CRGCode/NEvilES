@@ -41,14 +41,16 @@ namespace NEvilES.Tests
                 })
                 .AddEventStore<SQLEventStore, PipelineTransaction>(opts =>
                 {
-                    PipelineProcessor.AddStage(typeof(ValidationPipelineProcessor));
-                    PipelineProcessor.AddStage(typeof(CommandPipelineProcessor));
-                    PipelineProcessor.AddStage(typeof(ReadModelPipelineProcess));
+                    opts.PipelineStages = new[]
+                    {
+                        typeof(ValidationPipelineProcessor),
+                        typeof(CommandPipelineProcessor),
+                        typeof(ReadModelPipelineProcess)
+                    };
 
                     opts.DomainAssemblyTypes = new[]
                     {
                         typeof(Person.Created),
-                        //typeof(Employee.Aggregate),
                         typeof(Approval),
                         typeof(UniqueNameValidation)
                     };
