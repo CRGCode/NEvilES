@@ -1,4 +1,4 @@
-set version=2.4.0
+set version=2.5.0
 dotnet pack -p:PackageVersion=%version% .\NEvilES.Abstractions -o ..\Packages 
 dotnet pack -p:PackageVersion=%version% .\NEvilES -o ..\Packages 
 dotnet pack -p:PackageVersion=%version% .\NEvilES.Testing -o ..\Packages 

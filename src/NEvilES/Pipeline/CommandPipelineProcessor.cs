@@ -8,54 +8,42 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Pipeline
 {
-    public class CommandPipelineProcessor<TCommand> : IProcessPipelineStage<TCommand>
-        where TCommand : IMessage
+    public class CommandPipelineProcessor : PipelineStage
     {
-        private readonly IFactory factory;
-        private readonly IProcessPipelineStage<TCommand> nextPipelineStage;
-        private readonly ILogger logger;
-
-        public CommandPipelineProcessor(IFactory factory, IProcessPipelineStage<TCommand> nextPipelineStage, ILogger logger)
+        public CommandPipelineProcessor(IFactory factory, IProcessPipelineStage nextPipelineStage, ILogger logger) 
+            : base(factory, nextPipelineStage, logger)
         {
-            this.factory = factory;
-            this.nextPipelineStage = nextPipelineStage;
-            this.logger = logger;
         }
 
-        public virtual ICommandResult Process(TCommand command)
+        public override ICommandResult Process<TCommand>(TCommand command) 
         {
             var result = Execute(command);
-            if (nextPipelineStage == null)
-            {
-                return result;
-            }
-                
-            return nextPipelineStage.Process(command);
+            return NextPipelineStage == null ? result : NextPipelineStage.Process(command);
         }
 
-        public virtual async Task<ICommandResult> ProcessAsync(TCommand command)
+        public override async Task<ICommandResult> ProcessAsync<TCommand>(TCommand command)
         {
             var result = await ExecuteAsync(command);
-            if (nextPipelineStage == null)
+            if (NextPipelineStage == null)
             {
                 return result;
             }
 
-            return await nextPipelineStage.ProcessAsync(command);
+            return await NextPipelineStage.ProcessAsync(command);
         }
 
         public ICommandResult Execute<T>(T message) where T : IMessage
         {
             var commandType = message.GetType();
-            var repo = (IRepository)factory.Get(typeof(IRepository));
-            var commandResult = (ICommandResult)factory.Get(typeof(ICommandResult));
+            var repo = (IRepository)Factory.Get(typeof(IRepository));
+            var commandResult = (ICommandResult)Factory.Get(typeof(ICommandResult));
 
             if (message is ICommand command)
             {
                 var streamId = command.GetStreamId();
                 var type = typeof(IHandleAggregateCommandMarker<>).MakeGenericType(commandType);
 
-                var aggHandlers = factory.GetAll(type).Cast<IAggregateHandlers>().ToList();
+                var aggHandlers = Factory.GetAll(type).Cast<IAggregateHandlers>().ToList();
 
                 if (aggHandlers.Any())
                 {
@@ -71,21 +59,21 @@ namespace NEvilES.Pipeline
                     var handler = aggHandler.Handlers[commandType];
                     var parameters = handler.GetParameters();
                     var dependencies = new object[] { command }
-                        .Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
+                        .Concat(parameters.Skip(1).Select(x => Factory.Get(x.ParameterType))).ToArray();
 
-                    logger.LogTrace($"{agg.GetType().ReflectedType?.Name ?? agg.GetType().Name}.Handle<{commandType.Name}>({string.Join(',', dependencies.Select(x => x.GetType().Name).Skip(1))})");
+                    Logger.LogTrace($"{agg.GetType().ReflectedType?.Name ?? agg.GetType().Name}.Handle<{commandType.Name}>({string.Join(',', dependencies.Select(x => x.GetType().Name).Skip(1))})");
                     try
                     {
                         handler.Invoke(agg, dependencies);
                     }
                     catch (TargetInvocationException e) when (e.InnerException != null)
                     {
-                        logger.LogError(e, $"Error {e.Message}");
+                        Logger.LogError(e, $"Error {e.Message}");
                         throw e.InnerException;
                     }
                     catch (Exception e)
                     {
-                        logger.LogTrace(e, $"Error {e.Message}");
+                        Logger.LogTrace(e, $"Error {e.Message}");
                         throw;
                     }
 
@@ -98,7 +86,7 @@ namespace NEvilES.Pipeline
                 }
 
                 var commandProcessorType = typeof(IHandleCommand<>).MakeGenericType(commandType);
-                var commandHandlers = factory.GetAll(commandProcessorType).Cast<object>().ToArray();
+                var commandHandlers = Factory.GetAll(commandProcessorType).Cast<object>().ToArray();
 
                 if (!aggHandlers.Any() && !commandHandlers.Any())
                 {
@@ -121,9 +109,9 @@ namespace NEvilES.Pipeline
             else
             {
                 var type = typeof(IHandleStatelessEvent<>).MakeGenericType(commandType);
-                var singleAggHandler = factory.TryGet(type);
+                var singleAggHandler = Factory.TryGet(type);
                 var streamId = message.GetStreamId();
-                logger.LogTrace($"IHandleStatelessEvent<{commandType.Name}>");
+                Logger.LogTrace($"IHandleStatelessEvent<{commandType.Name}>");
 
                 var agg = repo.GetStateless(singleAggHandler?.GetType(), streamId);
                 // // TODO don't like the cast below of message to IEvent
@@ -139,17 +127,17 @@ namespace NEvilES.Pipeline
         {
             var commandResult = new CommandResult();
             var commandType = message.GetType();
-            var repo = (IAsyncRepository)factory.Get(typeof(IAsyncRepository));
+            var repo = (IAsyncRepository)Factory.Get(typeof(IAsyncRepository));
 
             if (message is ICommand command)
             {
                 var streamId = command.GetStreamId();
                 var type = typeof(IHandleAggregateCommandMarker<>).MakeGenericType(commandType);
-                var aggHandlers = factory.GetAll(type).Cast<IAggregateHandlers>().ToList();
+                var aggHandlers = Factory.GetAll(type).Cast<IAggregateHandlers>().ToList();
                 if (aggHandlers.Any())
                 {
                     var agg = await repo.GetAsync(aggHandlers.First().GetType(), streamId);
-                    logger.LogTrace($"GetAsync<{commandType.Name}>");
+                    Logger.LogTrace($"GetAsync<{commandType.Name}>");
                     var aggHandler = aggHandlers.SingleOrDefault(x => x.GetType() == agg.GetType());
 
                     if (aggHandler == null)
@@ -161,9 +149,9 @@ namespace NEvilES.Pipeline
                     var handler = aggHandler.Handlers[commandType];
                     var parameters = handler.GetParameters();
                     var deps = new object[] { command }
-                        .Concat(parameters.Skip(1).Select(x => factory.Get(x.ParameterType))).ToArray();
+                        .Concat(parameters.Skip(1).Select(x => Factory.Get(x.ParameterType))).ToArray();
 
-                    logger.LogTrace($"{agg.GetType().ReflectedType?.Name ?? agg.GetType().Name}.Handle<{commandType.Name}>({string.Join(',', deps.Select(x => x.GetType().Name).Skip(1))})");
+                    Logger.LogTrace($"{agg.GetType().ReflectedType?.Name ?? agg.GetType().Name}.Handle<{commandType.Name}>({string.Join(',', deps.Select(x => x.GetType().Name).Skip(1))})");
 
                     try
                     {
@@ -181,7 +169,7 @@ namespace NEvilES.Pipeline
 
 
                 var commandProcessorType = typeof(IProcessCommandAsync<>).MakeGenericType(commandType);
-                var commandHandlers = factory.GetAll(commandProcessorType).Cast<object>().ToArray();
+                var commandHandlers = Factory.GetAll(commandProcessorType).Cast<object>().ToArray();
 
                 if (!aggHandlers.Any() && !commandHandlers.Any())
                 {
@@ -200,7 +188,7 @@ namespace NEvilES.Pipeline
                 foreach (var commandHandler in commandHandlers)
                 {
                     var method = commandHandler.GetType().GetMethod("HandleAsync");
-                    logger.LogTrace($"commandHandler<{commandHandler}>");
+                    Logger.LogTrace($"commandHandler<{commandHandler}>");
 
                     try
                     {
@@ -208,7 +196,7 @@ namespace NEvilES.Pipeline
                     }
                     catch (Exception e)
                     {
-                        logger.LogError($"IProcessCommandAsync<{commandType.Name}> Error - {e.Message}>");
+                        Logger.LogError($"IProcessCommandAsync<{commandType.Name}> Error - {e.Message}>");
 
                         throw;
                     }
@@ -218,7 +206,7 @@ namespace NEvilES.Pipeline
             else
             {
                 var type = typeof(IHandleStatelessEvent<>).MakeGenericType(commandType);
-                var singleAggHandler = factory.TryGet(type);
+                var singleAggHandler = Factory.TryGet(type);
 
                 var agg = await repo.GetStatelessAsync(singleAggHandler?.GetType(), ((IEvent)message).GetStreamId());
                 // TODO don't like the cast below of message to IEvent

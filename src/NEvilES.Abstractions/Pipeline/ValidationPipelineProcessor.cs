@@ -7,27 +7,20 @@ using Microsoft.Extensions.Logging;
 
 namespace NEvilES.Abstractions.Pipeline
 {
-     public class ValidationPipelineProcessor<T> : IProcessPipelineStage<T>
-        where T : IMessage
+     public class ValidationPipelineProcessor : PipelineStage
     {
-        private readonly IFactory factory;
-        private readonly IProcessPipelineStage<T> nextPipelineStage;
-        private readonly ILogger logger;
-
-        public ValidationPipelineProcessor(IFactory factory, IProcessPipelineStage<T> nextPipelineStage, ILogger logger)
+        public ValidationPipelineProcessor(IFactory factory, IProcessPipelineStage nextPipelineStage, ILogger logger) 
+            : base(factory, nextPipelineStage, logger)
         {
-            this.factory = factory;
-            this.nextPipelineStage = nextPipelineStage;
-            this.logger = logger;
         }
 
-        public ICommandResult Process(T command)
+        public override ICommandResult Process<T>(T command)
         {
-            var validators = factory.GetAll(typeof(INeedExternalValidation<T>)).Cast<INeedExternalValidation<T>>().ToArray();
+            var validators = Factory.GetAll(typeof(INeedExternalValidation<T>)).Cast<INeedExternalValidation<T>>().ToArray();
 
             if (!validators.Any())
             {
-                return nextPipelineStage.Process(command);
+                return NextPipelineStage.Process(command);
             }
 
             var results = new List<CommandValidationResult>();
@@ -36,7 +29,7 @@ namespace NEvilES.Abstractions.Pipeline
             {
                 try
                 {
-                    logger.LogTrace($"{validator.GetType().Name}");
+                    Logger.LogTrace($"{validator.GetType().Name}");
                     results.Add(validator.Dispatch(command));
                 }
                 catch (SecurityException)
@@ -51,18 +44,18 @@ namespace NEvilES.Abstractions.Pipeline
 
             if (results.All(x => x.IsValid))
             {
-                return nextPipelineStage.Process(command);
+                return NextPipelineStage.Process(command);
             }
 
             throw new CommandValidationException(command, results.Where(x => !x.IsValid).SelectMany(x => x.Errors).ToList());
         }
 
-        public Task<ICommandResult> ProcessAsync(T command)
+        public override Task<ICommandResult> ProcessAsync<T>(T command)
         {
-            var validators = factory.GetAll(typeof(INeedExternalValidation<T>)).Cast<INeedExternalValidation<T>>().ToArray();
+            var validators = Factory.GetAll(typeof(INeedExternalValidation<T>)).Cast<INeedExternalValidation<T>>().ToArray();
             if (!validators.Any())
             {
-                return nextPipelineStage.ProcessAsync(command);
+                return NextPipelineStage.ProcessAsync(command);
             }
 
             var results = new List<CommandValidationResult>();
@@ -71,7 +64,7 @@ namespace NEvilES.Abstractions.Pipeline
             {
                 try
                 {
-                    logger.LogTrace($"{validator.GetType().Name}");
+                    Logger.LogTrace($"{validator.GetType().Name}");
 
                     results.Add(validator.Dispatch(command));
                 }
@@ -87,7 +80,7 @@ namespace NEvilES.Abstractions.Pipeline
 
             if (results.All(x => x.IsValid))
             {
-                return nextPipelineStage.ProcessAsync(command);
+                return NextPipelineStage.ProcessAsync(command);
             }
 
             throw new CommandValidationException(command, results.Where(x => !x.IsValid).SelectMany(x => x.Errors).ToList());

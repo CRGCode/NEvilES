@@ -94,67 +94,6 @@ namespace NEvilES.Pipeline
         }
     }
 
-    public class PipelineProcessor
-    {
-        private readonly ISecurityContext securityContext;
-        private readonly IFactory factory;
-        private readonly ILogger<PipelineProcessor> logger;
-
-        public PipelineProcessor(
-            ISecurityContext securityContext,
-            IFactory factory,
-            ILogger<PipelineProcessor> logger)
-        {
-            this.securityContext = securityContext;
-            this.factory = factory;
-            this.logger = logger;
-        }
-
-        public ICommandResult Process<T>(T command) where T : IMessage
-        {
-            var readModelProcessor = new ReadModelPipelineProcess<T>(factory, logger);
-            var commandProcessor = new CommandPipelineProcessor<T>(factory, readModelProcessor, logger);
-            var validationProcessor = new ValidationPipelineProcessor<T>(factory, commandProcessor, logger);
-
-            logger.LogTrace($"Processing[{command.GetStreamId()}]");
-            var commandResult = validationProcessor.Process(command);
-            return commandResult;
-        }
-
-        public Task<ICommandResult> ProcessAsync<T>(T command) where T : IMessage
-        {
-            var readModelProcessor = new ReadModelPipelineProcess<T>(factory, logger);
-            var commandProcessor = new CommandPipelineProcessor<T>(factory, readModelProcessor, logger);
-            var validationProcessor = new ValidationPipelineProcessor<T>(factory, commandProcessor, logger);
-
-            logger.LogTrace($"Processing[{command.GetStreamId()}]");
-            var commandResult = validationProcessor.ProcessAsync(command);
-            return commandResult;
-        }
-
-        public static void AddStage<TCommand>(IProcessPipelineStage<TCommand> stage)
-            where TCommand : IMessage
-        {
-            // WIP
-            // Something like below would be nice or maybe how .NET core does it http pipeline
-            /*
-            services.AddCamundaWorker("sampleWorker")
-                .AddHandler<SayHelloHandler>()
-                .AddHandler<SayHelloGuestHandler>()
-                .ConfigurePipeline(pipeline =>
-                {
-                    pipeline.Use(next => async context =>
-                    {
-                        var logger = context.ServiceProvider.GetRequiredService<ILogger<Startup>>();
-                        logger.LogInformation("Started processing of task {Id}", context.Task.Id);
-                        await next(context);
-                        logger.LogInformation("Finished processing of task {Id}", context.Task.Id);
-                    });
-                });
-            */
-        }
-    }
-
     public class PipelineProcessorRetryException : Exception
     {
         public PipelineProcessorRetryException(IMessage command, int attempts) : 

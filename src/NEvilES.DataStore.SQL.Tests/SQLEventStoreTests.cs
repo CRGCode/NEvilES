@@ -75,7 +75,7 @@ namespace NEvilES.DataStore.SQL.Tests
                     {
                         var factory = scope.ServiceProvider.GetRequiredService<IFactory>();
                         var logger = scope.ServiceProvider.GetRequiredService<ILogger<ChatRoom.IncludeUserInRoom>>();
-                        var processor = new CommandPipelineProcessor<ChatRoom.IncludeUserInRoom>(factory, null, logger);
+                        var processor = new CommandPipelineProcessor(factory, null, logger);
                         output.WriteLine($"Processing User {userNumber} [{userId}]");
                         await processor.ProcessAsync(new ChatRoom.IncludeUserInRoom()
                         {
@@ -145,7 +145,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                 var factory = scope.ServiceProvider.GetRequiredService<IFactory>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<ChatRoom.IncludeUserInRoom>>();
-                var processor = new CommandPipelineProcessor<ChatRoom.IncludeUserInRoom>(factory, null, logger);
+                var processor = new CommandPipelineProcessor(factory, null, logger);
                 processor.Process(new ChatRoom.IncludeUserInRoom()
                 {
                     ChatRoomId = guid,

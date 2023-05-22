@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.Pipeline
@@ -14,41 +13,38 @@ namespace NEvilES.Pipeline
         }
     }
 
-     public class SecurityPipelineProcessor<TCommand> : IProcessPipelineStage<TCommand>
-        where TCommand : IMessage
+     public class SecurityPipelineProcessor : PipelineStage
     {
         private readonly ISecurityContext securityContext;
-        private readonly IProcessPipelineStage<TCommand> innerCommand;
-        private readonly ILogger logger;
 
-        public SecurityPipelineProcessor(ISecurityContext securityContext, IProcessPipelineStage<TCommand> innerCommand, ILogger logger)
+        public SecurityPipelineProcessor(IFactory factory, IProcessPipelineStage nextPipelineStage, ILogger logger)
+            : base(factory, nextPipelineStage, logger)
         {
-            this.securityContext = securityContext;
-            this.innerCommand = innerCommand;
-            this.logger = logger;
+            securityContext = (ISecurityContext)factory.Get(typeof(ISecurityContext));
         }
 
-        public ICommandResult Process(TCommand command)
+
+        public override ICommandResult Process<TCommand>(TCommand command)
         {
             if (!securityContext.CheckSecurity())
             {
-                logger.LogWarning("Security Issues");
+                Logger.LogWarning("Security Issues");
                 throw new Exception("Security Issues.......");
             }
-            logger.LogTrace("Security Checked");
+            Logger.LogTrace("Security Checked");
 
-            return innerCommand.Process(command);
+            return NextPipelineStage.Process(command);
         }
 
-        public Task<ICommandResult> ProcessAsync(TCommand command)
+        public override Task<ICommandResult> ProcessAsync<TCommand>(TCommand command)
         {
             if (!securityContext.CheckSecurity())
             {
                 throw new Exception("Security Issues.......");
             }
-            logger.LogTrace("Security Checked");
+            Logger.LogTrace("Security Checked");
 
-            return innerCommand.ProcessAsync(command);
+            return NextPipelineStage.ProcessAsync(command);
         }
     }
 }

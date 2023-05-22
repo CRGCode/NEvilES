@@ -34,6 +34,10 @@ namespace NEvilES.DataStore.SQL.Tests
                 })
                 .AddEventStore<SQLEventStore, PipelineTransaction>(opts =>
                 {
+                    PipelineProcessor.AddStage(typeof(ValidationPipelineProcessor));
+                    PipelineProcessor.AddStage(typeof(CommandPipelineProcessor));
+                    PipelineProcessor.AddStage(typeof(ReadModelPipelineProcess));
+
                     opts.DomainAssemblyTypes = new[]
                     {
                         typeof(NEvilES.Tests.CommonDomain.Sample.Address),
@@ -62,9 +66,6 @@ namespace NEvilES.DataStore.SQL.Tests
             });
 
             services.AddScoped<IReadEventStore,SQLEventStoreReader>();
-            //services.AddScoped<SQLDocumentRepository>();
-            //services.AddScoped<IReadFromReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
-            //services.AddScoped<IWriteReadModel>(s => s.GetRequiredService<SQLDocumentRepository>());
 
             // ReSharper disable once VirtualMemberCallInConstructor
             AddServices(services);

@@ -6,22 +6,17 @@ using NEvilES.Pipeline;
 
 namespace NEvilES.Abstractions.Pipeline
 {
-    public class ReadModelPipelineProcess<T> : IProcessPipelineStage<T>
-       where T : IMessage
+    public class ReadModelPipelineProcess : PipelineStage
     {
-        private readonly IFactory factory;
-        private readonly ILogger logger;
-
-        public ReadModelPipelineProcess(IFactory factory, ILogger logger)
+        public ReadModelPipelineProcess(IFactory factory, IProcessPipelineStage nextPipelineStage, ILogger logger)
+            : base(factory, nextPipelineStage, logger)
         {
-            this.factory = factory;
-            this.logger = logger;
         }
 
-        public ICommandResult Process(T command)
+        public override ICommandResult Process<T>(T command)
         {
-            var commandContext = (ICommandContext)factory.Get(typeof(ICommandContext));
-            var commandResult = (ICommandResult)factory.Get(typeof(ICommandResult));
+            var commandContext = (ICommandContext)Factory.Get(typeof(ICommandContext));
+            var commandResult = (ICommandResult)Factory.Get(typeof(ICommandResult));
 
             if (!commandResult.UpdatedAggregates.Any())
             {
@@ -35,7 +30,7 @@ namespace NEvilES.Abstractions.Pipeline
                     var data = new ProjectorData(agg.StreamId, commandContext, message.Type, message.Event,
                         message.TimeStamp, message.Version);
                     var projectorType = typeof(IProject<>).MakeGenericType(message.Type);
-                    var projectors = factory.GetAll(projectorType);
+                    var projectors = Factory.GetAll(projectorType);
 
                     // TODO below looks like it needs some DRY attention
                     foreach (var projector in projectors)
@@ -51,7 +46,7 @@ namespace NEvilES.Abstractions.Pipeline
                     }
 
                     projectorType = typeof(IProjectWithResult<>).MakeGenericType(message.Type);
-                    projectors = factory.GetAll(projectorType);
+                    projectors = Factory.GetAll(projectorType);
 
                     foreach (var projector in projectors)
                     {
@@ -71,10 +66,10 @@ namespace NEvilES.Abstractions.Pipeline
             return commandResult;
         }
 
-        public async Task<ICommandResult> ProcessAsync(T command)
+        public override async Task<ICommandResult> ProcessAsync<T>(T command)
         {
-            var commandContext = (ICommandContext)factory.Get(typeof(ICommandContext));
-            var commandResult = (ICommandResult)factory.Get(typeof(ICommandResult));
+            var commandContext = (ICommandContext)Factory.Get(typeof(ICommandContext));
+            var commandResult = (ICommandResult)Factory.Get(typeof(ICommandResult));
             if (!commandResult.UpdatedAggregates.Any())
             {
                 return commandResult;
@@ -86,7 +81,7 @@ namespace NEvilES.Abstractions.Pipeline
                 {
                     var data = new ProjectorData(agg.StreamId, commandContext, message.Type, message.Event, message.TimeStamp, message.Version);
                     var projectorType = typeof(IProjectAsync<>).MakeGenericType(message.Type);
-                    var projectors = factory.GetAll(projectorType);
+                    var projectors = Factory.GetAll(projectorType);
 
                     // TODO below looks like it needs some DRY attention
                     foreach (var projector in projectors)
@@ -106,7 +101,7 @@ namespace NEvilES.Abstractions.Pipeline
                     }
 
                     projectorType = typeof(IProjectWithResultAsync<>).MakeGenericType(message.Type);
-                    projectors = factory.GetAll(projectorType);
+                    projectors = Factory.GetAll(projectorType);
 
                     foreach (var projector in projectors)
                     {

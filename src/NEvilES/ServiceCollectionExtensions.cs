@@ -5,7 +5,6 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-using NEvilES.Abstractions.Pipeline.Async;
 using NEvilES.Pipeline;
 
 namespace NEvilES
