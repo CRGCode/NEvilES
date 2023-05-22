@@ -12,18 +12,18 @@ namespace NEvilES.Pipeline
 
     public class ApprovalWorkflowEngine : IApprovalWorkflowEngine
     {
-        private readonly ICommandProcessor commandProcessor;
+        private readonly PipelineProcessor pipelineProcessor;
         private readonly IRepository repository;
 
-        public ApprovalWorkflowEngine(ICommandProcessor commandProcessor, IRepository repository)
+        public ApprovalWorkflowEngine(PipelineProcessor pipelineProcessor, IRepository repository)
         {
-            this.commandProcessor = commandProcessor;
+            this.pipelineProcessor = pipelineProcessor;
             this.repository = repository;
         }
 
         public ICommandResult Initiate<TCommand>(TCommand command) where TCommand : ICommand
         {
-            return commandProcessor.Process(new Approval.Create(CombGuid.NewGuid(), Approval.InnerCommand.Wrap(command)));
+            return pipelineProcessor.Process(new Approval.Create(CombGuid.NewGuid(), Approval.InnerCommand.Wrap(command)));
         }
 
         public static dynamic GetCommand(Approval.InnerCommand innerCommand)
@@ -42,14 +42,14 @@ namespace NEvilES.Pipeline
         {
             //var newState = _secRequestWorkflowProvider.Fire(toState);
             var newState = toState;
-            var result = commandProcessor.Process(new Approval.ChangeState(id, newState));
+            var result = pipelineProcessor.Process(new Approval.ChangeState(id, newState));
 
             if (newState != ApprovalEntryPoint)
                 return result;
 
             var approvalRequest = repository.Get<Approval.Aggregate>(id);
             var command = GetCommand(approvalRequest.GetInnerCommand());
-            return commandProcessor.Process(command);
+            return pipelineProcessor.Process(command);
         }
     }
 }

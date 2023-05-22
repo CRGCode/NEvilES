@@ -171,13 +171,12 @@ namespace NEvilES.DataStore.SQL.Tests
         [Fact]
         public void PipelineProcessorHandlesRetryOnConcurrencyExceptions()
         {
-
             var chatRoom = Guid.NewGuid();
 
             {
                 using var scope = serviceScopeFactory.CreateScope();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<IRetryPipelineProcessor>();
-                commandProcessor.ProcessWithRetry(new ChatRoom.Create
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                commandProcessor.Process(new ChatRoom.Create
                 {
                     ChatRoomId = chatRoom,
                     InitialUsers = new HashSet<Guid>(),
@@ -188,8 +187,8 @@ namespace NEvilES.DataStore.SQL.Tests
             void IncludeUser(int userNumber, Guid guid, Guid userId)
             {
                 using var scope = serviceScopeFactory.CreateScope();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<IRetryPipelineProcessor>();
-                commandProcessor.ProcessWithRetry(new ChatRoom.IncludeUserInRoom()
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                commandProcessor.Process(new ChatRoom.IncludeUserInRoom()
                 {
                     ChatRoomId = guid,
                     UserId = userId
@@ -224,8 +223,8 @@ namespace NEvilES.DataStore.SQL.Tests
 
             {
                 using var scope = serviceScopeFactory.CreateScope();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<IRetryPipelineProcessor>();
-                commandProcessor.ProcessWithRetry(new ChatRoom.Create
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                commandProcessor.Process(new ChatRoom.Create
                 {
                     ChatRoomId = chatRoom,
                     InitialUsers = new HashSet<Guid>(),
@@ -236,10 +235,10 @@ namespace NEvilES.DataStore.SQL.Tests
 
             {
                 using var scope = serviceScopeFactory.CreateScope();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<IRetryPipelineProcessor>();
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
                 try
                 {
-                    commandProcessor.ProcessWithRetry(new PatchEvent(chatRoom, "Bad.Path", "VIC"));
+                    commandProcessor.Process(new PatchEvent(chatRoom, "Bad.Path", "VIC"));
                 }
                 catch (Exception e)
                 {

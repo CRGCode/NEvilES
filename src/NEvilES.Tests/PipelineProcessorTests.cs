@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
@@ -16,7 +15,7 @@ namespace NEvilES.Tests
     [Collection("Serial")]
     public class PipelineProcessorTests : IClassFixture<SharedFixtureContext>, IDisposable
     {
-        private readonly IRetryPipelineProcessor commandProcessor;
+        private readonly PipelineProcessor pipelineProcessor;
         private readonly IRepository repository;
         private readonly IServiceScope scope;
 
@@ -24,7 +23,7 @@ namespace NEvilES.Tests
         {
             context.OutputHelper = output;
             scope = context.Container.CreateScope();
-            commandProcessor = scope.ServiceProvider.GetRequiredService<IRetryPipelineProcessor>();
+            pipelineProcessor = scope.ServiceProvider.GetRequiredService<PipelineProcessor>();
             repository = scope.ServiceProvider.GetRequiredService<IRepository>();
         }
 
@@ -33,7 +32,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var expected = commandProcessor.ProcessWithRetry(new Customer.SendInvite(streamId, new PersonalDetails("John", $"Smith{streamId}"),""));
+            var expected = pipelineProcessor.Process(new Customer.SendInvite(streamId, new PersonalDetails("John", $"Smith{streamId}"),""));
             Assert.Equal(streamId, expected.FilterEvents<Customer.Created>().First().CustomerId);
         }
 
@@ -42,7 +41,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var expected = commandProcessor.ProcessWithRetry(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
+            var expected = pipelineProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
             Assert.Equal(streamId, expected.FilterEvents<Person.Created>().First().PersonId);
         }
 
@@ -53,7 +52,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             Assert.Throws<DomainAggregateException>(() =>
-                commandProcessor.ProcessWithRetry(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "God") }));
+                pipelineProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "God") }));
         }
 
         [Fact]
@@ -62,8 +61,8 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var netAmount = 60000M;
-            commandProcessor.ProcessWithRetry(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
-            var expected = commandProcessor.ProcessWithRetry(new Employee.PayPerson { EmployeeId = streamId, NetAmount = netAmount });
+            pipelineProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
+            var expected = pipelineProcessor.Process(new Employee.PayPerson { EmployeeId = streamId, NetAmount = netAmount });
             var payPerson = expected.FilterEvents<Employee.PaidPerson>().First();
             Assert.Equal(streamId, payPerson.EmployeeId);
             Assert.True(payPerson.Tax < netAmount);
@@ -75,9 +74,9 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var bonus = 6000M;
-            commandProcessor.ProcessWithRetry(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
+            pipelineProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
 
-            var expected = commandProcessor.ProcessWithRetry(new Employee.PayBonus { EmployeeId = streamId, Amount = bonus });
+            var expected = pipelineProcessor.Process(new Employee.PayBonus { EmployeeId = streamId, Amount = bonus });
             var payPerson = expected.FilterEvents<Employee.BonusPaid>().First();
             Assert.Equal(streamId, payPerson.EmployeeId);
             Assert.Equal(bonus, payPerson.Amount);
@@ -91,9 +90,9 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            commandProcessor.ProcessWithRetry(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+            pipelineProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
 
-            var expected = commandProcessor.ProcessWithRetry(new Person.StatelessBirthdateChanged { PersonId = streamId, Birthdate = DateTime.Now });
+            var expected = pipelineProcessor.Process(new Person.StatelessBirthdateChanged { PersonId = streamId, Birthdate = DateTime.Now });
             Assert.Equal(streamId, expected.FilterEvents<Person.StatelessBirthdateChanged>().First().PersonId);
         }
 
@@ -102,9 +101,9 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            commandProcessor.ProcessWithRetry(new CommonDomain.Sample.ChatRoom.Create() { Name = "Chatter Box", ChatRoomId = streamId, State = "VIC"});
+            pipelineProcessor.Process(new CommonDomain.Sample.ChatRoom.Create() { Name = "Chatter Box", ChatRoomId = streamId, State = "VIC"});
 
-            var expected = commandProcessor.ProcessWithRetry(new PatchEvent(streamId, "Location.State", "NSW"));
+            var expected = pipelineProcessor.Process(new PatchEvent(streamId, "Location.State", "NSW"));
             Assert.Equal(streamId, expected.FilterEvents<PatchEvent>().First().GetStreamId());
             var chatRoom = expected.FindProjectedItem<ChatRoom>();
             Assert.Equal(streamId, expected.FilterEvents<PatchEvent>().First().GetStreamId());
@@ -117,7 +116,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             Assert.Throws<Exception>(() =>
-                commandProcessor.ProcessWithRetry(new Customer.BadStatelessEvent { CustomerId = streamId }));
+                pipelineProcessor.Process(new Customer.BadStatelessEvent { CustomerId = streamId }));
         }
 
         [Fact]
@@ -125,7 +124,7 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var results = commandProcessor.ProcessWithRetry(new Employee.Create()
+            var results = pipelineProcessor.Process(new Employee.Create()
             {
                 PersonId = streamId,
                 Person = new PersonalDetails("John", $"Smith{streamId}")
@@ -133,7 +132,7 @@ namespace NEvilES.Tests
             PersonalDetails projectedItem = results.FindProjectedItem<PersonReadModel>();
             Assert.True(projectedItem.FirstName == "John");
 
-            results = commandProcessor.ProcessWithRetry(new Person.CorrectName { PersonId = streamId, Name = "New Name" });
+            results = pipelineProcessor.Process(new Person.CorrectName { PersonId = streamId, Name = "New Name" });
             projectedItem = results.FindProjectedItem<PersonalDetails>();
             Assert.True(projectedItem.FirstName == "New");
         }
@@ -148,8 +147,8 @@ namespace NEvilES.Tests
 
             Assert.Throws<CommandValidationException>(() =>
                 // below doesn't work because we don't register handlers for sub-types Employee descends from Details -> We only register INeedExternal
-                //commandProcessor.Process(new Details.Create { PersonId = personId, Details = new PersonalDetails("John", "Smith") }));
-                commandProcessor.ProcessWithRetry(new Employee.Create { PersonId = personId, Person = model }));
+                //pipelineProcessor.Process(new Details.Create { PersonId = personId, Details = new PersonalDetails("John", "Smith") }));
+                pipelineProcessor.Process(new Employee.Create { PersonId = personId, Person = model }));
         }
 
         [Fact] 
@@ -158,7 +157,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var command = new Customer.SendInvite(streamId, new PersonalDetails("John", $"Smith+{Guid.NewGuid()}"), "john@gmail.com");
-            var expected = commandProcessor.ProcessWithRetry(command);
+            var expected = pipelineProcessor.Process(command);
 
             Assert.Equal(2, expected.UpdatedAggregates.SelectMany(x => x.UpdatedEvents).Count());
 
@@ -178,7 +177,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var bonus = new Employee.PayBonus { EmployeeId = streamId, Amount = 10000M };
-            var results = commandProcessor.ProcessWithRetry(bonus);
+            var results = pipelineProcessor.Process(bonus);
             var projectedItem = (decimal)results.ReadModelItems[0];
             Assert.True(projectedItem == bonus.Amount);
         }
@@ -189,7 +188,7 @@ namespace NEvilES.Tests
             var streamId = Guid.NewGuid();
 
             var email = new Customer.EmailSent { CustomerId = streamId, Text = "Testing" };
-            var results = commandProcessor.ProcessWithRetry(email);
+            var results = pipelineProcessor.Process(email);
             var projectedItem = results.ReadModelItems[0];
             Assert.True((string)projectedItem == email.Text);
         }
