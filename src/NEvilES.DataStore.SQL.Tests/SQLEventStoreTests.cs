@@ -42,6 +42,7 @@ namespace NEvilES.DataStore.SQL.Tests
             var repository = scope.ServiceProvider.GetRequiredService<IRepository>();
             var commit = repository.Save(chatRoom);
 
+            output.WriteLine($"Events: {commit.UpdatedEvents.Length}");
             Assert.NotNull(commit);
         }
 
@@ -236,14 +237,11 @@ namespace NEvilES.DataStore.SQL.Tests
             {
                 using var scope = serviceScopeFactory.CreateScope();
                 var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
-                try
+
+                Assert.Throws<ProjectorException>(() =>
                 {
                     commandProcessor.Process(new PatchEvent(chatRoom, "Bad.Path", "VIC"));
-                }
-                catch (Exception e)
-                {
-                    Assert.Equal(typeof(ProjectorException), e.GetType());
-                }
+                });
             }
 
             {

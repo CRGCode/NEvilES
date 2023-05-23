@@ -1,6 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
-
-  <PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+		<PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 

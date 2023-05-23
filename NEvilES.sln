@@ -12,9 +12,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Tests", "src\NEvilES.Tests\NEvilES.Tests.csproj", "{11B04DDE-378F-46BC-A3BA-2ADCDE4A5699}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{46D734C0-32AE-4B02-9A16-2FE154B888BB}"
-	ProjectSection(SolutionItems) = preProject
-		src\Server\NEvilES.Server\NEvilES.Server.csproj = src\Server\NEvilES.Server\NEvilES.Server.csproj
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Abstractions", "src\NEvilES.Abstractions\NEvilES.Abstractions.csproj", "{3AC8CB1E-D411-4BF5-BD6A-D3A7C570EF00}"
 EndProject
@@ -62,7 +59,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEvilES.Server.ClientApi", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Outbox", "Outbox", "{B0D69A5F-14F8-4657-9755-D09565A635A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Outbox.Abstractions", "src\Outbox\Outbox.Abstractions\Outbox.Abstractions.csproj", "{638B2912-D559-472E-AA41-78931F114D34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Outbox.Abstractions", "src\Outbox\Outbox.Abstractions\Outbox.Abstractions.csproj", "{638B2912-D559-472E-AA41-78931F114D34}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

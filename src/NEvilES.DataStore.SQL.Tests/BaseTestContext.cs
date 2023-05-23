@@ -24,7 +24,8 @@ namespace NEvilES.DataStore.SQL.Tests
             var services = new ServiceCollection()
                 .AddLogging(loggingBuilder =>
                 {
-                    loggingBuilder.SetMinimumLevel(LogLevel.Error);
+                    loggingBuilder.AddXUnit(this);
+                    loggingBuilder.SetMinimumLevel(LogLevel.Trace);
                 })
                 .AddSingleton<IConnectionString>(c => new ConnectionString(ConnString))
                 .AddScoped(c =>
@@ -55,11 +56,6 @@ namespace NEvilES.DataStore.SQL.Tests
                     };
                 });
 
-            services.AddLogging(configure =>
-            {
-                configure.AddXUnit(this);
-                configure.SetMinimumLevel(LogLevel.Trace);
-            });
             services.AddSingleton<IUser>(c => new CommandContext.User(Guid.Parse("00000001-0007-4852-9D2D-111111111111")));
             services.AddScoped<ICommandContext, CommandContext>(s =>
             {
