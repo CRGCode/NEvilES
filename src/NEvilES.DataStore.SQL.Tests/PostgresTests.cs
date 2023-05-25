@@ -5,12 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
-
 using Xunit;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
     using NEvilES.Tests.CommonDomain.Sample;
+    using Npgsql;
+    using System.Data;
+    using System.Reflection.Emit;
     using Xunit.Abstractions;
     using ReadModel = NEvilES.Tests.CommonDomain.Sample.ReadModel;
 
@@ -97,4 +99,6 @@ namespace NEvilES.DataStore.SQL.Tests
             scope?.Dispose();
         }
     }
+
+
 }

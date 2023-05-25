@@ -201,6 +201,7 @@ namespace NEvilES
                 .ConnectImplementingType(typeof(IProjectWithResultAsync<>));
 
             services.AddScoped(typeof(ITransaction), typeof(TTransaction));
+            services.AddScoped(typeof(TRepository));
 
             services.AddTransient<ICommandProcessor, PipelineProcessorWithScopedRetry>();
 

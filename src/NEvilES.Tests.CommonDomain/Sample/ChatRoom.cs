@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NEvilES.Abstractions;
+using Outbox.Abstractions;
 
 namespace NEvilES.Tests.CommonDomain.Sample
 {
@@ -50,7 +51,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
 
         public class Aggregate : AggregateBase,
             IHandleAggregateCommand<Create>,
-            IHandleAggregateCommand<IncludeUserInRoom>,
+            IHandleAggregateCommand<IncludeUserInRoom, IOutboxRepository>,
             IHandleAggregateCommand<RemoveUserFromRoom>,
             IHandleAggregateCommand<RenameRoom>
         {
@@ -59,9 +60,17 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 Raise<Created>(command);
             }
 
-            public void Handle(IncludeUserInRoom command)
+            public void Handle(IncludeUserInRoom command, IOutboxRepository outbox)
             {
-                Raise<UserIncludedInRoom>(command);
+                var evt = Raise<UserIncludedInRoom>(command);
+
+                outbox.Add(new OutboxMessage()
+                {
+                    MessageType = nameof(IncludeUserInRoom),
+                    MessageId = Guid.NewGuid(),
+                    Destination = "Credit",
+                    Payload = evt.ToString()
+                });
             }
 
             public void Handle(RemoveUserFromRoom command)

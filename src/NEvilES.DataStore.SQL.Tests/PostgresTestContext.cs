@@ -1,10 +1,12 @@
 using System.Data;
+using LamarCodeGeneration.Util;
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore.Marten;
 using Npgsql;
+using Outbox.Abstractions;
 
 namespace NEvilES.DataStore.SQL.Tests
 {
@@ -16,12 +18,20 @@ namespace NEvilES.DataStore.SQL.Tests
 
         protected override void AddServices(IServiceCollection services)
         {
-            services.AddScoped<IDbConnection>(c =>
+            services.AddScoped(s =>
             {
-                var conn = new NpgsqlConnection(c.GetRequiredService<IConnectionString>().Data);
+                var conn = new NpgsqlConnection(s.GetRequiredService<IConnectionString>().Data);
                 conn.Open();
                 return conn;
-            });
+            }).AddScoped<IDbConnection>(s => s.GetRequiredService<NpgsqlConnection>());
+
+            services.AddScoped(c =>
+            {
+                var conn = c.GetRequiredService<NpgsqlConnection>();
+                return conn.BeginTransaction();
+            }).AddScoped<IDbTransaction>(s => s.GetRequiredService<NpgsqlTransaction>()); ;
+
+            services.AddScoped<IOutboxRepository>(s => new SQLOutboxRepository(s.GetRequiredService<SQLEventStore>()));
 
             services
                 .AddSingleton<IDocumentStore>(c => DocumentStore.For(ConnString) )
@@ -32,7 +42,7 @@ namespace NEvilES.DataStore.SQL.Tests
             services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });
             services.AddAllGenericTypes(typeof(IQueryFromReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });
 
-            new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
+            //new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
         }
     }
 }

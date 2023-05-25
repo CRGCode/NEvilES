@@ -46,8 +46,6 @@ namespace NEvilES.Abstractions.Pipeline
         private static IProcessPipelineStage CreatePipelineFor(IFactory factory, ILogger logger)
         {
             IProcessPipelineStage nextStage = null;
-
-            nextStage = null;
             foreach (var ctor in _ctors)
             {
                 var stage = (IProcessPipelineStage)ctor.Invoke(new object[] { factory, nextStage, logger });

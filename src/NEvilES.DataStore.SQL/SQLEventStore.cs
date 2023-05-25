@@ -11,7 +11,7 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.DataStore.SQL
 {
-    public class SQLEventStore : SQLEventStoreReader, IRepository, IAsyncRepository
+    public class SQLEventStore : SQLEventStoreBase, IRepository, IAsyncRepository
     {
         private readonly ICommandContext commandContext;
 

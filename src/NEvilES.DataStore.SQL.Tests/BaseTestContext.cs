@@ -28,11 +28,7 @@ namespace NEvilES.DataStore.SQL.Tests
                     loggingBuilder.SetMinimumLevel(LogLevel.Trace);
                 })
                 .AddSingleton<IConnectionString>(c => new ConnectionString(ConnString))
-                .AddScoped(c =>
-                {
-                    var conn = c.GetRequiredService<IDbConnection>();
-                    return conn.BeginTransaction();
-                })
+
                 .AddEventStore<SQLEventStore, PipelineTransaction>(opts =>
                 {
                     opts.PipelineStages = new[]
@@ -64,13 +60,12 @@ namespace NEvilES.DataStore.SQL.Tests
                 return new CommandContext(user, transaction, null, "1.0");
             });
 
-            services.AddScoped<IReadEventStore,SQLEventStoreReader>();
+            services.AddScoped<IReadEventStore,SQLEventStoreBase>();
 
             // ReSharper disable once VirtualMemberCallInConstructor
             AddServices(services);
 
             Container = services.BuildServiceProvider();
         }
-
     }
 }

@@ -7,8 +7,8 @@ namespace Outbox.Abstractions;
 
 public interface IOutboxRepository
 {
-    void Add(IOutboxMessage message);
-    IEnumerable<IOutboxMessage> GetNext();
+    void Add(OutboxMessage message);
+    IEnumerable<OutboxMessage> GetNext();
     void Remove(int messageId);
 }
 
@@ -50,22 +50,22 @@ public class OutboxMessage<T> : OutboxMessage
 
 public class InMemoryOutboxRepository : IOutboxRepository
 {
-    private readonly Dictionary<int, IOutboxMessage> data = new();
+    private readonly Dictionary<int, OutboxMessage> data = new();
 
     private static int _pKey;
 
-    public void Add(IOutboxMessage message)
+    public void Add(OutboxMessage message)
     {
         message.Id = ++_pKey;
         data.Add(message.Id, message);
     }
 
-    public IEnumerable<IOutboxMessage> GetNext()
+    public IEnumerable<OutboxMessage> GetNext()
     {
         return data.Select(x => x.Value);
     }
 
-    public void Update(IOutboxMessage message)
+    public void Update(OutboxMessage message)
     {
         data[message.Id] = message;
     }

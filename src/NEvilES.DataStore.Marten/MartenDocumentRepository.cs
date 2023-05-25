@@ -19,19 +19,19 @@ namespace NEvilES.DataStore.Marten
         public void Insert<T>(T item) where T : class, IHaveIdentity<TId>
         {
             session.Insert(item);
-            session.SaveChanges();
+            //session.SaveChanges();
         }
 
         public void Update<T>(T item) where T : class, IHaveIdentity<TId>
         {
             session.Store(item);
-            session.SaveChanges();
+            //session.SaveChanges();
         }
 
         public void Delete<T>(T item) where T : class, IHaveIdentity<TId>
         {
             session.Delete(item);
-            session.SaveChanges();
+            //session.SaveChanges();
         }
 
         public T Get<T>(TId id) where T : class, IHaveIdentity<TId>
