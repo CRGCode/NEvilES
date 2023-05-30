@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -7,7 +8,9 @@ namespace Outbox.Abstractions;
 
 public interface IOutboxWorker
 {
-    public void Trigger();
+    void Trigger();
+    void MainLoop();
+    Task Send();
 }
 
 public class OutboxWorkerWorkerThread : IOutboxWorker
@@ -16,8 +19,9 @@ public class OutboxWorkerWorkerThread : IOutboxWorker
     private readonly IServiceBus serviceBus;
     private readonly IOutboxRepository repository;
     private readonly ManualResetEventSlim signal;
-    private CancellationTokenSource? cancellationTokenSource;
-    private Thread? thread;
+    private readonly CancellationTokenSource cancellationTokenSource;
+    private readonly Thread thread;
+    private CancellationToken cancellationToken;
 
     public OutboxWorkerWorkerThread(ILogger<OutboxWorkerWorkerThread> logger,
         IServiceBus serviceBus,
@@ -27,6 +31,9 @@ public class OutboxWorkerWorkerThread : IOutboxWorker
         this.serviceBus = serviceBus;
         this.repository = repository;
         signal = new ManualResetEventSlim(false);
+        
+        cancellationTokenSource = new CancellationTokenSource();
+        thread = new Thread(MainLoop);
     }
 
     public void Trigger()
@@ -35,51 +42,50 @@ public class OutboxWorkerWorkerThread : IOutboxWorker
         logger.LogInformation("Triggered");
     }
 
-    private async Task Send()
+    public async Task Send()
     {
-        await serviceBus.SendAsync(repository.GetNext());
+        var outboxMessages = repository.GetNext().ToArray();
+        await serviceBus.SendAsync(outboxMessages);
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken ct)
     {
         logger.LogInformation("Outbox service starting");
-
-        cancellationTokenSource = new CancellationTokenSource();
-        thread = new Thread(() =>
-        {
-            var wait = 0;
-            while (!cancellationTokenSource.Token.IsCancellationRequested)
-            {
-                try
-                {
-                    logger.LogInformation("Outbox waiting {0}", wait++);
-
-                    signal.Wait(cancellationTokenSource.Token);
-
-                    Send().Wait(cancellationTokenSource.Token);
-
-                    signal.Reset();
-                }
-                catch (OperationCanceledException)
-                {
-                    logger.LogInformation("Outbox service Cancelled");
-                }
-                catch (Exception e)
-                {
-                    logger.LogError(e, "OutboxWorker Exception");
-                }
-            }
-        });
-
         thread.Start();
+        cancellationToken = ct;
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public void MainLoop()
+    {
+        var wait = 0;
+        while (!cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            try
+            {
+                logger.LogInformation("Outbox waiting {0}", wait++);
+
+                signal.Wait(cancellationToken);
+
+                Send().Wait(cancellationToken);
+
+                signal.Reset();
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogInformation("Outbox service Cancelled");
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "OutboxWorker Exception");
+            }
+        }
+    }
+
+    public Task StopAsync(CancellationToken ct)
     {
         logger.LogInformation("Outbox service stopping");
-        cancellationTokenSource?.Cancel();
-        thread?.Join();
+        thread.Join();
         return Task.CompletedTask;
     }
 }

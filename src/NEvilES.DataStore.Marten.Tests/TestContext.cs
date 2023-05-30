@@ -25,7 +25,7 @@ namespace NEvilES.DataStore.Marten.Tests
 
             Services = services.BuildServiceProvider();
 
-            new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
+            new PgSQLEventStoreCreate(new ConnectionString(ConnString)).CreateOrWipeDb();
         }
     }
 }

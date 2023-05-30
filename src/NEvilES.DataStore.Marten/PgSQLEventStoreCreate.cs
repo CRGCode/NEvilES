@@ -6,17 +6,39 @@ namespace NEvilES.DataStore.Marten
 {
     public class PgSQLEventStoreCreate : ICreateOrWipeDb
     {
-        public void CreateOrWipeDb(IConnectionString connString)
+        private readonly string targetDb;
+        private readonly string dbName;
+        private readonly string master;
+
+        public PgSQLEventStoreCreate(IConnectionString connString)
         {
-            void RunSql(NpgsqlConnection connection, string sql)
-            {
-                var command = connection.CreateCommand();
-                command.CommandText = sql;
-                command.ExecuteNonQuery();
-            }
-            var dbName = connString.Keys["Database"];
-            
-            using (var connection = new NpgsqlConnection($@"Host={connString.Keys["Host"]};Port={connString.Keys["Port"]};Username={connString.Keys["Username"]};Password={connString.Keys["Password"]};Database=postgres"))
+            dbName = connString.Keys["Database"];
+
+            targetDb = connString.Data;
+
+            master = $"Host={connString.Keys["Host"]};Port={connString.Keys["Port"]};Username={connString.Keys["Username"]};Password={connString.Keys["Password"]};Database=postgres";
+        }
+
+        public void RunSql(string sql)
+        {
+            using var connection = new NpgsqlConnection(targetDb);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        }
+
+        private void RunSql(NpgsqlConnection connection, string sql)
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        }
+
+        public void CreateOrWipeDb()
+        {
+            using (var connection = new NpgsqlConnection(master))
             {
                 connection.Open();
 
@@ -31,7 +53,7 @@ WHERE	datname = '{dbName}';
                 NpgsqlConnection.ClearAllPools();
             }
 
-            using (var connection = new NpgsqlConnection(connString.Data))
+            using (var connection = new NpgsqlConnection(targetDb))
             {
                 connection.Open();
                 var cmd = connection.CreateCommand();

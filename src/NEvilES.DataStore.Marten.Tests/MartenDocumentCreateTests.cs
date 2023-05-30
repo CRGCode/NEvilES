@@ -20,7 +20,7 @@ namespace NEvilES.DataStore.Marten.Tests
         [Fact]
         public void EventStoreCreate()
         {
-            new PgSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(TestContext.ConnString));
+            new PgSQLEventStoreCreate(new ConnectionString(TestContext.ConnString)).CreateOrWipeDb();
         }
     }
 }

@@ -6,11 +6,22 @@ namespace NEvilES.DataStore.MSSQL
 {
     public class MSSQLEventStoreCreate : ICreateOrWipeDb
     {
+        private readonly string dbName;
+        private readonly string targetDb;
+        private readonly string master;
 
-        public void CreateOrWipeDb(IConnectionString connString)
+        public MSSQLEventStoreCreate(IConnectionString connString)
         {
-            var dbName = connString.Keys["Database"];
-            using (var connection = new SqlConnection($@"Server={connString.Keys["Server"]};Database=Master;Integrated Security=true;"))
+            dbName = connString.Keys["Database"];
+
+            targetDb = connString.Data;
+
+            master = $"Server={connString.Keys["Server"]};Database=Master;Integrated Security=true;";
+        }
+
+        public void CreateOrWipeDb()
+        {
+            using (var connection = new SqlConnection(master))
             {
                 connection.Open();
 
@@ -40,7 +51,7 @@ EXEC ('CREATE DATABASE [{0}] ON PRIMARY
                 connection.Close();
             }
 
-            using (var connection = new SqlConnection(connString.Data))
+            using (var connection = new SqlConnection(targetDb))
             {
                 connection.Open();
                 var cmd = connection.CreateCommand();

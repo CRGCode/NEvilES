@@ -14,11 +14,13 @@ namespace NEvilES.DataStore.Marten.Tests
     {
         private readonly TestContext context;
         private readonly ITestOutputHelper output;
+        private readonly IServiceScopeFactory serviceScopeFactory;
 
         public MartenDocumentStoreSmokeTests(TestContext context, ITestOutputHelper output)
         {
             this.context = context;
             this.output = output;
+            serviceScopeFactory = context.Services.GetRequiredService<IServiceScopeFactory>();
         }
 
         [Fact]
@@ -56,13 +58,19 @@ namespace NEvilES.DataStore.Marten.Tests
         {
             var id = Guid.NewGuid();
             var item = new Person(id, "John");
-            var writer = context.Services.GetRequiredService<IWriteReadModel<Guid>>();
-            writer.Insert(item);
-            writer.Insert(new Person(Guid.NewGuid(), "Fred"));
+            {
+                using var scope = serviceScopeFactory.CreateScope();
+                var writer = scope.ServiceProvider.GetRequiredService<IWriteReadModel<Guid>>();
+                writer.Insert(item);
+                writer.Insert(new Person(Guid.NewGuid(), "Fred"));
+            }
 
-            var reader = context.Services.GetRequiredService<IReadFromReadModel<Guid>>();
-            var persons = reader.Query<Person>(p => p.Name == "John").ToArray();
-
+            Person[] persons;
+            {
+                using var scope = serviceScopeFactory.CreateScope();
+                var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<Guid>>();
+                persons = reader.Query<Person>(p => p.Name == "John").ToArray();
+            }
             Assert.Single(persons);
             Assert.Equal(item.Name, persons.First().Name);
         }
@@ -71,28 +79,37 @@ namespace NEvilES.DataStore.Marten.Tests
         public void GetAll_Filter()
         {
             var id = Guid.NewGuid();
-            var item = new Person(id, "John") { State = State.Vic };
-            var writer = context.Services.GetRequiredService<IWriteReadModel<Guid>>();
-            writer.Insert(item);
-            writer.Insert(new Person(Guid.NewGuid(), "Fred"));
+            var item = new Person(id, "John")
+            {
+                State = State.Vic
+            };
+            {
+                using var scope = serviceScopeFactory.CreateScope();
+                var writer = scope.ServiceProvider.GetRequiredService<IWriteReadModel<Guid>>();
+                writer.Insert(item);
+                writer.Insert(new Person(Guid.NewGuid(), "Fred"));
+            }
 
+            {
+                using var scope = serviceScopeFactory.CreateScope();
+                var reader = scope.ServiceProvider.GetRequiredService<IQueryFromReadModel<Guid>>();
+                var query = reader
+                    .GetAll<Person>();
 
-            var reader = context.Services.GetRequiredService<IQueryFromReadModel<Guid>>();
-            var query = reader
-                .GetAll<Person>();
+                query = query.FilterByName("John");
+                query = query.FilterByState(State.Vic);
+                //query = query.FilterByStates(new []{ State.Vic, State.NSW });
 
-            query = query.FilterByName("John");
-            query = query.FilterByState(State.Vic);
-            //query = query.FilterByStates(new []{ State.Vic, State.NSW });
+                query = query.OrderByDescending(x => x.DOB);
 
-            query = query.OrderByDescending(x => x.DOB);
-            output.WriteLine(query.ToCommand().CommandText);
-            Assert.Contains("->> 'Name'", query.ToCommand().CommandText);
-            //Assert.Contains("->> 'State'", query.ToCommand().CommandText);
-            Assert.Contains("order by", query.ToCommand().CommandText);
+                output.WriteLine(query.ToCommand().CommandText);
+                Assert.Contains("->> 'Name'", query.ToCommand().CommandText);
+                //Assert.Contains("->> 'State'", query.ToCommand().CommandText);
+                Assert.Contains("order by", query.ToCommand().CommandText);
 
-            var results = query.ToArray();
-            Assert.Single(results);
+                var results = query.ToArray();
+                Assert.Single(results);
+            }
         }
     }
 

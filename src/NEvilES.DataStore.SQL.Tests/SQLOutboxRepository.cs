@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Data;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Outbox.Abstractions;
 
 namespace NEvilES.DataStore.SQL.Tests
@@ -33,12 +33,10 @@ namespace NEvilES.DataStore.SQL.Tests
             cmd.Transaction = transaction;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = "INSERT INTO outbox(messageid, messagetype, payload, destination) VALUES(@messageId, @messageType, @payload, @destination)";
-            var messageId = CreateParam(cmd, "@messageId", DbType.Guid, message.MessageId);
-            var messageType = CreateParam(cmd, "@messageType", DbType.String, message.MessageType);
-            var payload = CreateParam(cmd, "@payload", DbType.String, message.Payload);
-            var destination = CreateParam(cmd, "@destination", DbType.String, message.Destination);
-
-            //cmd.Prepare();
+            CreateParam(cmd, "@messageId", DbType.Guid, message.MessageId);
+            CreateParam(cmd, "@messageType", DbType.String, message.MessageType);
+            CreateParam(cmd, "@payload", DbType.String, message.Payload);
+            CreateParam(cmd, "@destination", DbType.String, message.Destination);
 
             cmd.ExecuteNonQuery();
         }
@@ -66,9 +64,16 @@ namespace NEvilES.DataStore.SQL.Tests
             }
         }
 
-        public void Remove(int messageId)
+        public void Remove(int id)
         {
-            throw new System.NotImplementedException();
+            using var cmd = transaction.Connection.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText = "DELETE FROM outbox WHERE id = @Id";
+
+            CreateParam(cmd, "@Id", DbType.Int32, id);
+
+            cmd.ExecuteNonQuery();
         }
     }
 }

@@ -22,10 +22,16 @@ namespace NEvilES.DataStore.SQL.Tests
                 return conn;
             });
 
+            services.AddScoped(c =>
+            {
+                var conn = c.GetRequiredService<IDbConnection>();
+                return conn.BeginTransaction();
+            });
+
             services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
             services.AddAllGenericTypes(typeof(IReadFromReadModel<>), new[] { typeof(SQLDocumentRepository<>).Assembly });
             
-            new MSSQLEventStoreCreate().CreateOrWipeDb(new ConnectionString(ConnString));
+            new MSSQLEventStoreCreate(new ConnectionString(ConnString)).CreateOrWipeDb();
         }
     }
 }

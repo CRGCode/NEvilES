@@ -7,9 +7,10 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.DataStore.Marten
 {
-    public abstract class MartenDocumentRepository<TId> : IReadFromReadModel<TId>, IWriteReadModel<TId>, IQueryFromReadModel<TId>
+    public abstract class MartenDocumentRepository<TId> : IReadFromReadModel<TId>, IWriteReadModel<TId>, IQueryFromReadModel<TId>, IDisposable
     {
         private readonly IDocumentSession session;
+        private bool changed;
 
         protected MartenDocumentRepository(IDocumentSession documentSession)
         {
@@ -19,19 +20,19 @@ namespace NEvilES.DataStore.Marten
         public void Insert<T>(T item) where T : class, IHaveIdentity<TId>
         {
             session.Insert(item);
-            //session.SaveChanges();
+            changed = true;
         }
 
         public void Update<T>(T item) where T : class, IHaveIdentity<TId>
         {
             session.Store(item);
-            //session.SaveChanges();
+            changed = true;
         }
 
         public void Delete<T>(T item) where T : class, IHaveIdentity<TId>
         {
             session.Delete(item);
-            //session.SaveChanges();
+            changed = true;
         }
 
         public T Get<T>(TId id) where T : class, IHaveIdentity<TId>
@@ -60,6 +61,19 @@ namespace NEvilES.DataStore.Marten
         public void WipeDocTypeIfExists<T>()
         {
             session.DocumentStore.Advanced.Clean.DeleteDocumentsByType(typeof(T));
+        }
+
+        public void Dispose()
+        {
+            if (session == null) 
+                return;
+            if (changed)
+            {
+                session.SaveChanges();
+                changed = false;
+            }
+
+            session.Dispose();
         }
     }
 

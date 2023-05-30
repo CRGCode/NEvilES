@@ -51,26 +51,18 @@ namespace NEvilES.Tests.CommonDomain.Sample
 
         public class Aggregate : AggregateBase,
             IHandleAggregateCommand<Create>,
-            IHandleAggregateCommand<IncludeUserInRoom, IOutboxRepository>,
+            IHandleAggregateCommand<IncludeUserInRoom>,
             IHandleAggregateCommand<RemoveUserFromRoom>,
-            IHandleAggregateCommand<RenameRoom>
+            IHandleAggregateCommand<RenameRoom, IOutboxRepository>
         {
             public void Handle(Create command)
             {
                 Raise<Created>(command);
             }
 
-            public void Handle(IncludeUserInRoom command, IOutboxRepository outbox)
+            public void Handle(IncludeUserInRoom command)
             {
                 var evt = Raise<UserIncludedInRoom>(command);
-
-                outbox.Add(new OutboxMessage()
-                {
-                    MessageType = nameof(IncludeUserInRoom),
-                    MessageId = Guid.NewGuid(),
-                    Destination = "Credit",
-                    Payload = evt.ToString()
-                });
             }
 
             public void Handle(RemoveUserFromRoom command)
@@ -78,9 +70,17 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 Raise<UserRemovedFromRoom>(command);
             }
 
-            public void Handle(RenameRoom command)
+            public void Handle(RenameRoom command, IOutboxRepository outbox)
             {
-                RaiseStateless<RoomRenamed>(command);
+                var evt = RaiseStateless<RoomRenamed>(command);
+
+                outbox.Add(new OutboxMessage()
+                {
+                    MessageType = nameof(RoomRenamed),
+                    MessageId = Guid.NewGuid(),
+                    Destination = "Credit",
+                    Payload = evt.ToString()
+                });
             }
 
             //------------------------------------------------
