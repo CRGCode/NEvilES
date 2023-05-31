@@ -157,15 +157,18 @@ namespace NEvilES.DataStore.SQL.Tests
 
             var outboxWorker = serviceProvider.GetRequiredService<OutboxWorkerWorkerThread>();
 
-            await outboxWorker.StartAsync(new CancellationToken());
 
-            Thread.Sleep(1000);
+            var cts = new CancellationTokenSource();
+            await outboxWorker.StartAsync(cts.Token);
+
+            Thread.Sleep(10);
 
             outboxWorker.Trigger();
 
-            Thread.Sleep(1000);
+            Thread.Sleep(100);
 
-            await outboxWorker.StopAsync(new CancellationToken());
+            cts.Cancel();
+            await outboxWorker.StopAsync(cts.Token);
         }
 
         public void Dispose()

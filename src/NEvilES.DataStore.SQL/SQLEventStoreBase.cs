@@ -39,10 +39,10 @@ namespace NEvilES.DataStore.SQL
 
         public IEnumerable<IAggregateCommit> Read(long from = 0, long to = 0)
         {
-            using var cmd = Transaction.Connection.CreateCommand();
+            using var cmd = Transaction.Connection!.CreateCommand();
             cmd.Transaction = Transaction;
             cmd.CommandType = CommandType.Text;
-            if (@from == 0 && to == 0)
+            if (from == 0 && to == 0)
             {
                 cmd.CommandText =
                     "SELECT streamid, bodytype, body, who, _when, version FROM events ORDER BY id";
@@ -51,7 +51,7 @@ namespace NEvilES.DataStore.SQL
             {
                 cmd.CommandText =
                     "SELECT streamid, bodytype, body, who, _when, version FROM events WHERE id BETWEEN @from AND @to ORDER BY id";
-                CreateParam(cmd, "@from", DbType.Int64, @from);
+                CreateParam(cmd, "@from", DbType.Int64, from);
                 CreateParam(cmd, "@to", DbType.Int64, to);
             }
 
@@ -63,7 +63,7 @@ namespace NEvilES.DataStore.SQL
 
         public IEnumerable<IAggregateCommit> ReadNewestLimit(int limit = 50)
         {
-            using var cmd = Transaction.Connection.CreateCommand();
+            using var cmd = Transaction.Connection!.CreateCommand();
             cmd.Transaction = Transaction;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = "SELECT streamid, bodytype, body, who, _when, version FROM events ORDER BY id DESC";
@@ -76,7 +76,7 @@ namespace NEvilES.DataStore.SQL
 
         public IEnumerable<IAggregateCommit> Read(Guid streamId)
         {
-            using var cmd = Transaction.Connection.CreateCommand();
+            using var cmd = Transaction.Connection!.CreateCommand();
             cmd.Transaction = Transaction;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText =
@@ -88,7 +88,7 @@ namespace NEvilES.DataStore.SQL
 
         public IEnumerable<IAggregateCommit> ReadNewestLimit(Guid streamId, int limit = 50)
         {
-            using var cmd = Transaction.Connection.CreateCommand();
+            using var cmd = Transaction.Connection!.CreateCommand();
             cmd.Transaction = Transaction;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText =

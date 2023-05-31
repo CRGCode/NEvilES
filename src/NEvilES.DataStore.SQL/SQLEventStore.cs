@@ -42,7 +42,7 @@ namespace NEvilES.DataStore.SQL
         public IAggregate Get(Type type, Guid id, long? version)
         {
             var events = new List<EventDb>();
-            using (var cmd = Transaction.Connection.CreateCommand())
+            using (var cmd = Transaction.Connection!.CreateCommand())
             {
                 cmd.Transaction = Transaction;
                 cmd.CommandType = CommandType.Text;
@@ -89,11 +89,11 @@ namespace NEvilES.DataStore.SQL
             if (events.Count == 0)
             {
                 var emptyAggregate = (IAggregate)Activator.CreateInstance(type, true);
-                ((AggregateBase)emptyAggregate).SetState(id);
+                ((AggregateBase)emptyAggregate)!.SetState(id);
                 return emptyAggregate;
             }
 
-            var aggregate = (IAggregate)Activator.CreateInstance(EventTypeLookupStrategy.Resolve(events[0].Category));
+            var aggregate = (IAggregate)Activator.CreateInstance(EventTypeLookupStrategy.Resolve(events[0].Category))!;
 
             foreach (var eventDb in events.OrderBy(x => x.Version))
             {
@@ -111,7 +111,7 @@ namespace NEvilES.DataStore.SQL
         public async Task<IAggregate> GetAsync(Type type, Guid id, long? version)
         {
             var events = new List<EventDb>();
-            await using var cmd = (DbCommand)Transaction.Connection.CreateCommand();
+            await using var cmd = (DbCommand)Transaction.Connection!.CreateCommand();
             cmd.Transaction = (DbTransaction)Transaction;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText =
@@ -154,7 +154,7 @@ namespace NEvilES.DataStore.SQL
         {
             int? version = null;
             string category = null;
-            using (var cmd = Transaction.Connection.CreateCommand())
+            using (var cmd = Transaction.Connection!.CreateCommand())
             {
                 cmd.Transaction = Transaction;
                 cmd.CommandType = CommandType.Text;
@@ -191,7 +191,7 @@ namespace NEvilES.DataStore.SQL
                 aggregate = (IAggregate)Activator.CreateInstance(EventTypeLookupStrategy.Resolve(category));
             }
 
-            ((AggregateBase)aggregate).SetState(id, version ?? 0);
+            ((AggregateBase)aggregate)!.SetState(id, version ?? 0);
 
             return aggregate;
         }
@@ -200,7 +200,7 @@ namespace NEvilES.DataStore.SQL
         {
             int? version = null;
             string category = null;
-            await using var cmd = (DbCommand)Transaction.Connection.CreateCommand();
+            await using var cmd = (DbCommand)Transaction.Connection!.CreateCommand();
             cmd.Transaction = (DbTransaction)Transaction;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText =
@@ -234,7 +234,7 @@ namespace NEvilES.DataStore.SQL
             var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
             var count = 0;
 
-            using (var cmd = Transaction.Connection.CreateCommand())
+            using (var cmd = Transaction.Connection!.CreateCommand())
             {
                 cmd.Transaction = Transaction;
                 cmd.CommandType = CommandType.Text;
@@ -293,7 +293,7 @@ namespace NEvilES.DataStore.SQL
             var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
             var count = 0;
 
-            await using var cmd = (DbCommand)Transaction.Connection.CreateCommand();
+            await using var cmd = (DbCommand)Transaction.Connection!.CreateCommand();
             cmd.Transaction = (DbTransaction)Transaction;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText =

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <DebugType>portable</DebugType>
         <AssemblyName>NEvilES</AssemblyName>
         <PackageId>NEvilES</PackageId>
@@ -12,9 +12,9 @@
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.32" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.32" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.3" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		</ItemGroup>
     <ItemGroup>
         <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" Version="1.1.2-*" />

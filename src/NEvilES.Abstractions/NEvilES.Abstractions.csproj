@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+	  <TargetFramework>net6.0</TargetFramework>
 	  <AssemblyName>NEvilES.Abstractions</AssemblyName>
 	  <PackageId>NEvilES.Abstractions</PackageId>
 	  <Description>.Net Evil Event Sourcing Core</Description>
@@ -13,6 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.32" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.3" />
   </ItemGroup>
 </Project>

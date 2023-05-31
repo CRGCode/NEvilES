@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1</TargetFrameworks>
+		<TargetFramework>net6.0</TargetFramework>
 		<PackageId>NEvilES.Testing</PackageId>
 		<Description>.Net Evil Event Sourcing Testing</Description>
 		<Authors>Craig Gardiner;Elijah Bate</Authors>
