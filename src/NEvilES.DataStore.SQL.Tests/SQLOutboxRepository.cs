@@ -9,7 +9,7 @@ namespace NEvilES.DataStore.SQL.Tests
     {
         private readonly IDbTransaction transaction;
 
-        public SQLOutboxRepository(SQLEventStoreBase eventStore)
+        public SQLOutboxRepository(SQLEventStoreReader eventStore)
         {
             transaction = eventStore.Transaction;
         }

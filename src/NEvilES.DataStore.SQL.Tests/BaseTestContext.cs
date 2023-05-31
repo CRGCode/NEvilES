@@ -59,7 +59,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 return new CommandContext(user, transaction, null, "1.0");
             });
 
-            services.AddScoped<IReadEventStore,SQLEventStoreBase>();
+            services.AddScoped<IReadEventStore,SQLEventStoreReader>();
 
             // ReSharper disable once VirtualMemberCallInConstructor
             AddServices(services);

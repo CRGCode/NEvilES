@@ -7,12 +7,12 @@ using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.DataStore.SQL
 {
-    public class SQLEventStoreBase : IReadEventStore 
+    public class SQLEventStoreReader : IReadEventStore 
     {
         public readonly IDbTransaction Transaction;
         protected readonly IEventTypeLookupStrategy EventTypeLookupStrategy;
 
-        public SQLEventStoreBase(IDbTransaction transaction, IEventTypeLookupStrategy eventTypeLookupStrategy)
+        public SQLEventStoreReader(IDbTransaction transaction, IEventTypeLookupStrategy eventTypeLookupStrategy)
         {
             Transaction = transaction;
             EventTypeLookupStrategy = eventTypeLookupStrategy;

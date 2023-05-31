@@ -74,7 +74,7 @@ namespace NEvilES.Tests
             });
 
             services.AddScoped<IFactory, ServiceProviderFactory>();
-            services.AddScoped<IReadEventStore, SQLEventStoreBase>();
+            services.AddScoped<IReadEventStore, SQLEventStoreReader>();
             services.AddSingleton<DocumentStoreGuid>();
             services.AddSingleton<IReadFromReadModel<Guid>>(s => s.GetRequiredService<DocumentStoreGuid>());
             services.AddSingleton<IWriteReadModel<Guid>>(s => s.GetRequiredService<DocumentStoreGuid>());
