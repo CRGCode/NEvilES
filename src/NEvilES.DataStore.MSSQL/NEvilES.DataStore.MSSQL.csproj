@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFramework>net6.0</TargetFramework>
-    <DebugType>portable</DebugType>
+	  <TargetFramework>netstandard2.1</TargetFramework>
     <Description>.Net Evil Event Sourcing Data Store</Description>
     <VersionPrefix>0.0.1</VersionPrefix>
     <Version>1.1.2</Version>
