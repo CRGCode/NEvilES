@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -20,6 +20,7 @@
     <ProjectReference Include="..\NEvilES.DataStore.Marten\NEvilES.DataStore.Marten.csproj" />
     <ProjectReference Include="..\NEvilES.Testing\NEvilES.Testing.csproj" />
     <ProjectReference Include="..\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj" />
+    <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
   </ItemGroup>
 
   <ItemGroup>
