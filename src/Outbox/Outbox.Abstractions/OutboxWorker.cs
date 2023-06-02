@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Outbox.Abstractions;
@@ -9,11 +10,9 @@ namespace Outbox.Abstractions;
 public interface IOutboxWorker
 {
     void Trigger();
-    void MainLoop();
-    Task Send();
 }
 
-public class OutboxWorkerWorkerThread : IOutboxWorker
+public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
 {
     private readonly ILogger<OutboxWorkerWorkerThread> logger;
     private readonly IServiceBus serviceBus;
@@ -72,7 +71,7 @@ public class OutboxWorkerWorkerThread : IOutboxWorker
                 {
                     signal.Wait(cancellationToken);
                 }
-                catch (OperationCanceledException e)
+                catch (OperationCanceledException)
                 {
                     logger.LogInformation("Outbox service Cancelled whilst waiting for trigger (signal)");
                 }
@@ -81,7 +80,7 @@ public class OutboxWorkerWorkerThread : IOutboxWorker
                 {
                     Send().Wait();//(cancellationToken);
                 }
-                catch (OperationCanceledException e)
+                catch (OperationCanceledException)
                 {
                     logger.LogInformation("Outbox service Cancelled whilst waiting for ServiceBus to Send()");
                 }

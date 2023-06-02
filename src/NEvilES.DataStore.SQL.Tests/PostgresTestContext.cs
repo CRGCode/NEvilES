@@ -25,17 +25,16 @@ namespace NEvilES.DataStore.SQL.Tests
                 return conn;
             }).AddScoped<IDbConnection>(s => s.GetRequiredService<NpgsqlConnection>());
 
-            services.AddSingleton<OutboxWorkerWorkerThread>();
-
-            services.AddSingleton<IServiceBus, LocalServiceBus>();
-
             services.AddScoped(c =>
             {
                 var conn = c.GetRequiredService<NpgsqlConnection>();
                 return conn.BeginTransaction();
             }).AddScoped<IDbTransaction>(s => s.GetRequiredService<NpgsqlTransaction>()); 
 
-            services.AddScoped<IOutboxRepository>(s => new SQLOutboxRepository(s.GetRequiredService<SQLEventStore>()));
+            services.AddScoped<IOutboxRepository>(s => new SQLOutboxRepository(s.GetRequiredService<SQLEventStore>().Transaction));
+            services.AddSingleton<OutboxWorkerWorkerThread>();
+            services.AddSingleton<IServiceBus, LocalServiceBus>();
+
 
             services
                 .AddSingleton<IDocumentStore>(c => DocumentStore.For(ConnString))
