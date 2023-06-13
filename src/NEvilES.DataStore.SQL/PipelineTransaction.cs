@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Data;
+using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions.Pipeline;
 
 namespace NEvilES.DataStore.SQL
 {
     public class PipelineTransaction : TransactionBase, IDisposable
     {
+        private readonly ILogger log;
         private readonly IDbConnection connection;
         public IDbTransaction Transaction { get; }
         private bool rollback;
         private bool disposed;
 
-        public PipelineTransaction(IDbConnection connection, IDbTransaction transaction)
+        public PipelineTransaction(ILogger logger, IDbConnection connection, IDbTransaction transaction)
         {
             Id = CombGuid.NewGuid();
+            log = logger;
             this.connection = connection;
             Transaction = transaction;
         }
@@ -26,7 +29,11 @@ namespace NEvilES.DataStore.SQL
             if (disposing)
             {
                 if (!rollback)
+                {
                     Transaction.Commit();
+                    log.LogDebug($"Transaction {Id} Committed");
+                }
+
                 Transaction.Dispose();
                 connection.Close();
             }
@@ -42,6 +49,8 @@ namespace NEvilES.DataStore.SQL
         public override void Rollback()
         {
             Transaction.Rollback();
+            log.LogDebug($"Transaction {Id} Rollback");
+
             rollback = true;
         }
     }
