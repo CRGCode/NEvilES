@@ -53,7 +53,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
             IHandleAggregateCommand<Create>,
             IHandleAggregateCommand<IncludeUserInRoom>,
             IHandleAggregateCommand<RemoveUserFromRoom>,
-            IHandleAggregateCommand<RenameRoom, IOutboxRepository>
+            IHandleAggregateCommand<RenameRoom, IOutboxRepository, ISerialize>
         {
             public void Handle(Create command)
             {
@@ -70,7 +70,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 Raise<UserRemovedFromRoom>(command);
             }
 
-            public void Handle(RenameRoom command, IOutboxRepository outbox)
+            public void Handle(RenameRoom command, IOutboxRepository outbox, ISerialize serializer)
             {
                 var evt = RaiseStateless<RoomRenamed>(command);
 
@@ -79,7 +79,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
                     MessageType = nameof(RoomRenamed),
                     MessageId = Guid.NewGuid(),
                     Destination = "Credit",
-                    Payload = evt.ToString()
+                    Payload = serializer.ToJson(evt)
                 });
             }
 

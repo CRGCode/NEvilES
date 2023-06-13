@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.DataStore.Marten;
+using Newtonsoft.Json;
 using Npgsql;
 using Outbox.Abstractions;
 using Weasel.Postgresql.Tables;
@@ -29,19 +30,20 @@ namespace NEvilES.DataStore.SQL.Tests
             {
                 var conn = c.GetRequiredService<NpgsqlConnection>();
                 return conn.BeginTransaction();
-            }).AddScoped<IDbTransaction>(s => s.GetRequiredService<NpgsqlTransaction>()); 
+            }).AddScoped<IDbTransaction>(s => s.GetRequiredService<NpgsqlTransaction>());
 
-            services.AddScoped<IOutboxRepository>(s => new SQLOutboxRepository(s.GetRequiredService<SQLEventStore>().Transaction));
+            services.AddScoped<ITransaction, PipelineTransaction>();
+            services.AddScoped<PipelineTransaction>();
+            services.AddScoped<ISerialize, Serializer>();
+
+            services.AddScoped<IOutboxRepository>(s => new SQLOutboxRepository(s.GetRequiredService<IDbTransaction>()));
             services.AddSingleton<OutboxWorkerWorkerThread>();
-            services.AddSingleton<IServiceBus, LocalServiceBus>();
+            services.AddScoped<IServiceBus, LocalServiceBus>();
 
 
             services
                 .AddSingleton<IDocumentStore>(c => DocumentStore.For(ConnString))
-                .AddScoped(s =>
-                {
-                    return s.GetRequiredService<IDocumentStore>().OpenSession();
-                })
+                .AddScoped(s => s.GetRequiredService<IDocumentStore>().LightweightSession())
                 .AddScoped(s => s.GetRequiredService<IDocumentStore>().QuerySession());
 
             services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });
@@ -59,6 +61,19 @@ CREATE TABLE IF NOT EXISTS public.outbox(
     destination varchar(50) NOT NULL,
     createdat timestamp without time zone default (now() at time zone 'utc')
 )");
+        }
+    }
+
+    public class Serializer : ISerialize
+    {
+        public string ToJson<T>(T obj)
+        {
+            return JsonConvert.SerializeObject(obj);
+        }
+
+        public T FromJson<T>(string json)
+        {
+            return JsonConvert.DeserializeObject<T>(json)!;
         }
     }
 }

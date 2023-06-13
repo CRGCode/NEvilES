@@ -31,7 +31,7 @@ namespace NEvilES.DataStore.SQL
                 if (!rollback)
                 {
                     Transaction.Commit();
-                    log.LogDebug($"Transaction {Id} Committed");
+                    log.LogDebug($"Commit Pipeline Transaction {Id}");
                 }
 
                 Transaction.Dispose();
@@ -49,7 +49,7 @@ namespace NEvilES.DataStore.SQL
         public override void Rollback()
         {
             Transaction.Rollback();
-            log.LogDebug($"Transaction {Id} Rollback");
+            log.LogDebug($"Rollback Pipeline Transaction {Id}");
 
             rollback = true;
         }

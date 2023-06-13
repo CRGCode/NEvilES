@@ -60,7 +60,8 @@ namespace NEvilES.DataStore.Marten
         
         public void WipeDocTypeIfExists<T>()
         {
-            session.DocumentStore.Advanced.Clean.DeleteDocumentsByType(typeof(T));
+            session.DocumentStore.Advanced.Clean.DeleteDocumentsByTypeAsync(typeof(T)).Wait();
+            changed = true;
         }
 
         public void Dispose()

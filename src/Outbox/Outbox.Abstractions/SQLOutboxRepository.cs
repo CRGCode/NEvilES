@@ -41,8 +41,8 @@ namespace Outbox.Abstractions
 
         public IEnumerable<OutboxMessage> GetNext()
         {
-            using var cmd = transaction.Connection!.CreateCommand();
-            cmd.Transaction = transaction;
+            var conn = transaction.Connection!;
+            using var cmd = conn.CreateCommand();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = "SELECT id, messageid, messagetype, payload, destination, createdat FROM outbox ORDER BY id";
 
@@ -65,7 +65,6 @@ namespace Outbox.Abstractions
         public void Remove(int id)
         {
             using var cmd = transaction.Connection!.CreateCommand();
-            cmd.Transaction = transaction;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = "DELETE FROM outbox WHERE id = @Id";
 

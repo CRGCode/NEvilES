@@ -13,11 +13,9 @@ public interface IServiceBus
 public class LocalServiceBus : IServiceBus
 {
     private readonly ILogger<LocalServiceBus> logger;
-    //private readonly OutboxSettings settings;
     private readonly IOutboxRepository repository;
 
     public LocalServiceBus(ILogger<LocalServiceBus> logger,
-        //IOptions<OutboxSettings> settings, 
         IOutboxRepository repository)
     {
         this.logger = logger;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -78,9 +79,12 @@ public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
                     {
                         using var scope = scopedFactory.CreateScope();
                         var sp = scope.ServiceProvider;
+                        var trn = sp.GetRequiredService<IDbTransaction>();
+                        var repo = sp.GetRequiredService<IOutboxRepository>();
+                        var serviceBus = sp.GetRequiredService<IServiceBus>();
                         // ReSharper disable once MethodSupportsCancellation
-                        Send(sp.GetRequiredService<IOutboxRepository>(), sp.GetRequiredService<IServiceBus>())
-                            .Wait(); // We don't want this to ever be cancelled
+                        Send(repo, serviceBus).Wait(); // We don't want this to ever be cancelled
+                        trn.Commit();
                     }
                 }
                 catch (OperationCanceledException)

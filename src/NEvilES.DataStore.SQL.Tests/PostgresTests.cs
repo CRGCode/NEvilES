@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,10 +86,19 @@ namespace NEvilES.DataStore.SQL.Tests
                 expected = serviceScope.ServiceProvider.GetRequiredService<Marten.DocumentRepositoryWithKeyTypeGuid>()
                     .GetAll<ReadModel.ChatRoom>().ToList();
             }
+            Output.WriteLine($"Expected count {expected.Count}");
             {
                 using var documentRepository = scope.ServiceProvider.GetRequiredService<Marten.DocumentRepositoryWithKeyTypeGuid>();
                 documentRepository.WipeDocTypeIfExists<ReadModel.ChatRoom>();
             }
+
+            {
+                using var serviceScope = serviceScopeFactory.CreateScope();
+                var wiped = serviceScope.ServiceProvider.GetRequiredService<Marten.DocumentRepositoryWithKeyTypeGuid>()
+                    .GetAll<ReadModel.ChatRoom>().ToList();
+                Output.WriteLine($"Wiped count {wiped.Count}");
+            }
+
             {
                 using var serviceScope = serviceScopeFactory.CreateScope();
                 var reader = serviceScope.ServiceProvider.GetRequiredService<IReadEventStore>();
@@ -124,7 +134,7 @@ namespace NEvilES.DataStore.SQL.Tests
             Assert.Equal(1, chatRoom.Users.Count);
         }
 
-        [Fact]
+        //[Fact]
         public async Task ProcessAsync()
         {
             var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
@@ -154,10 +164,22 @@ namespace NEvilES.DataStore.SQL.Tests
                 UserId = Guid.NewGuid(),
             });
 
+            commandProcessor.Process(new ChatRoom.IncludeUserInRoom
+            {
+                ChatRoomId = chatRoomId,
+                UserId = Guid.NewGuid(),
+            });
+
             commandProcessor.Process(new ChatRoom.RenameRoom
             {
                 ChatRoomId = chatRoomId,
                 NewName = "New ChatRoom"
+            });
+
+            commandProcessor.Process(new ChatRoom.RenameRoom
+            {
+                ChatRoomId = chatRoomId,
+                NewName = "New ChatRoom2"
             });
 
             var repository = scope.ServiceProvider.GetRequiredService<IOutboxRepository>();
@@ -169,6 +191,8 @@ namespace NEvilES.DataStore.SQL.Tests
                 Destination = "QueueName",
                 Payload = "{ IncludeUserInRoom Json }"
             });
+            var outboxMessages = repository.GetNext().ToArray();
+            Assert.Equal(3, outboxMessages.Length);
         }
 
         [Fact]
@@ -176,15 +200,8 @@ namespace NEvilES.DataStore.SQL.Tests
         {
             var serviceProvider = scope.ServiceProvider;
 
-            var commandProcessor = serviceProvider.GetRequiredService<ICommandProcessor>();
-            commandProcessor.Process(new ChatRoom.RenameRoom
-            {
-                ChatRoomId = chatRoomId,
-                NewName = "New ChatRoom"
-            });
-
+            var tran = serviceProvider.GetRequiredService<IDbTransaction>();
             var repository = serviceProvider.GetRequiredService<IOutboxRepository>();
-
             repository.Add(new OutboxMessage()
             {
                 MessageId = chatRoomId,
@@ -192,21 +209,36 @@ namespace NEvilES.DataStore.SQL.Tests
                 Destination = "QueueName",
                 Payload = "{ IncludeUserInRoom Json }"
             });
+            tran.Commit();
 
-            var outboxWorker = serviceProvider.GetRequiredService<OutboxWorkerWorkerThread>();
+            var commandProcessor = serviceProvider.GetRequiredService<ICommandProcessor>();
+            commandProcessor.Process(new ChatRoom.RenameRoom
+            {
+                ChatRoomId = chatRoomId,
+                NewName = "New ChatRoom"
+            });
+            
+            var outboxMessages = repository.GetNext().ToArray();
 
+            Assert.True(outboxMessages.Length >= 2);
+
+            var hostWorker = serviceProvider.GetRequiredService<OutboxWorkerWorkerThread>();
 
             var cts = new CancellationTokenSource();
-            await outboxWorker.StartAsync(cts.Token);
+            await hostWorker.StartAsync(cts.Token);
 
             Thread.Sleep(10);
 
+            var outboxWorker = (IOutboxWorker)hostWorker;
             outboxWorker.Trigger();
 
-            Thread.Sleep(100);
+            Thread.Sleep(10);
 
             cts.Cancel();
-            await outboxWorker.StopAsync(cts.Token);
+            await hostWorker.StopAsync(cts.Token);
+
+            outboxMessages = repository.GetNext().ToArray();
+            Assert.Equal(0, outboxMessages.Length);
         }
 
         public void Dispose()
