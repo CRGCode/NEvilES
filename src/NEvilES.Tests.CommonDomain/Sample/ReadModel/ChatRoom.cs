@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 
@@ -6,6 +7,11 @@ namespace NEvilES.Tests.CommonDomain.Sample.ReadModel
 {
     public class ChatRoom : IHaveIdentity<Guid>
     {
+        public ChatRoom()
+        {
+            Users = new List<Guid>();
+        }
+
         public Guid Id { get; set; }
 
         public string Name { get; set; }
@@ -21,7 +27,8 @@ namespace NEvilES.Tests.CommonDomain.Sample.ReadModel
         }
 
         public class Projector : BaseProjector<ChatRoom>,
-            IProjectWithResult<Sample.ChatRoom.Created>
+            IProjectWithResult<Sample.ChatRoom.Created>,
+            IProject<Sample.ChatRoom.UserIncludedInRoom>
         {
             public Projector(IReadFromReadModel<Guid> reader, IWriteReadModel<Guid> writer) : base(reader, writer)
             {
@@ -35,7 +42,17 @@ namespace NEvilES.Tests.CommonDomain.Sample.ReadModel
 
                 return new ProjectorResult(chatRoom);
             }
+
+            public void Project(Sample.ChatRoom.UserIncludedInRoom message, IProjectorData data)
+            {
+                var chatRoom = Reader.Get<ReadModel.ChatRoom>(message.ChatRoomId);
+                chatRoom.Users.Add(message.UserId);
+
+                Writer.Update(chatRoom);
+            }
         }
+
+        public List<Guid> Users { get; set; }
 
         public override bool Equals(object obj)
         {

@@ -345,6 +345,6 @@ namespace NEvilES.DataStore.SQL
             var aggregate = await GetAsync(typeof(TAggregate), id);
             return (TAggregate)aggregate;
         }
-        public Task<IAggregate> GetAsync(Type type, Guid id) => GetAsync(type, id, null);
+        public async Task<IAggregate> GetAsync(Type type, Guid id) => await GetAsync(type, id, null);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 #pragma warning disable CS8618
 
 namespace Outbox.Abstractions;
@@ -32,20 +33,21 @@ public class OutboxMessage : IOutboxMessage
     public DateTime CreatedAt { get; set; }
 }
 
-public interface ISerialize
-{
-    string ToJson<T>(T obj);
-    T FromJson<T>(string json);
-}
-
 public class OutboxMessage<T> : OutboxMessage
 {
     public OutboxMessage(ISerialize serializer, T message, string destination)
     {
+        MessageId = Guid.NewGuid();
         MessageType = typeof(T).FullName;
         Payload = serializer.ToJson(message);
         Destination = destination;
     }
+}
+
+public interface ISerialize
+{
+    string ToJson<T>(T obj);
+    T FromJson<T>(string json);
 }
 
 public class InMemoryOutboxRepository : IOutboxRepository

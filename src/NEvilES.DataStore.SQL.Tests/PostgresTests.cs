@@ -105,7 +105,7 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
-        public void Outbox_Add()
+        public void Process()
         {
             var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
 
@@ -115,6 +115,44 @@ namespace NEvilES.DataStore.SQL.Tests
                 UserId = Guid.NewGuid(),
             });
 
+
+            var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<Guid>>();
+
+            var chatRoom = reader.Get<ReadModel.ChatRoom>(chatRoomId);
+
+            Output.WriteLine($"chatRoom.Users.Count = {chatRoom.Users.Count}");
+            Assert.Equal(1, chatRoom.Users.Count);
+        }
+
+        [Fact]
+        public async Task ProcessAsync()
+        {
+            var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+
+            await commandProcessor.ProcessAsync(new ChatRoom.IncludeUserInRoom
+            {
+                ChatRoomId = chatRoomId,
+                UserId = Guid.NewGuid(),
+            });
+
+
+            var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<Guid>>();
+
+            var chatRoom = reader.Get<ReadModel.ChatRoom>(chatRoomId);
+
+            Assert.True(chatRoom.Users.Count > 0);
+        }
+
+        [Fact]
+        public void Outbox_Add()
+        {
+            var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+
+            commandProcessor.Process(new ChatRoom.IncludeUserInRoom
+            {
+                ChatRoomId = chatRoomId,
+                UserId = Guid.NewGuid(),
+            });
 
             commandProcessor.Process(new ChatRoom.RenameRoom
             {

@@ -62,14 +62,14 @@ namespace NEvilES.Pipeline
             do
             {
                 using var scope = scopeFactory.CreateScope();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<PipelineProcessor>();
+                var pipelineProcessor = scope.ServiceProvider.GetRequiredService<PipelineProcessor>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<PipelineProcessorWithScopedRetry>>();
                 var context = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                 logger.LogInformation($"Processing[{command.GetStreamId()}] for {typeof(T).Name}");
 
                 try
                 {
-                    return commandProcessor.ProcessAsync(command);
+                    return pipelineProcessor.ProcessAsync(command);
                 }
                 catch (AggregateConcurrencyException)
                 {

@@ -46,6 +46,25 @@ namespace NEvilES.DataStore.SQL.Tests
             Assert.NotNull(commit);
         }
 
+        [Fact]
+        public async void Save_Event_Async()
+        {
+            var chatRoom = new ChatRoom.Aggregate();
+            chatRoom.RaiseEvent(new ChatRoom.Created
+            {
+                ChatRoomId = Guid.NewGuid(),
+                InitialUsers = new HashSet<Guid> { },
+                Name = "Biz Room"
+            });
+
+            using var scope = serviceScopeFactory.CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<IAsyncRepository>();
+            var commit = await repository.SaveAsync(chatRoom);
+
+            output.WriteLine($"Events: {commit.UpdatedEvents.Length}");
+            Assert.NotNull(commit);
+        }
+
         private static readonly int[] BackOff = { 10, 20, 20, 50, 50, 50, 100, 100, 200, 200, 300 };
 
 
