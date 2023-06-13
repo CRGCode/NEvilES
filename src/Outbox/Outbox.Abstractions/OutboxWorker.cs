@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -15,22 +16,18 @@ public interface IOutboxWorker
 public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
 {
     private readonly ILogger<OutboxWorkerWorkerThread> logger;
-    private readonly IServiceBus serviceBus;
-    private readonly IOutboxRepository repository;
+    private readonly IServiceScopeFactory scopedFactory;
     private readonly ManualResetEventSlim signal;
     private readonly CancellationTokenSource cancellationTokenSource;
     private readonly Thread thread;
     private CancellationToken cancellationToken;
 
-    public OutboxWorkerWorkerThread(ILogger<OutboxWorkerWorkerThread> logger,
-        IServiceBus serviceBus,
-        IOutboxRepository repository)
+    public OutboxWorkerWorkerThread(ILogger<OutboxWorkerWorkerThread> logger, IServiceScopeFactory serviceProvider)
     {
         this.logger = logger;
-        this.serviceBus = serviceBus;
-        this.repository = repository;
+        scopedFactory = serviceProvider;
         signal = new ManualResetEventSlim(false);
-        
+
         cancellationTokenSource = new CancellationTokenSource();
         thread = new Thread(MainLoop);
     }
@@ -41,7 +38,7 @@ public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
         logger.LogInformation("Triggered");
     }
 
-    public async Task Send()
+    public async Task Send(IOutboxRepository repository, IServiceBus serviceBus)
     {
         var outboxMessages = repository.GetNext().ToArray();
         await serviceBus.SendAsync(outboxMessages);
@@ -78,7 +75,13 @@ public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
 
                 try
                 {
-                    Send().Wait();//(cancellationToken);
+                    {
+                        using var scope = scopedFactory.CreateScope();
+                        var sp = scope.ServiceProvider;
+                        // ReSharper disable once MethodSupportsCancellation
+                        Send(sp.GetRequiredService<IOutboxRepository>(), sp.GetRequiredService<IServiceBus>())
+                            .Wait(); // We don't want this to ever be cancelled
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -103,4 +106,3 @@ public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
         return Task.CompletedTask;
     }
 }
-

@@ -7,13 +7,13 @@ namespace NEvilES.DataStore.SQL
 {
     public class PipelineTransaction : TransactionBase, IDisposable
     {
-        private readonly ILogger log;
+        private readonly ILogger<PipelineTransaction> log;
         private readonly IDbConnection connection;
         public IDbTransaction Transaction { get; }
         private bool rollback;
         private bool disposed;
 
-        public PipelineTransaction(ILogger logger, IDbConnection connection, IDbTransaction transaction)
+        public PipelineTransaction(ILogger<PipelineTransaction> logger, IDbConnection connection, IDbTransaction transaction)
         {
             Id = CombGuid.NewGuid();
             log = logger;
