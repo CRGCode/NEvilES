@@ -64,7 +64,9 @@ namespace NEvilES.DataStore.SQL.Tests
             }
             var documentRepository = scope.ServiceProvider.GetRequiredService<DocumentRepositoryWithKeyTypeGuid>();
             documentRepository.WipeDocTypeIfExists<ChatRoom>();
-            var reader = serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IReadEventStore>();
+            var serviceProvider = serviceScopeFactory.CreateScope().ServiceProvider;
+            var reader = serviceProvider.GetRequiredService<IReadEventStore>();
+
             Pipeline.ReplayEvents.Replay(factory,reader);
             var actual = documentRepository.GetAll<ChatRoom>().ToList();
             Assert.Equal(expected.First(),actual.First());

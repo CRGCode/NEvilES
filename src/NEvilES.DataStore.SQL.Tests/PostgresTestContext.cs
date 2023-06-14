@@ -37,13 +37,14 @@ namespace NEvilES.DataStore.SQL.Tests
             services.AddScoped<ISerialize, Serializer>();
 
             services.AddScoped<IOutboxRepository>(s => new SQLOutboxRepository(s.GetRequiredService<IDbTransaction>()));
-            services.AddSingleton<OutboxWorkerWorkerThread>();
-            services.AddScoped<IServiceBus, LocalServiceBus>();
 
+            services.AddSingleton<OutboxWorkerWorkerThread>();
+            services.AddSingleton<IOutboxWorker>(s => s.GetRequiredService<OutboxWorkerWorkerThread>());
+            services.AddScoped<IServiceBus, LocalServiceBus>();
 
             services
                 .AddSingleton<IDocumentStore>(c => DocumentStore.For(ConnString))
-                .AddScoped(s => s.GetRequiredService<IDocumentStore>().LightweightSession())
+                .AddScoped(s => s.GetRequiredService<IDocumentStore>().IdentitySession())
                 .AddScoped(s => s.GetRequiredService<IDocumentStore>().QuerySession());
 
             services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });

@@ -39,7 +39,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
                     opts.DomainAssemblyTypes = new[]
                     {
-                        typeof(NEvilES.Tests.CommonDomain.Sample.Address),
+                        typeof(NEvilES.Tests.CommonDomain.Sample.ChatRoom),
                         typeof(PatchEvent)
                     };
 
@@ -47,7 +47,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
                     opts.ReadModelAssemblyTypes = new[]
                     {
-                        typeof(NEvilES.Tests.CommonDomain.Sample.Address),
+                        typeof(NEvilES.Tests.CommonDomain.Sample.ChatRoom),
                     };
                 });
 

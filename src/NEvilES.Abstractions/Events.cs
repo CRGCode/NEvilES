@@ -29,5 +29,10 @@ namespace NEvilES.Abstractions
             TimeStamp = stamp;
             Version = version;
         }
+
+        public override string ToString()
+        {
+            return $"{Type.Name} V{Version} {Event}";
+        }
     }
 }

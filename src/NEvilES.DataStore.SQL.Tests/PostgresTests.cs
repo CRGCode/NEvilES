@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using Xunit;
@@ -61,7 +62,7 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
-        public async Task Save_FirstEvent()
+        public void Save_FirstEvent()
         {
             var repository = scope.ServiceProvider.GetRequiredService<IAsyncRepository>();
 
@@ -72,7 +73,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 InitialUsers = new HashSet<Guid> { },
                 Name = "Biz Room"
             });
-            var commit = await repository.SaveAsync(chatRoom);
+            var commit = repository.SaveAsync(chatRoom).GetAwaiter().GetResult();
 
             Assert.NotNull(commit);
         }
@@ -80,6 +81,14 @@ namespace NEvilES.DataStore.SQL.Tests
         [Fact]
         public void ReplayEvents()
         {
+            var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+
+            commandProcessor.Process(new ChatRoom.IncludeUserInRoom
+            {
+                ChatRoomId = chatRoomId,
+                UserId = Guid.NewGuid(),
+            });
+
             List<ReadModel.ChatRoom> expected;
             {
                 using var serviceScope = serviceScopeFactory.CreateScope();
@@ -88,7 +97,8 @@ namespace NEvilES.DataStore.SQL.Tests
             }
             Output.WriteLine($"Expected count {expected.Count}");
             {
-                using var documentRepository = scope.ServiceProvider.GetRequiredService<Marten.DocumentRepositoryWithKeyTypeGuid>();
+                using var serviceScope = serviceScopeFactory.CreateScope();
+                var documentRepository = serviceScope.ServiceProvider.GetRequiredService<Marten.DocumentRepositoryWithKeyTypeGuid>();
                 documentRepository.WipeDocTypeIfExists<ReadModel.ChatRoom>();
             }
 
@@ -102,6 +112,7 @@ namespace NEvilES.DataStore.SQL.Tests
             {
                 using var serviceScope = serviceScopeFactory.CreateScope();
                 var reader = serviceScope.ServiceProvider.GetRequiredService<IReadEventStore>();
+                var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<PostgresTests>>();
                 Pipeline.ReplayEvents.Replay(serviceScope.ServiceProvider.GetRequiredService<IFactory>(), reader);
             }
 
@@ -220,6 +231,7 @@ namespace NEvilES.DataStore.SQL.Tests
             
             var outboxMessages = repository.GetNext().ToArray();
 
+            Output.WriteLine($"Outbox count {outboxMessages.Length}");
             Assert.True(outboxMessages.Length >= 2);
 
             var hostWorker = serviceProvider.GetRequiredService<OutboxWorkerWorkerThread>();
@@ -234,11 +246,12 @@ namespace NEvilES.DataStore.SQL.Tests
 
             Thread.Sleep(10);
 
+            outboxMessages = repository.GetNext().ToArray();
+            Output.WriteLine($"Outbox count {outboxMessages.Length}");
+            Assert.Equal(0, outboxMessages.Length);
+
             cts.Cancel();
             await hostWorker.StopAsync(cts.Token);
-
-            outboxMessages = repository.GetNext().ToArray();
-            Assert.Equal(0, outboxMessages.Length);
         }
 
         public void Dispose()

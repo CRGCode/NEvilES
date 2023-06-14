@@ -45,7 +45,7 @@ namespace NEvilES.Tests.CommonDomain.Sample.ReadModel
 
             public void Project(Sample.ChatRoom.UserIncludedInRoom message, IProjectorData data)
             {
-                var chatRoom = Reader.Get<ReadModel.ChatRoom>(message.ChatRoomId);
+                var chatRoom = Reader.Get<ChatRoom>(message.ChatRoomId);
                 chatRoom.Users.Add(message.UserId);
 
                 Writer.Update(chatRoom);

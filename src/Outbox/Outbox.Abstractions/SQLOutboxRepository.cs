@@ -43,8 +43,9 @@ namespace Outbox.Abstractions
         {
             var conn = transaction.Connection!;
             using var cmd = conn.CreateCommand();
+            cmd.Transaction = transaction;
             cmd.CommandType = CommandType.Text;
-            cmd.CommandText = "SELECT id, messageid, messagetype, payload, destination, createdat FROM outbox ORDER BY id";
+            cmd.CommandText = "SELECT id, messageid, messagetype, payload, destination, createdat FROM outbox ORDER BY id NOWAIT";
 
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -65,6 +66,7 @@ namespace Outbox.Abstractions
         public void Remove(int id)
         {
             using var cmd = transaction.Connection!.CreateCommand();
+            cmd.Transaction = transaction;
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = "DELETE FROM outbox WHERE id = @Id";
 

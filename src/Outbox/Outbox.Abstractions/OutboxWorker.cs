@@ -72,6 +72,7 @@ public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
                 catch (OperationCanceledException)
                 {
                     logger.LogInformation("Outbox service Cancelled whilst waiting for trigger (signal)");
+                    break;
                 }
 
                 try
@@ -79,7 +80,7 @@ public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
                     {
                         using var scope = scopedFactory.CreateScope();
                         var sp = scope.ServiceProvider;
-                        var trn = sp.GetRequiredService<IDbTransaction>();
+                        using var trn = sp.GetRequiredService<IDbTransaction>();
                         var repo = sp.GetRequiredService<IOutboxRepository>();
                         var serviceBus = sp.GetRequiredService<IServiceBus>();
                         // ReSharper disable once MethodSupportsCancellation
@@ -90,6 +91,7 @@ public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
                 catch (OperationCanceledException)
                 {
                     logger.LogInformation("Outbox service Cancelled whilst waiting for ServiceBus to Send()");
+                    break;
                 }
 
                 signal.Reset();
