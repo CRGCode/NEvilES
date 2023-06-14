@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
@@ -39,13 +40,12 @@ public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
         logger.LogInformation("Triggered");
     }
 
-    public async Task Send(IOutboxRepository repository, IServiceBus serviceBus)
+    public async Task Send(IEnumerable<OutboxMessage> outboxMessages, IServiceBus serviceBus)
     {
-        var outboxMessages = repository.GetNext().ToArray();
         await serviceBus.SendAsync(outboxMessages);
     }
 
-    public Task StartAsync(CancellationToken ct)
+public Task StartAsync(CancellationToken ct)
     {
         logger.LogInformation("Outbox service starting");
         thread.Start();
@@ -80,11 +80,13 @@ public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
                     {
                         using var scope = scopedFactory.CreateScope();
                         var sp = scope.ServiceProvider;
-                        using var trn = sp.GetRequiredService<IDbTransaction>();
+
+                        var trn = sp.GetRequiredService<IDbTransaction>();
                         var repo = sp.GetRequiredService<IOutboxRepository>();
                         var serviceBus = sp.GetRequiredService<IServiceBus>();
+                        var outboxMessages = repo.GetNext().ToArray();
                         // ReSharper disable once MethodSupportsCancellation
-                        Send(repo, serviceBus).Wait(); // We don't want this to ever be cancelled
+                        Send(outboxMessages, serviceBus).Wait(); // We don't want this to ever be cancelled
                         trn.Commit();
                     }
                 }

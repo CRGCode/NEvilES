@@ -45,7 +45,7 @@ namespace Outbox.Abstractions
             using var cmd = conn.CreateCommand();
             cmd.Transaction = transaction;
             cmd.CommandType = CommandType.Text;
-            cmd.CommandText = "SELECT id, messageid, messagetype, payload, destination, createdat FROM outbox ORDER BY id NOWAIT";
+            cmd.CommandText = "SELECT id, messageid, messagetype, payload, destination, createdat FROM outbox ORDER BY id";
 
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
