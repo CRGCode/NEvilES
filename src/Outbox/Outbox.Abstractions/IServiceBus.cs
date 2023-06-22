@@ -10,16 +10,6 @@ public interface IServiceBus
     Task SendAsync(IEnumerable<OutboxMessage> messages);
 }
 
-public interface IProcessEvent<in T> where T : class, IHaveId
-{
-    Task HandleEventAsync(T evt);
-}
-
-public interface IHaveId
-{
-    string Id { get; }
-}
-
 public class MessageEnvelope
 {
     public string Type { get; private set; }
