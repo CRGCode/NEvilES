@@ -234,7 +234,7 @@ namespace NEvilES.DataStore.SQL.Tests
             Output.WriteLine($"Outbox count {outboxMessages.Length}");
             Assert.True(outboxMessages.Length >= 2);
 
-            var hostWorker = serviceProvider.GetRequiredService<OutboxWorkerWorkerThread>();
+            var hostWorker = serviceProvider.GetRequiredService<OutboxWorkerSendingMessages>();
 
             var cts = new CancellationTokenSource();
             await hostWorker.StartAsync(cts.Token);

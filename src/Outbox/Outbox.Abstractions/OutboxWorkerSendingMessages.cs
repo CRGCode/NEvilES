@@ -15,16 +15,16 @@ public interface IOutboxWorker
     void Trigger();
 }
 
-public class OutboxWorkerWorkerThread : IOutboxWorker, IHostedService
+public class OutboxWorkerSendingMessages : IOutboxWorker, IHostedService
 {
-    private readonly ILogger<OutboxWorkerWorkerThread> logger;
+    private readonly ILogger<OutboxWorkerSendingMessages> logger;
     private readonly IServiceScopeFactory scopedFactory;
     private readonly ManualResetEventSlim signal;
     private readonly CancellationTokenSource cancellationTokenSource;
     private readonly Thread thread;
     private CancellationToken cancellationToken;
 
-    public OutboxWorkerWorkerThread(ILogger<OutboxWorkerWorkerThread> logger, IServiceScopeFactory serviceProvider)
+    public OutboxWorkerSendingMessages(ILogger<OutboxWorkerSendingMessages> logger, IServiceScopeFactory serviceProvider)
     {
         this.logger = logger;
         scopedFactory = serviceProvider;

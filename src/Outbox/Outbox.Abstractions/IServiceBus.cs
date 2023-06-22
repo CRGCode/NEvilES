@@ -10,6 +10,23 @@ public interface IServiceBus
     Task SendAsync(IEnumerable<OutboxMessage> messages);
 }
 
+public interface IProcessEvent<in T> where T : class
+{
+    Task HandleEventAsync(T evt);
+}
+
+public class MessageEnvelope
+{
+    public string Type { get; private set; }
+    public string Message { get; private set; }
+
+    public MessageEnvelope(string type, string message)
+    {
+        Type = type;
+        Message = message;
+    }
+}
+
 public class LocalServiceBus : IServiceBus
 {
     private readonly ILogger<LocalServiceBus> logger;

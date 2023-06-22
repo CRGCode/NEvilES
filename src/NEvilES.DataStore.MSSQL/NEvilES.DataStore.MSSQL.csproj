@@ -13,6 +13,5 @@
   <ItemGroup>
     <ProjectReference Include="../NEvilES/NEvilES.csproj" />
     <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" />
-    <ProjectReference Include="..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
   </ItemGroup>
 </Project>
