@@ -7,8 +7,6 @@ namespace Outbox.Abstractions
     {
         public static IServiceCollection AddOutboxWorker(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<OutboxServiceBus.OutboxSettings>(configuration.GetSection("OutboxSettings"));
-
             services.AddSingleton<OutboxWorkerSendingMessages>();
             services.AddSingleton<ITriggerOutbox>(s => s.GetRequiredService<OutboxWorkerSendingMessages>());
             services.AddScoped<IServiceBus, OutboxServiceBus>();

@@ -63,9 +63,9 @@ public class OutboxServiceBus : IServiceBus
 
         logger.LogInformation($"Azure ServiceBus Total connection time {connectionTime} Overall time {overallTime.ElapsedMilliseconds} for {cnt} messages sent");
     }
+}
 
-    public class OutboxSettings
-    {
-        public string ServiceBusConnection { get; set; }
-    }
+public class OutboxSettings
+{
+    public string ServiceBusConnection { get; set; }
 }
