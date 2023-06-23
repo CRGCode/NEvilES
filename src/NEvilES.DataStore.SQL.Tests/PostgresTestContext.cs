@@ -39,7 +39,7 @@ namespace NEvilES.DataStore.SQL.Tests
             services.AddScoped<IOutboxRepository>(s => new SQLOutboxRepository(s.GetRequiredService<IDbTransaction>()));
 
             services.AddSingleton<OutboxWorkerSendingMessages>();
-            services.AddSingleton<IOutboxWorker>(s => s.GetRequiredService<OutboxWorkerSendingMessages>());
+            services.AddSingleton<ITriggerOutbox>(s => s.GetRequiredService<OutboxWorkerSendingMessages>());
             services.AddScoped<IServiceBus, LocalServiceBus>();
 
             services

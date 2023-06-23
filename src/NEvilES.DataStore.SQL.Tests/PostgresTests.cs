@@ -241,7 +241,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
             Thread.Sleep(10);
 
-            var outboxWorker = (IOutboxWorker)hostWorker;
+            var outboxWorker = (ITriggerOutbox)hostWorker;
             outboxWorker.Trigger();
 
             Thread.Sleep(10);

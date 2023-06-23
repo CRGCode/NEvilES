@@ -10,12 +10,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Outbox.Abstractions;
 
-public interface IOutboxWorker
+public interface ITriggerOutbox
 {
     void Trigger();
 }
 
-public class OutboxWorkerSendingMessages : IOutboxWorker, IHostedService
+public class OutboxWorkerSendingMessages : ITriggerOutbox, IHostedService
 {
     private readonly ILogger<OutboxWorkerSendingMessages> logger;
     private readonly IServiceScopeFactory scopedFactory;
