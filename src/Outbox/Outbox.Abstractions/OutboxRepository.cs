@@ -8,8 +8,8 @@ namespace Outbox.Abstractions;
 
 public interface IOutboxRepository
 {
-    void Add(OutboxMessage message);
-    IEnumerable<OutboxMessage> GetNext();
+    void Add(IOutboxMessage message);
+    IEnumerable<IOutboxMessage> GetNext();
     void Remove(int messageId);
 }
 
@@ -33,16 +33,16 @@ public class OutboxMessage : IOutboxMessage
     public DateTime CreatedAt { get; set; }
 }
 
-public class OutboxMessage<T> : OutboxMessage
-{
-    public OutboxMessage(ISerialize serializer, T message, string destination)
-    {
-        MessageId = Guid.NewGuid();
-        MessageType = typeof(T).FullName;
-        Payload = serializer.ToJson(message);
-        Destination = destination;
-    }
-}
+//public class OutboxMessage<T> : OutboxMessage
+//{
+//    public OutboxMessage(ISerialize serializer, T message, string destination)
+//    {
+//        MessageId = Guid.NewGuid();
+//        MessageType = typeof(T).FullName;
+//        Payload = serializer.ToJson(message);
+//        Destination = destination;
+//    }
+//}
 
 public interface ISerialize
 {
@@ -52,24 +52,19 @@ public interface ISerialize
 
 public class InMemoryOutboxRepository : IOutboxRepository
 {
-    private readonly Dictionary<int, OutboxMessage> data = new();
+    private readonly Dictionary<int, IOutboxMessage> data = new();
 
     private static int _pKey;
 
-    public void Add(OutboxMessage message)
+    public void Add(IOutboxMessage message)
     {
         message.Id = ++_pKey;
         data.Add(message.Id, message);
     }
 
-    public IEnumerable<OutboxMessage> GetNext()
+    public IEnumerable<IOutboxMessage> GetNext()
     {
         return data.Select(x => x.Value);
-    }
-
-    public void Update(OutboxMessage message)
-    {
-        data[message.Id] = message;
     }
 
     public void Remove(int messageId)

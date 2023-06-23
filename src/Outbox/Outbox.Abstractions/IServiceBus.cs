@@ -7,7 +7,7 @@ namespace Outbox.Abstractions;
 
 public interface IServiceBus
 {
-    Task SendAsync(IEnumerable<OutboxMessage> messages);
+    Task SendAsync(IEnumerable<IOutboxMessage> messages);
 }
 
 public class MessageEnvelope
@@ -35,7 +35,7 @@ public class LocalServiceBus : IServiceBus
         this.repository = repository;
     }
 
-    public Task SendAsync(IEnumerable<OutboxMessage> messages)
+    public Task SendAsync(IEnumerable<IOutboxMessage> messages)
     {
         var cnt = 0;
         foreach (var message in messages)

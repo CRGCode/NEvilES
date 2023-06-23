@@ -40,7 +40,7 @@ public class OutboxWorkerSendingMessages : IOutboxWorker, IHostedService
         logger.LogInformation("Triggered");
     }
 
-    public async Task Send(IEnumerable<OutboxMessage> outboxMessages, IServiceBus serviceBus)
+    public async Task Send(IEnumerable<IOutboxMessage> outboxMessages, IServiceBus serviceBus)
     {
         await serviceBus.SendAsync(outboxMessages);
     }

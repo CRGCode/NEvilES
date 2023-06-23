@@ -25,7 +25,7 @@ namespace Outbox.Abstractions
             return param;
         }
 
-        public void Add(OutboxMessage message)
+        public void Add(IOutboxMessage message)
         {
             using var cmd = transaction.Connection!.CreateCommand();
             cmd.Transaction = transaction;
@@ -39,7 +39,7 @@ namespace Outbox.Abstractions
             cmd.ExecuteNonQuery();
         }
 
-        public IEnumerable<OutboxMessage> GetNext()
+        public IEnumerable<IOutboxMessage> GetNext()
         {
             var conn = transaction.Connection!;
             using var cmd = conn.CreateCommand();

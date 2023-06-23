@@ -79,6 +79,8 @@ namespace Outbox.Abstractions
                 scope.Dispose();
             }
         }
+        public abstract Type GetEventHandler(TypeInfo type);
+
 
         private Task ProcessErrorAsync(ProcessErrorEventArgs arg)
         {
@@ -117,8 +119,6 @@ namespace Outbox.Abstractions
             await serviceBusProcessor.DisposeAsync();
             await client.DisposeAsync();
         }
-
-        public abstract Type GetEventHandler(TypeInfo type);
     }
 
     public class ServiceBusOptions
