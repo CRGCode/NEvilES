@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
+using Outbox.Abstractions;
 
-namespace Outbox.Abstractions
+namespace NEvilES.DataStore.SQL
 {
     public class SQLOutboxRepository : IOutboxRepository
     {
@@ -74,5 +76,15 @@ namespace Outbox.Abstractions
 
             cmd.ExecuteNonQuery();
         }
+    }
+
+    public class OutboxMessage : IOutboxMessage
+    {
+        public int Id { get; set; }
+        public Guid MessageId { get; set; }
+        public string MessageType { get; set; }
+        public string Payload { get; set; }
+        public string Destination { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

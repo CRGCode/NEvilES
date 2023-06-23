@@ -9,5 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="../NEvilES/NEvilES.csproj" />
     <ProjectReference Include="../NEvilES.Abstractions/NEvilES.Abstractions.csproj" />
+    <ProjectReference Include="..\Outbox\Outbox.Abstractions\Outbox.Abstractions.csproj" />
   </ItemGroup>
 </Project>

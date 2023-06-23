@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
     <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
     <ProjectReference Include="..\Outbox\Outbox.Abstractions\Outbox.Abstractions.csproj" />
   </ItemGroup>

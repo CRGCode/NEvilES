@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NEvilES.Abstractions;
+using NEvilES.DataStore.SQL;
 using Outbox.Abstractions;
 
 namespace NEvilES.Tests.CommonDomain.Sample
