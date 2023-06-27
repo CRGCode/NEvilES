@@ -13,12 +13,16 @@ using Newtonsoft.Json;
 
 namespace Outbox.Abstractions
 {
-    public interface IGetEventHandler
+    //public interface IGetEventHandler
+    //{
+    //    Type GetEventHandler(TypeInfo type);
+    //}
+    public interface IProcessEvent<in T> where T : class
     {
-        Type GetEventHandler(TypeInfo type);
+        Task HandleEventAsync(T evt);
     }
 
-    public abstract class ServiceBusWorkerProcessingEvents<TEvent> : IHostedService, IDisposable, IGetEventHandler
+    public class ServiceBusWorkerProcessingEvents<TEvent> : IHostedService, IDisposable
     {
         private readonly ILogger logger;
         private readonly IServiceScopeFactory scopeFactory;
@@ -61,7 +65,9 @@ namespace Outbox.Abstractions
                 {
                     dynamic obj = JsonConvert.DeserializeObject(envelope.Message, type)!;
 
-                    var ht = GetEventHandler(type);
+                    //var ht = GetEventHandler(type);
+
+                    var ht = typeof(IProcessEvent<>).MakeGenericType(type);
                     dynamic processor = scope.ServiceProvider.GetRequiredService(ht);
 
                     await processor.HandleEventAsync(obj);
@@ -84,7 +90,7 @@ namespace Outbox.Abstractions
             }
         }
 
-        public abstract Type GetEventHandler(TypeInfo type);
+        //public abstract Type GetEventHandler(TypeInfo type);
 
         private Task ProcessErrorAsync(ProcessErrorEventArgs arg)
         {
