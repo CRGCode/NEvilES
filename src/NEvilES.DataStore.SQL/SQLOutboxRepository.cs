@@ -76,6 +76,11 @@ namespace NEvilES.DataStore.SQL
 
             cmd.ExecuteNonQuery();
         }
+
+        public void SaveChanges()
+        {
+            transaction.Commit();
+        }
     }
 
     public class OutboxMessage : IOutboxMessage

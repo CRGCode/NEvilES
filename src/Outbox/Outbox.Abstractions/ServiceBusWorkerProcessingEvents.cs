@@ -66,6 +66,10 @@ namespace Outbox.Abstractions
 
                     await processor.HandleEventAsync(obj);
                 }
+                else
+                {
+                    logger.LogInformation($"envelope.Type not found - '{envelope.Type}'\n{envelope.Message}");
+                }
 
                 await args.CompleteMessageAsync(args.Message);
             }
@@ -79,8 +83,8 @@ namespace Outbox.Abstractions
                 scope.Dispose();
             }
         }
-        public abstract Type GetEventHandler(TypeInfo type);
 
+        public abstract Type GetEventHandler(TypeInfo type);
 
         private Task ProcessErrorAsync(ProcessErrorEventArgs arg)
         {

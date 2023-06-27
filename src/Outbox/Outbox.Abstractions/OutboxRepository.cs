@@ -11,6 +11,8 @@ public interface IOutboxRepository
     void Add(IOutboxMessage message);
     IEnumerable<IOutboxMessage> GetNext();
     void Remove(int messageId);
+
+    void SaveChanges();
 }
 
 public interface IOutboxMessage
@@ -60,5 +62,9 @@ public class InMemoryOutboxRepository : IOutboxRepository
     public void Remove(int messageId)
     {
         data.Remove(messageId);
+    }
+
+    public void SaveChanges()
+    {
     }
 }

@@ -81,13 +81,12 @@ public Task StartAsync(CancellationToken ct)
                         using var scope = scopedFactory.CreateScope();
                         var sp = scope.ServiceProvider;
 
-                        var trn = sp.GetRequiredService<IDbTransaction>();
                         var repo = sp.GetRequiredService<IOutboxRepository>();
                         var serviceBus = sp.GetRequiredService<IServiceBus>();
                         var outboxMessages = repo.GetNext().ToArray();
                         // ReSharper disable once MethodSupportsCancellation
                         Send(outboxMessages, serviceBus).Wait(); // We don't want this to ever be cancelled
-                        trn.Commit();
+                        repo.SaveChanges();
                     }
                 }
                 catch (OperationCanceledException)
