@@ -1,16 +1,48 @@
 using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample;
+using Outbox.Abstractions;
 using Xunit;
 
 namespace NEvilES.Tests
 {
     public class RegisterEventStoreTests
     {
+
+        [Fact]
+        public void Register_GenericHost()
+        {
+            var services = new ServiceCollection();
+
+            services.Configure<ServiceBusOptions>(options =>
+            {
+                options.TopicSubscription = "Topic:Sub";
+                options.ConnectionString = "Endpoint=sb://oa-servicebus-pilot.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=UBlZGK2dwHbM7Bisdfa4i5/DD5X5x74yIU8OnSR7XFA=";
+            });
+
+            services.AddLogging(loggingBuilder =>
+            {
+                //loggingBuilder.AddXUnit(this);
+                loggingBuilder.SetMinimumLevel(LogLevel.Trace);
+            });
+
+            //services.AddSingleton<ServiceBusWorkerProcessingEvents<ChatRoom.Created>>();
+            services.AddSingleton(typeof(IHostedService), typeof(ServiceBusWorkerProcessingEvents<ChatRoom.Created>));
+
+            var sp = services.BuildServiceProvider();
+
+            var type = typeof(IHostedService);
+
+            var hosts = sp.GetServices(type).ToArray();
+
+            Assert.Single(hosts);
+        }
 
         [Fact]
         public void RegisterTypesFrom_SameAssembly()

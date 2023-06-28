@@ -48,6 +48,12 @@ namespace Outbox.Abstractions
                 MaxConcurrentCalls = 1,
                 AutoCompleteMessages = false,
             };
+
+            if (string.IsNullOrWhiteSpace(options.Value.TopicSubscription))
+                throw new Exception("Must provide ServiceBusOptions.TopicSubscription");
+
+            if (!options.Value.TopicSubscription.Contains(':'))
+                throw new Exception("Invalid ServiceBusOptions.TopicSubscription, format 'TopicName:Subscription' ie. the separator ':' is critical");
             var subscription = options.Value.TopicSubscription.Split(":");
             serviceBusProcessor = client.CreateProcessor(subscription[0], subscription[1], serviceBusProcessorOptions);
             serviceBusProcessor.ProcessMessageAsync += ProcessMessagesAsync;
@@ -66,10 +72,11 @@ namespace Outbox.Abstractions
                     dynamic obj = JsonConvert.DeserializeObject(envelope.Message, type)!;
 
                     //var ht = GetEventHandler(type);
-
+                    
                     var ht = typeof(IProcessEvent<>).MakeGenericType(type);
                     dynamic processor = scope.ServiceProvider.GetRequiredService(ht);
 
+                    logger.LogDebug($"Attempting to ProcessEvent<{envelope.Type}>\n{envelope.Message}");
                     await processor.HandleEventAsync(obj);
                 }
                 else
