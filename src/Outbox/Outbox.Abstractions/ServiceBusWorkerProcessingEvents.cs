@@ -30,7 +30,7 @@ namespace Outbox.Abstractions
         private readonly ServiceBusProcessor serviceBusProcessor;
         private readonly Dictionary<string, TypeInfo> typeLookup;
 
-        protected ServiceBusWorkerProcessingEvents(
+        public ServiceBusWorkerProcessingEvents(
             IOptions<ServiceBusOptions> options,
             ILogger<ServiceBusWorkerProcessingEvents<TEvent>> logger,
             IServiceScopeFactory sf)
