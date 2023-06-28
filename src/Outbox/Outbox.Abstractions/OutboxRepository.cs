@@ -25,17 +25,6 @@ public interface IOutboxMessage
     DateTime CreatedAt { get; set; }
 }
 
-//public class OutboxMessage<T> : OutboxMessage
-//{
-//    public OutboxMessage(ISerialize serializer, T message, string destination)
-//    {
-//        MessageId = Guid.NewGuid();
-//        MessageType = typeof(T).FullName;
-//        Payload = serializer.ToJson(message);
-//        Destination = destination;
-//    }
-//}
-
 public interface ISerialize
 {
     string ToJson<T>(T obj);

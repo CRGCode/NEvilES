@@ -82,14 +82,4 @@ namespace NEvilES.DataStore.SQL
             transaction.Commit();
         }
     }
-
-    public class OutboxMessage : IOutboxMessage
-    {
-        public int Id { get; set; }
-        public Guid MessageId { get; set; }
-        public string MessageType { get; set; }
-        public string Payload { get; set; }
-        public string Destination { get; set; }
-        public DateTime CreatedAt { get; set; }
-    }
 }
