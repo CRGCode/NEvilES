@@ -100,7 +100,14 @@ namespace NEvilES.DataStore.SQL
                 var message = (IEvent)JsonConvert.DeserializeObject(eventDb.Body,
                     EventTypeLookupStrategy.Resolve(eventDb.BodyType), SerializerSettings);
                 //message.StreamId = eventDb.StreamId;
-                aggregate.ApplyEvent(message);
+                try
+                {
+                    aggregate.ApplyEvent(message);
+                }
+                catch (Exception e)
+                {
+                    throw new DomainEventException((AggregateBase)aggregate,$"Couldn't ApplyEvent('{eventDb.BodyType}') onto {eventDb.Category} EventId {eventDb.Id}\n{eventDb.Body}");
+                }
             }
 
             ((AggregateBase)aggregate).SetState(id);

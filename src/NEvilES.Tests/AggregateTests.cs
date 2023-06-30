@@ -72,13 +72,13 @@ namespace NEvilES.Tests
            Assert.Equal(streamId, iAgg.Id);
         }
 
-        //[Fact]
-        //public void FailsWhenRaisingStatelessEventFromCommand()
-        //{
-        //    var agg = new ChatRoom.Aggregate();
-        //    var ex = Assert.Throws<Exception>(() => agg.RaiseStateless<ChatRoom.RenameRoom>(new ChatRoom.RenameRoom()));
-        //    Assert.Contains("You can't RaiseStateless<TEvent> where typeof(TEvent) is a Command", ex.Message);
-        //}
+        [Fact]
+        public void FailsWhenRaisingStatelessEventFromCommand()
+        {
+            var agg = new ChatRoom.Aggregate();
+            var ex = Assert.Throws<Exception>(() => agg.RaiseStateless<ChatRoom.RoomRenamed>(new ChatRoom.RenameRoom()));
+            Assert.Contains("You can't RaiseStateless<TEvent> where typeof(TEvent) is a Command", ex.Message);
+        }
 
         [Fact]
         public void FailsWhenRaisingStatelessEventFromCommand_ButTheEventIsStateful_AsThereIs_ApplyMethodForTheEvent_()

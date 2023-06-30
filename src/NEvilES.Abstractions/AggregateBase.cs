@@ -300,4 +300,16 @@ namespace NEvilES.Abstractions
             Aggregate = aggregate;
         }
     }
+
+    public class DomainEventException : Exception
+    {
+        public readonly AggregateBase Aggregate;
+
+        public DomainEventException(AggregateBase aggregate, string message)
+            : base(message)
+        {
+            Aggregate = aggregate;
+        }
+    }
+
 }

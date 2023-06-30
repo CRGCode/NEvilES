@@ -101,6 +101,10 @@ namespace NEvilES.Tests.CommonDomain.Sample
             // ReSharper disable UnusedMember.Local
             private void Apply(Created ev)
             {
+                if (ev.CustomerId == Guid.Empty)
+                {
+                    ev = null; // force exception below
+                }
                 Id = ev.CustomerId;
             }
 

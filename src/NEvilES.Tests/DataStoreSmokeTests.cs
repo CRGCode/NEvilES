@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Tests.CommonDomain.Sample;
@@ -13,12 +15,14 @@ namespace NEvilES.Tests
     {
         private readonly IRepository repository;
         private readonly IServiceScope scope;
+        private readonly IDbTransaction trans;
 
         public DataStoreSmokeTests(SharedFixtureContext context, ITestOutputHelper output)
         {
             context.OutputHelper = output;
             scope = context.Container.CreateScope();
             repository = scope.ServiceProvider.GetRequiredService<IRepository>();
+            trans = scope.ServiceProvider.GetRequiredService<IDbTransaction>();
         }
 
         [Fact]
@@ -30,6 +34,24 @@ namespace NEvilES.Tests
             Assert.NotNull(expected);
             Assert.Equal(expected.Id, streamId);
             Assert.Equal(0, expected.Version);
+        }
+
+        [Fact]
+        public void Get_BadEvents()
+        {
+            var streamId = Guid.NewGuid();
+            var command = trans.Connection!.CreateCommand();
+
+            command.Transaction = trans;
+
+            var body = "{\"Details\":{\"FirstName\":\"Test\",\"LastName\":\"Last\",\"Name\":\"Test Last\"}}";
+            command.CommandText = $@"
+insert into [events] values ('NEvilES.Tests.CommonDomain.Sample.Customer+Aggregate','{streamId}', '3cb79d9b-55f1-db34-95f7-6997c9d2fe28', 'NEvilES.Tests.CommonDomain.Sample.Customer+Created',
+'{body}','00000001-0007-4852-9D2D-111111111111',GETDATE(),1,'1.0')
+";
+            command.ExecuteNonQuery();
+
+            Assert.Throws<DomainEventException>( () => repository.Get<Customer.Aggregate>(streamId));
         }
 
         [Fact]
