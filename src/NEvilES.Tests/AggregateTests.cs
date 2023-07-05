@@ -45,17 +45,6 @@ namespace NEvilES.Tests
             Assert.Equal(600,  ((Customer.Refunded)((EventData)events[1]).Event).Amount);
         }
 
-        //[Fact]
-        //public void FailRaiseStatelessEvent_NoStream() // Not sure about this, do we need some sort if marker for the first Event?
-        //{
-        //    var streamId = Guid.NewGuid();
-        //    var agg = new Customer.Aggregate();
-        //    agg.RaiseStatelessEvent(new Customer.Refunded(streamId, 100));
-        //    var iAgg = (IAggregate)agg;
-        //    Assert.Equal(1, iAgg.Version);
-        //    Assert.Equal(streamId, iAgg.Id);
-        //}
-
         [Fact]
         public void CanRaiseStatelessEventFromCommand()
         {
@@ -70,14 +59,6 @@ namespace NEvilES.Tests
            var iAgg = (IAggregate)agg;
            Assert.Equal(2, iAgg.Version);
            Assert.Equal(streamId, iAgg.Id);
-        }
-
-        [Fact]
-        public void FailsWhenRaisingStatelessEventFromCommand()
-        {
-            var agg = new ChatRoom.Aggregate();
-            var ex = Assert.Throws<Exception>(() => agg.RaiseStateless<ChatRoom.RoomRenamed>(new ChatRoom.RenameRoom()));
-            Assert.Contains("You can't RaiseStateless<TEvent> where typeof(TEvent) is a Command", ex.Message);
         }
 
         [Fact]

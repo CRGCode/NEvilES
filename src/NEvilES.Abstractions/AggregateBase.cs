@@ -279,13 +279,6 @@ namespace NEvilES.Abstractions
                 p.SetValue(evt, sourceProp.GetValue(command, null), null);
             }
 
-            //if (!(command is ICommand cmd)) 
-            //    return evt;
-
-            //var commandId = cmd.GetStreamId();
-            //if (commandId != Guid.Empty)
-            //    evt.StreamId = commandId;
-
             return evt;
         }
     }

@@ -35,7 +35,7 @@ namespace NEvilES.Abstractions.Pipeline
         public static void Map(object src, object dst)
         {
             var sourceProps = src.GetType().GetTypeInfo().GetProperties().Where(x => x.CanRead).ToList();
-            var dstProps =  dst.GetType().GetTypeInfo().GetProperties().Where(x => x.CanWrite).ToList();
+            var dstProps = dst.GetType().GetTypeInfo().GetProperties().Where(x => x.CanWrite).ToList();
 
             foreach (var sourceProp in sourceProps)
             {
