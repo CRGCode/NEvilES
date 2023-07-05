@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NEvilES.Abstractions;
 using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
@@ -270,6 +271,31 @@ namespace NEvilES
                 foreach (var type in interfaces.Where(x => x.Name == name))
                 {
                     services.AddScoped(type, s => s.GetRequiredService(item));
+                }
+            }
+
+            return services;
+        }
+
+        public static IServiceCollection ReplaceAllGenericTypes(this IServiceCollection services, Type genericType, Assembly[] assemblies)
+        {
+            var typesFromAssemblies = assemblies.SelectMany(a => a.DefinedTypes.Where(x => x.GetInterfaces()
+                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericType))).ToArray();
+
+            foreach (var item in typesFromAssemblies)
+            {
+                var interfaces = item.GetInterfaces();
+                if (item.IsAbstract || !item.IsClass)
+                    continue;
+
+                var name = genericType.Name;
+                if (interfaces.All(type => type.Name != name))
+                    continue;
+                services.Replace(ServiceDescriptor.Scoped(item,item));
+
+                foreach (var type in interfaces.Where(x => x.Name == name))
+                {
+                    services.Replace(ServiceDescriptor.Scoped(type, item));
                 }
             }
 

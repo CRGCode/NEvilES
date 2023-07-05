@@ -23,7 +23,7 @@ namespace NEvilES
         }
     }
 
-    public class InMemoryEventStore : IRepository
+    public class InMemoryEventStore : IRepository, IReadEventStore
     {
         private class EventDb
         {
@@ -157,6 +157,26 @@ namespace NEvilES
 
             aggregate.ClearUncommittedEvents();
             return new AggregateCommit(aggregate.Id, Guid.Empty, uncommittedEvents);
+        }
+
+        public IEnumerable<IAggregateCommit> Read(long from = 0, long to = 0)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IAggregateCommit> Read(Guid streamId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IAggregateCommit> ReadNewestLimit(Guid streamId, int limit = 50)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IAggregateCommit> ReadNewestLimit(int limit = 50)
+        {
+            throw new NotImplementedException();
         }
     }
 }
