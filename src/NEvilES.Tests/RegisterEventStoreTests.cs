@@ -83,9 +83,10 @@ namespace NEvilES.Tests
                 typeof(UniqueNameValidation)
             });
 
-            services.AddSingleton<DocumentStoreGuid>();
-            services.AddSingleton<IReadFromReadModel<Guid>, DocumentStoreGuid>();
-            services.AddSingleton<IWriteReadModel<Guid>, DocumentStoreGuid>();
+            services.AddSingleton<IDocumentMemory, DocumentMemory>();
+            services.AddScoped<DocumentStoreGuid>();
+            services.AddScoped<IReadFromReadModel<Guid>, DocumentStoreGuid>();
+            services.AddScoped<IWriteReadModel<Guid>, DocumentStoreGuid>();
 
             bl.ConnectImplementingType(typeof(INeedExternalValidation<>));
 

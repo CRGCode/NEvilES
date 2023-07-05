@@ -11,9 +11,9 @@ namespace NEvilES
     {
         private readonly ConcurrentDictionary<string, object> data;
 
-        public InMemoryDocumentRepository()
+        protected InMemoryDocumentRepository(IDocumentMemory docStorage)
         {
-            data = new ConcurrentDictionary<string, object>();
+            data = docStorage.Data;
         }
 
         public void Insert<T>(T item) where T : class, IHaveIdentity<TId>
@@ -74,6 +74,31 @@ namespace NEvilES
         }
     }
 
-    public class DocumentStoreGuid : InMemoryDocumentRepository<Guid> { }
-    public class DocumentStoreString : InMemoryDocumentRepository<string> { }
+    public interface IDocumentMemory
+    {
+        ConcurrentDictionary<string, object> Data { get; }
+    }
+
+    public class DocumentMemory : IDocumentMemory
+    {
+        public ConcurrentDictionary<string, object> Data { get; }
+
+        public DocumentMemory()
+        {
+            Data = new ConcurrentDictionary<string, object>();
+        }
+    }
+
+    public class DocumentStoreGuid : InMemoryDocumentRepository<Guid>
+    {
+        public DocumentStoreGuid(IDocumentMemory docStorage) : base(docStorage)
+        {
+        }
+    }
+    public class DocumentStoreString : InMemoryDocumentRepository<string>
+    {
+        public DocumentStoreString(IDocumentMemory docStorage) : base(docStorage)
+        {
+        }
+    }
 }

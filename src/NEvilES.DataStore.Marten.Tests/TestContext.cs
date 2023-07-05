@@ -16,7 +16,7 @@ namespace NEvilES.DataStore.Marten.Tests
 
             var services = new ServiceCollection()
                 .AddSingleton<IDocumentStore>(c => DocumentStore.For(ConnString) )
-                .AddScoped(s => s.GetRequiredService<IDocumentStore>().OpenSession())
+                .AddScoped(s => s.GetRequiredService<IDocumentStore>().IdentitySession())
                 .AddScoped(s => s.GetRequiredService<IDocumentStore>().QuerySession());
 
             services.AddAllGenericTypes(typeof(IWriteReadModel<>), new[] { typeof(MartenDocumentRepository<>).Assembly });

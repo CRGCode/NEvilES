@@ -111,14 +111,14 @@ namespace Outbox.Abstractions
 
         public async Task StartAsync(CancellationToken stoppingToken)
         {
-            logger.LogInformation($"Starting {this.GetType().Name}");
+            logger.LogInformation($"Starting {GetType().Name}");
 
             await serviceBusProcessor.StartProcessingAsync(stoppingToken);
         }
 
         public async Task StopAsync(CancellationToken stoppingToken)
         {
-            logger.LogInformation($"Stopping {this.GetType().Name}");
+            logger.LogInformation($"Stopping {GetType().Name}");
 
             await serviceBusProcessor.CloseAsync(stoppingToken);
         }
