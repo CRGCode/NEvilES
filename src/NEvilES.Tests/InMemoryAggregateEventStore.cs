@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NEvilES.Abstractions;
 
 namespace NEvilES.Tests
 {
-    public class InMemoryAggregateEventStore : IRepository
+    public class InMemoryAggregateEventStore : IRepository, IAsyncRepository
     {
         private readonly Dictionary<Guid, IAggregate> aggregates;
 
@@ -51,6 +52,7 @@ namespace NEvilES.Tests
 
         public TAggregate GetVersion<TAggregate>(Guid id, long version) where TAggregate : IAggregate
         {
+            // we can't get the version in this implementation
             throw new NotImplementedException();
         }
 
@@ -69,6 +71,32 @@ namespace NEvilES.Tests
 
             aggregates.Add(id, aggregate);
             return aggregate;
+        }
+
+        public Task<TAggregate> GetAsync<TAggregate>(Guid id) where TAggregate : IAggregate
+        {
+            return Task.FromResult(Get<TAggregate>(id));
+        }
+
+        public Task<IAggregate> GetAsync(Type type, Guid id)
+        {
+            return Task.FromResult(Get(type, id));
+        }
+
+        public Task<IAggregate> GetAsync(Type type, Guid id, long? version)
+        {
+            // we can't get the version in this implementation
+            throw new NotImplementedException();
+        }
+
+        public Task<IAggregate> GetStatelessAsync(Type type, Guid id)
+        {
+            return Task.FromResult(GetStateless(type, id));
+        }
+
+        public Task<IAggregateCommit> SaveAsync(IAggregate aggregate)
+        {
+            return Task.FromResult(Save(aggregate));
         }
     }
 }
