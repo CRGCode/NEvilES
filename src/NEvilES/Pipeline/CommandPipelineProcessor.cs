@@ -57,11 +57,20 @@ namespace NEvilES.Pipeline
                     }
 
                     var handler = aggHandler.Handlers[commandType];
-                    var parameters = handler.GetParameters();
-                    var dependencies = new object[] { command }
-                        .Concat(parameters.Skip(1).Select(x => Factory.Get(x.ParameterType))).ToArray();
+                    var parameters = handler.GetParameters().Skip(1);  // skip the command
 
-                    Logger.LogTrace($"{agg.GetType().ReflectedType?.Name ?? agg.GetType().Name}.Handle<{commandType.Name}>({string.Join(',', dependencies.Select(x => x.GetType().Name).Skip(1))})");
+                    var dependencies = new object[] { command }
+                        .Concat(parameters.Select(x =>
+                        {
+                            var param = Factory.Get(x.ParameterType);
+                            if(param != null)
+                                return param;
+                            throw new MissingHandlerDependency(handler, x.ParameterType);
+                        })).ToArray();
+
+                    var aggName = agg.GetType().ReflectedType?.Name ?? agg.GetType().Name;
+                    var p = string.Join(',', dependencies.Select(x => x.GetType().Name).Skip(1));
+                    Logger.LogTrace($"{aggName}.Handle<{commandType.Name}>({p})");
                     try
                     {
                         handler.Invoke(agg, dependencies);
@@ -216,6 +225,14 @@ namespace NEvilES.Pipeline
             }
 
             return commandResult;
+        }
+    }
+
+    public class MissingHandlerDependency : Exception
+    {
+        public MissingHandlerDependency(MethodInfo handler, Type dependencyType) : base($"Command Handler {handler} missing dependency {dependencyType.Name}")
+        {
+           
         }
     }
 }

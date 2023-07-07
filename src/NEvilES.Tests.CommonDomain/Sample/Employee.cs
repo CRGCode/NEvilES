@@ -17,6 +17,10 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public decimal Tax { get; set; }
         }
 
+        public class DoNothing : Id, ICommand
+        {
+        }
+
         public class PaidPerson : PayPerson, IEvent
         {
         }
@@ -36,6 +40,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
         public class Aggregate : Person.Aggregate,
             IHandleAggregateCommand<Create, UniqueNameValidation>,
             IHandleAggregateCommand<PayPerson, TaxRuleEngine>,
+            IHandleAggregateCommand<DoNothing, SomethingMissing>,
             IHandleAggregateCommand<PayBonus>,
             IHandleStatelessEvent<BonusPaid>
         {
@@ -45,6 +50,11 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 c.Tax = taxCalculator.Calculate(c.NetAmount);
 
                 RaiseStateless<PaidPerson>(c);
+            }
+            public void Handle(DoNothing command, SomethingMissing missing)
+            {
+                // should never get here as the dependency "SomethingMissing" is never register in DI
+                throw new NotImplementedException();
             }
 
             public void Handle(Create command, UniqueNameValidation validator)
@@ -70,5 +80,9 @@ namespace NEvilES.Tests.CommonDomain.Sample
             }
 
         }
+    }
+
+    public class SomethingMissing
+    {
     }
 }

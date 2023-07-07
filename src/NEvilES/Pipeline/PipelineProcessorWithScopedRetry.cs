@@ -27,7 +27,7 @@ namespace NEvilES.Pipeline
                 var pipelineProcessor = scope.ServiceProvider.GetRequiredService<PipelineProcessor>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<PipelineProcessorWithScopedRetry>>();
                 var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
-                logger.LogInformation($"Processing[{command.GetStreamId()}] for {typeof(T).Name}");
+                logger.LogInformation($"Processing[{command.GetStreamId()}] for {command.GetType().Name}");
 
                 try
                 {
