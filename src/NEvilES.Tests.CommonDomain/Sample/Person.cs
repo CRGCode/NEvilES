@@ -13,7 +13,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public Guid PersonId { get; set; }
         }
 
-        public class Create : Id, ICommand
+        public class Create : Id, ICreationCommand
         {
             public PersonalDetails Person { get; set; }
             public string ExtraEventInfo { get; set; }

@@ -11,6 +11,10 @@ namespace NEvilES.Abstractions
     {
     }
 
+    public interface ICreationCommand : ICommand
+    {
+    }
+
     public interface IPatch :IEvent
     {
         string Path { get; }

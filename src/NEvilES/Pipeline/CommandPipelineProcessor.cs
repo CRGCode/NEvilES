@@ -48,6 +48,18 @@ namespace NEvilES.Pipeline
                 if (aggHandlers.Any())
                 {
                     var agg = repo.Get(aggHandlers.First().GetType(), streamId);
+                    // Check ICreationCommands are the first command
+                    if (agg.Version == 0)
+                    {
+                        if (!(command is ICreationCommand))
+                            throw new Exception("Missing Creation command");
+                    }
+                    else
+                    {
+                        // Check ICreationCommands are only executed once on the aggregate
+                        if (command is ICreationCommand)
+                            throw new Exception("Can't run Creation command after Aggregate has been already created");
+                    }
                     var aggHandler = aggHandlers.SingleOrDefault(x => x.GetType() == agg.GetType());
 
                     if (aggHandler == null)

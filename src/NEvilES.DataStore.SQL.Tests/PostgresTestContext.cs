@@ -7,7 +7,6 @@ using NEvilES.DataStore.Marten;
 using Newtonsoft.Json;
 using Npgsql;
 using Outbox.Abstractions;
-using Weasel.Postgresql.Tables;
 
 namespace NEvilES.DataStore.SQL.Tests
 {

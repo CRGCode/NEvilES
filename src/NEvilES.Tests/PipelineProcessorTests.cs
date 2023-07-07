@@ -188,10 +188,12 @@ namespace NEvilES.Tests
         public void Projector_RaiseCommandCastAsEvent_GivenCommandInheritsFromEvent()
         {
             var streamId = Guid.NewGuid();
-
+            pipelineProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
             var bonus = new Employee.PayBonus { EmployeeId = streamId, Amount = 10000M };
             var results = pipelineProcessor.Process(bonus);
-            var projectedItem = (decimal)results.ReadModelItems[0];
+            
+            var projectedItem = (decimal)results.ReadModelItems.First(x => x is decimal);
+
             Assert.True(projectedItem == bonus.Amount);
         }
 

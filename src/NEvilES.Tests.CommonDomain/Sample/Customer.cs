@@ -12,14 +12,14 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public Guid CustomerId { get; set; }
         }
 
-        public class Create : Id, ICommand
+        public class Create : Id, ICreationCommand
         {
             public PersonalDetails Details { get; set; }
         }
 
         public class Created : Create, IEvent { }
 
-        public class SendInvite : Id, ICommand
+        public class SendInvite : Id, ICreationCommand
         {
             public SendInvite(Guid id, PersonalDetails details, string email)
             {

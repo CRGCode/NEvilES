@@ -30,7 +30,7 @@ namespace NEvilES.Pipeline
             }
         }
 
-        public class Create : Id, ICommand
+        public class Create : Id, ICreationCommand
         {
             public InnerCommand InnerCommand { get; set; }
 

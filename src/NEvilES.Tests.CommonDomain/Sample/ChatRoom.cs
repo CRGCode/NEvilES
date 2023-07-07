@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NEvilES.Abstractions;
-using NEvilES.DataStore.SQL;
 using Outbox.Abstractions;
 
 namespace NEvilES.Tests.CommonDomain.Sample
@@ -14,7 +13,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public Guid ChatRoomId { get; set; }
         }
 
-        public class Create : Id, ICommand
+        public class Create : Id, ICreationCommand
         {
             public string Name { get; set; }
             public string State { get; set; }

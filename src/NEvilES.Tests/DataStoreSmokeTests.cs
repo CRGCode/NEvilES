@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using NEvilES.Abstractions;
 using NEvilES.Tests.CommonDomain.Sample;
