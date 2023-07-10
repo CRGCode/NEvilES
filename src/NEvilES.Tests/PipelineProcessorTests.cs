@@ -68,6 +68,18 @@ namespace NEvilES.Tests
             Assert.True(payPerson.Tax < netAmount);
         }
 
+
+        [Fact]
+        public void CommandThatThrows_DomainAggregateException()
+        {
+            var streamId = Guid.NewGuid();
+
+            var netAmount = 60000M;
+            pipelineProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
+            var expected = Assert.Throws<DomainAggregateException>(() => pipelineProcessor.Process(new Employee.BadNews { EmployeeId = streamId }));
+            Assert.Contains("Bad", expected.Message);
+        }
+
         [Fact]
         public void CommandWithMissingHandlerDependency()
         {

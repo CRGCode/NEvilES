@@ -21,6 +21,10 @@ namespace NEvilES.Tests.CommonDomain.Sample
         {
         }
 
+        public class BadNews : Id, ICommand
+        {
+        }
+
         public class PaidPerson : PayPerson, IEvent
         {
         }
@@ -41,6 +45,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
             IHandleAggregateCommand<Create, UniqueNameValidation>,
             IHandleAggregateCommand<PayPerson, TaxRuleEngine>,
             IHandleAggregateCommand<DoNothing, SomethingMissing>,
+            IHandleAggregateCommand<BadNews>,
             IHandleAggregateCommand<PayBonus>,
             IHandleStatelessEvent<BonusPaid>
         {
@@ -68,6 +73,11 @@ namespace NEvilES.Tests.CommonDomain.Sample
             public void Handle(PayBonus c)
             {
                 Raise<BonusPaid>(c);
+            }
+
+            public void Handle(BadNews command)
+            {
+                throw new DomainAggregateException(this, "Bad news for this command... ha ha!");
             }
 
             //---------------------------------------------------------------------
