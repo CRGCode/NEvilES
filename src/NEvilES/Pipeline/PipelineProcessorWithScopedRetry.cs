@@ -16,7 +16,7 @@ namespace NEvilES.Pipeline
         {
             this.scopeFactory = scopeFactory;
         }
-        const int RETRIES = 10;
+        const int RETRIES = 15;
         private static readonly int[] BackOff = { 2, 20, 50, 100, 200, 300, 500, 600, 700, 1000 };
         public ICommandResult Process<T>(T command) where T : IMessage
         {
@@ -37,17 +37,16 @@ namespace NEvilES.Pipeline
                 catch (AggregateConcurrencyException)
                 {
                     commandContext.Transaction.Rollback();
-                    //scope.Dispose();
                     var delay = BackOff[retry++] + new Random().Next(10);
                     logger.LogInformation($"Retry[{retry}] for Command[{command.GetStreamId()}] {typeof(T).Name} with backoff delay {delay}");
                     Thread.Sleep(delay);
                 }
                 catch (Exception exception)
                 {
-                    logger.LogError(exception, $"Command {typeof(T).FullName} error");
+                    if(!(exception is DomainAggregateException))
+                        logger.LogError(exception, $"Command {typeof(T).FullName} error");
 
                     commandContext.Transaction.Rollback();
-                    //scope.Dispose();
                     throw;
                 }
 
@@ -74,17 +73,16 @@ namespace NEvilES.Pipeline
                 catch (AggregateConcurrencyException)
                 {
                     context.Transaction.Rollback();
-                    //scope.Dispose();
                     var delay = BackOff[retry++] + new Random().Next(10);
                     logger.LogInformation($"Retry[{retry}] for Command[{command.GetStreamId()}] {typeof(T).Name} with backoff delay {delay}");
                     Thread.Sleep(delay);
                 }
                 catch (Exception exception)
                 {
-                    logger.LogError(exception, $"Command {typeof(T).FullName} error");
+                    if (!(exception is DomainAggregateException))
+                        logger.LogError(exception, $"Command {typeof(T).FullName} error");
 
                     context.Transaction.Rollback();
-                    //scope.Dispose();
                     throw;
                 }
 

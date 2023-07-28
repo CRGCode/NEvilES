@@ -53,7 +53,8 @@ namespace NEvilES.Abstractions.Pipeline
                         try
                         {
                             IProjectorResult result = ((dynamic)projector).Project((dynamic)message.Event, data);
-                            commandResult.ReadModelItems.AddRange(result.Items);
+                            if (result != null)
+                                commandResult.ReadModelItems.AddRange(result.Items);
                         }
                         catch (Exception e)
                         {

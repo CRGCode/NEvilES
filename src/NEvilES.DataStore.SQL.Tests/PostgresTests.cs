@@ -165,6 +165,22 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
+        public void CommandRaises2Events()
+        {
+            var streamId = Guid.NewGuid();
+            var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+            var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<Guid>>();
+            commandProcessor.Process(new Customer.Create() { CustomerId = streamId, Details = new PersonalDetails("John", "Smith") });
+
+            const string reason = "Some reason for complaining";
+            commandProcessor.Process(new Customer.Complain { CustomerId = streamId, Reason = reason });
+
+            var customer = reader.Get<ReadModel.Customer>(streamId);
+            Assert.Equal(reason, customer.Complaints.First());
+            Assert.Equal(reason, customer.Notes.First());
+        }
+
+        [Fact]
         public void Outbox_Add()
         {
             var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();

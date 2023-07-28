@@ -89,15 +89,11 @@ namespace NEvilES.Pipeline
                     }
                     catch (TargetInvocationException e) when (e.InnerException != null)
                     {
-                        if (!(e.InnerException is DomainAggregateException))
-                        {
-                            Logger.LogError(e, $"Error {e.Message}");
-                        }
                         throw e.InnerException;
                     }
                     catch (Exception e)
                     {
-                        Logger.LogTrace(e, $"Error {e.Message}");
+                        Logger.LogCritical(e, $"Error {e.Message}");
                         throw;
                     }
 

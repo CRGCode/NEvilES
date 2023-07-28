@@ -9,6 +9,7 @@ using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 using Xunit;
 using Xunit.Abstractions;
 using ChatRoom = NEvilES.Tests.CommonDomain.Sample.ReadModel.ChatRoom;
+using Customer = NEvilES.Tests.CommonDomain.Sample.Customer;
 
 namespace NEvilES.Tests
 {
@@ -108,6 +109,23 @@ namespace NEvilES.Tests
 
             var agg = repository.Get<Employee.Aggregate>(streamId);
             Assert.Equal(bonus, agg.Bonus);
+        }
+
+        [Fact]
+        public void CommandRaises2Events()
+        {
+            var streamId = Guid.NewGuid();
+            pipelineProcessor.Process(new Customer.Create() { CustomerId = streamId, Details = new PersonalDetails("John","Smith") });
+
+            const string reason = "Some reason for complaining";
+            var expected = pipelineProcessor.Process(new Customer.Complain{ CustomerId = streamId, Reason = reason});
+            Assert.Equal(reason, expected.FilterEvents<Customer.Complaint>().First().Reason);
+            Assert.Equal(reason, expected.FilterEvents<Customer.NoteAdded>().First().Text);
+
+            var reader = scope.ServiceProvider.GetRequiredService<IReadFromReadModel<Guid>>();
+            var customer = reader.Get<CommonDomain.Sample.ReadModel.Customer>(streamId);
+            Assert.Equal(reason, customer.Complaints.First());
+            Assert.Equal(reason, customer.Notes.First());
         }
 
         [Fact]

@@ -1,4 +1,5 @@
-﻿using NEvilES.Abstractions.Pipeline;
+﻿using System;
+using NEvilES.Abstractions.Pipeline;
 using NEvilES.Pipeline;
 using NEvilES.Tests.CommonDomain.Sample.ReadModel;
 
@@ -9,26 +10,28 @@ namespace NEvilES.Tests.CommonDomain.Sample
         IProjectWithResult<Customer.Created>,
         IProjectWithResult<Person.NameCorrectedV2>
     {
-        private readonly DocumentStoreGuid db;
+        private readonly IWriteReadModel<Guid> writer;
+        private readonly IReadFromReadModel<Guid> reader;
 
-        public SampleProjector(DocumentStoreGuid db)
+        public SampleProjector(IWriteReadModel<Guid> writer, IReadFromReadModel<Guid> reader)
         {
-            this.db = db;
+            this.writer = writer;
+            this.reader = reader;
         }
 
         public IProjectorResult Project(Customer.Created message, IProjectorData data)
         {
             var person = new PersonReadModel(message.CustomerId, message.Details.FirstName, message.Details.LastName);
-            db.Insert(person);
+            writer.Insert(person);
             return new ProjectorResult(person);
         }
 
         public IProjectorResult Project(Person.NameCorrectedV2 message, IProjectorData data)
         {
-            var person = db.Get<PersonReadModel>(message.PersonId);
+            var person = reader.Get<PersonReadModel>(message.PersonId);
             person.FirstName = message.FirstName;
             person.LastName = message.LastName;
-            db.Update(person);
+            writer.Update(person);
 
             return new ProjectorResult(person);
         }
@@ -36,7 +39,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
         public IProjectorResult Project(Person.Created message, IProjectorData data)
         {       
             var person = new PersonReadModel(message.PersonId, message.Person.FirstName, message.Person.LastName);
-            db.Insert(person);
+            writer.Insert(person);
             return new ProjectorResult(person);
         }
     }

@@ -28,6 +28,11 @@ namespace NEvilES
         {
             var item = Get(message.GetStreamId());
 
+            if (item == null)
+            {
+                return default;
+            }
+
             var r = new Resolver();
             var result = (Property)r.Resolve(item, message.Path);
             result.SetValue(message.Value);
