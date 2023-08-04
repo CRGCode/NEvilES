@@ -1,4 +1,4 @@
-version: 4.0.1
+version: 4.0.2
 image: Visual Studio 2022
 nuget:
   account_feed: true
@@ -11,15 +11,15 @@ build_script:
 test_script:
 - cmd: dotnet test .\src\NEvilES.Tests\NEvilES.Tests.csproj
 after_test:
-- cmd: dotnet pack .\src\NEvilES\NEvilES.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
-- cmd: dotnet pack .\src\NEvilES.Abstractions\NEvilES.Abstractions.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg .\src\NEvilES\NEvilES.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg .\src\NEvilES.Abstractions\NEvilES.Abstractions.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 #- cmd: dotnet pack .\src\NEvilES.Extensions.DependencyInjection\NEvilES.Extensions.DependencyInjection.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
-- cmd: dotnet pack .\src\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
-- cmd: dotnet pack .\src\NEvilES.DataStore.Marten\NEvilES.DataStore.Marten.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
-- cmd: dotnet pack .\src\NEvilES.DataStore.DynamoDB\NEvilES.DataStore.DynamoDB.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
-- cmd: dotnet pack .\src\NEvilES.DataStore.LiteDb\NEvilES.DataStore.LiteDb.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
-- cmd: dotnet pack .\src\NEvilES.Testing\NEvilES.Testing.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
-- cmd: dotnet pack .\src\Outbox\Outbox.Abstractions\Outbox.Abstractions.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg .\src\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg .\src\NEvilES.DataStore.Marten\NEvilES.DataStore.Marten.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg .\src\NEvilES.DataStore.DynamoDB\NEvilES.DataStore.DynamoDB.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg .\src\NEvilES.DataStore.LiteDb\NEvilES.DataStore.LiteDb.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg .\src\NEvilES.Testing\NEvilES.Testing.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
+- cmd: dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg .\src\Outbox\Outbox.Abstractions\Outbox.Abstractions.csproj -c Release -o .\artifacts\ /property:version=%APPVEYOR_BUILD_VERSION%
 artifacts:
 - path: 'artifacts\*.nupkg'
   name: NEvilES
