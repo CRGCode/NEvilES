@@ -14,12 +14,11 @@ namespace NEvilES
 
         public void Rollback()
         {
-            throw new NotImplementedException();
         }
 
-        public Transaction(Guid id)
+        public Transaction()
         {
-            Id = id;
+            Id = Guid.NewGuid();
         }
     }
 
@@ -35,7 +34,7 @@ namespace NEvilES
             public int Version { get; set; }
         }
 
-        private readonly Dictionary<Guid, List<EventDb>> eventData;
+        private static readonly Dictionary<Guid, List<EventDb>> EventData = new Dictionary<Guid, List<EventDb>>();
 
         private readonly IEventTypeLookupStrategy eventTypeLookupStrategy;
 
@@ -49,8 +48,6 @@ namespace NEvilES
 
         public InMemoryEventStore(IEventTypeLookupStrategy eventTypeLookupStrategy)
         {
-            eventData = new Dictionary<Guid, List<EventDb>>();
-
             this.eventTypeLookupStrategy = eventTypeLookupStrategy;
         }
 
@@ -62,7 +59,7 @@ namespace NEvilES
 
         public IAggregate Get(Type type, Guid id, long? version)
         {
-            if (!eventData.ContainsKey(id))
+            if (!EventData.ContainsKey(id))
             {
                 var emptyAggregate = (IAggregate)Activator.CreateInstance(type, true);
                 ((AggregateBase)emptyAggregate).SetState(id);
@@ -70,8 +67,8 @@ namespace NEvilES
             }
 
             var events = version.HasValue ? 
-                eventData[id].Where(x => x.Version <= version).OrderBy(x => x.Id).ToArray() : 
-                eventData[id].OrderBy(x => x.Id).ToArray();
+                EventData[id].Where(x => x.Version <= version).OrderBy(x => x.Id).ToArray() : 
+                EventData[id].OrderBy(x => x.Id).ToArray();
 
             var aggregate = (IAggregate)Activator.CreateInstance(eventTypeLookupStrategy.Resolve(events[0].Category));
 
@@ -97,7 +94,7 @@ namespace NEvilES
 
             EventDb eventDb = null;
 
-            if (eventData.TryGetValue(id, out var events))
+            if (EventData.TryGetValue(id, out var events))
             {
                 eventDb = events
                     .Take(1)
@@ -133,10 +130,10 @@ namespace NEvilES
             var uncommittedEvents = aggregate.GetUncommittedEvents().Cast<IEventData>().ToArray();
             var count = 0;
 
-            if (!eventData.TryGetValue(aggregate.Id, out var events))
+            if (!EventData.TryGetValue(aggregate.Id, out var events))
             {
                 events = new List<EventDb>();
-                eventData.Add(aggregate.Id, events);
+                EventData.Add(aggregate.Id, events);
             }
             foreach (var uncommittedEvent in uncommittedEvents)
             {

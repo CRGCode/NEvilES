@@ -97,6 +97,7 @@ namespace NEvilES.Tests.CommonDomain.Sample
                 RaiseStatelessEvent(new NoteAdded(){CustomerId = command.CustomerId, Text = command.Reason});
             }
 
+
             //---------------------------------------------------------------------
             // ReSharper disable UnusedMember.Local
             private void Apply(Created ev)
@@ -112,7 +113,6 @@ namespace NEvilES.Tests.CommonDomain.Sample
             {
                 
             }
-
         }
 
         public class Validate : INeedExternalValidation<PersonalDetails>
