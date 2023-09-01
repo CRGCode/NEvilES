@@ -75,7 +75,6 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var netAmount = 60000M;
             pipelineProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
             var expected = Assert.Throws<DomainAggregateException>(() => pipelineProcessor.Process(new Employee.BadNews { EmployeeId = streamId }));
             Assert.Contains("Bad", expected.Message);
@@ -86,7 +85,6 @@ namespace NEvilES.Tests
         {
             var streamId = Guid.NewGuid();
 
-            var netAmount = 60000M;
             pipelineProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", $"Smith{streamId}") });
 
             var expected = Assert.Throws<MissingHandlerDependency>(() => pipelineProcessor.Process(new Employee.DoNothing() { EmployeeId = streamId }));

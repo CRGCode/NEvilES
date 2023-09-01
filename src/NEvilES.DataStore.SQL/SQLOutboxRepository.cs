@@ -13,7 +13,7 @@ namespace NEvilES.DataStore.SQL
             transaction = tran;
         }
 
-        protected static IDbDataParameter CreateParam(IDbCommand cmd, string name, DbType type, object? value = null, int? size = null)
+        protected static IDbDataParameter CreateParam(IDbCommand cmd, string name, DbType type, object value = null, int? size = null)
         {
             var param = cmd.CreateParameter();
             param.DbType = type;

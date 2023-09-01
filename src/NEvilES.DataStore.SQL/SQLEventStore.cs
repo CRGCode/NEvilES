@@ -104,7 +104,7 @@ namespace NEvilES.DataStore.SQL
                 {
                     aggregate.ApplyEvent(message);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     throw new DomainEventException((AggregateBase)aggregate,$"Couldn't ApplyEvent('{eventDb.BodyType}') onto {eventDb.Category} EventId {eventDb.Id}\n{eventDb.Body}");
                 }

@@ -36,7 +36,7 @@ public class OutboxWorkerSendingMessages : ITriggerOutbox, IHostedService
     public void Trigger()
     {
         signal.Set();
-        logger.LogInformation("Triggered");
+        logger.LogDebug("Triggered");
     }
 
     public async Task Send(IEnumerable<IOutboxMessage> outboxMessages, IServiceBus serviceBus)

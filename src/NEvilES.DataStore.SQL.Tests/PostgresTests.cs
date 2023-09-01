@@ -142,10 +142,10 @@ namespace NEvilES.DataStore.SQL.Tests
             var chatRoom = reader.Get<ReadModel.ChatRoom>(chatRoomId);
 
             Output.WriteLine($"chatRoom.Users.Count = {chatRoom.Users.Count}");
-            Assert.Equal(1, chatRoom.Users.Count);
+            Assert.Single(chatRoom.Users);
         }
 
-        //[Fact]
+        [Fact(Skip = "Postgres issues")]
         public async Task ProcessAsync()
         {
             var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
@@ -264,7 +264,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
             outboxMessages = repository.GetNext().ToArray();
             Output.WriteLine($"Outbox count {outboxMessages.Length}");
-            Assert.Equal(0, outboxMessages.Length);
+            Assert.Empty(outboxMessages);
 
             cts.Cancel();
             await hostWorker.StopAsync(cts.Token);

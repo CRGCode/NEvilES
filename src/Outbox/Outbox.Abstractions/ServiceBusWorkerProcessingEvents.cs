@@ -138,6 +138,7 @@ namespace Outbox.Abstractions
         }
     }
 
+#pragma warning disable CS8618
     public class ServiceBusOptions
     {
         public string ConnectionString { get; set; }

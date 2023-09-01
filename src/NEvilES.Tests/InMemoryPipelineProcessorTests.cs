@@ -77,6 +77,17 @@ public class InMemoryPipelineProcessorTests : IClassFixture<InMemoryFixtureConte
         Assert.True(payPerson.Tax < netAmount);
     }
 
+    [Fact]
+    public void ProcessStatelessEvent()
+    {
+        var streamId = Guid.NewGuid();
+
+        commandProcessor.Process(new Employee.Create { PersonId = streamId, Person = new PersonalDetails("John", "Smith") });
+
+        var expected = commandProcessor.Process(new Person.StatelessBirthdateChanged { PersonId = streamId, Birthdate = DateTime.Now });
+        Assert.Equal(streamId, expected.FilterEvents<Person.StatelessBirthdateChanged>().First().PersonId);
+    }
+
     public void Dispose()
     {
         scope?.Dispose();

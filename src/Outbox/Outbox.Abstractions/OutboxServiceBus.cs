@@ -67,5 +67,7 @@ public class OutboxServiceBus : IServiceBus
 
 public class OutboxSettings
 {
+#pragma warning disable CS8618
     public string ServiceBusConnection { get; set; }
+#pragma warning restore CS8618
 }

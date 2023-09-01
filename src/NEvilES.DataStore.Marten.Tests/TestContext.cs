@@ -8,7 +8,7 @@ namespace NEvilES.DataStore.Marten.Tests
 {
     public class TestContext
     {
-        public static string ConnString = "Host=localhost;Port=5454;Username=postgres;Password=postgres;Database=neviles";
+        public static string ConnString = "Host=localhost;Port=5436;Username=postgres;Password=postgres;Database=neviles";
         public IServiceProvider Services { get; }
 
         public TestContext()

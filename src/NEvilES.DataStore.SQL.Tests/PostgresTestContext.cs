@@ -12,7 +12,7 @@ namespace NEvilES.DataStore.SQL.Tests
 {
     public class PostgresTestContext : BaseTestContext
     {
-        public PostgresTestContext() : base("Host=localhost;Port=5454;Username=postgres;Password=postgres;Database=neviles")
+        public PostgresTestContext() : base("Host=localhost;Port=5436;Username=postgres;Password=postgres;Database=neviles")
         {
         }
 

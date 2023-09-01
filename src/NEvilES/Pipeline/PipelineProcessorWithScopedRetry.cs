@@ -46,7 +46,7 @@ namespace NEvilES.Pipeline
                     if(!(exception is DomainAggregateException))
                         logger.LogError(exception, $"Command {typeof(T).FullName} error");
 
-                    commandContext.Transaction.Rollback();
+                    commandContext.Transaction?.Rollback();
                     throw;
                 }
 
