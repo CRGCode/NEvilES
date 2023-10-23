@@ -1,4 +1,4 @@
-version: 4.0.5
+version: 4.0.6
 image: Visual Studio 2022
 nuget:
   account_feed: true
@@ -27,7 +27,7 @@ artifacts:
 deploy:
 - provider: NuGet
   api_key:
-    secure: zfWdL/evMCOMhVHS3rMKvznhT0a7R3lFlPdXqhlhHZG+/zpsVqNsMvQCZOdzLcVK
+    secure: dMIpr/3q3lNdCHnLUpMQNUzcOh9RRrw3+qY67mESYbcAzGMdJlqSXAZ3jaV6vLc7
   artifact: NEvilES
   on:
     branch: master
