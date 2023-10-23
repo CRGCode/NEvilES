@@ -69,7 +69,7 @@ namespace NEvilES.DataStore.SQL.Tests
 
 
         [Fact]
-        public void RetryCommandProcessorOnConcurrencyExceptions()
+        public async Task RetryCommandProcessorOnConcurrencyExceptions()
         {
             var retries = BackOff.Count();
             var chatRoom = Guid.NewGuid();
@@ -126,7 +126,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 var userNumber = i;
                 tasks.Add(Task.Run(async () => { await IncludeUser(userNumber, chatRoom, Guid.NewGuid()); }));
             }
-            Task.WaitAll(tasks.ToArray(), CancellationToken.None);
+            await Task.WhenAll(tasks.ToArray());
             output.WriteLine($"All Done {done.Count}!");
 
             Thread.Sleep(1000);
@@ -144,13 +144,14 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
-        public void ForceConcurrencyExceptions()
+        public async Task ForceConcurrencyExceptions()
         {
             var chatRoom = Guid.NewGuid();
 
             {
                 using var scope = serviceScopeFactory.CreateScope();
                 var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+                // ReSharper disable once MethodHasAsyncOverload
                 commandProcessor.Process(new ChatRoom.Create
                 {
                     ChatRoomId = chatRoom,
@@ -162,7 +163,6 @@ namespace NEvilES.DataStore.SQL.Tests
             void IncludeUser(Guid guid, Guid userId)
             {
                 using var scope = serviceScopeFactory.CreateScope();
-                var commandContext = scope.ServiceProvider.GetRequiredService<ICommandContext>();
                 var factory = scope.ServiceProvider.GetRequiredService<IFactory>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<ChatRoom.IncludeUserInRoom>>();
                 var processor = new CommandPipelineProcessor(factory, null, logger);
@@ -175,21 +175,18 @@ namespace NEvilES.DataStore.SQL.Tests
 
             var tasks = new List<Task>();
 
-            var ex = Assert.Throws<AggregateException>(() =>
+            var ex = await Assert.ThrowsAsync<AggregateConcurrencyException>(async () =>
             {
                 for (var i = 0; i < 20; i++)
                 {
                     tasks.Add(Task.Run(() => { IncludeUser(chatRoom, Guid.NewGuid()); }));
                 }
-                Task.WaitAll(tasks.ToArray(), CancellationToken.None);
+                await Task.WhenAll(tasks.ToArray());
             });
-
-            output.WriteLine($"ex.InnerExceptions.Count = {ex.InnerExceptions.Count}");
-            Assert.All(ex.InnerExceptions, x => Assert.IsType<AggregateConcurrencyException>(x));
         }
 
         [Fact]
-        public void PipelineProcessorHandlesRetryOnConcurrencyExceptions()
+        public async Task PipelineProcessorHandlesRetryOnConcurrencyExceptions()
         {
             var chatRoom = Guid.NewGuid();
 
@@ -224,7 +221,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 tasks.Add(Task.Run(() => { IncludeUser(i1, chatRoom, Guid.NewGuid()); }));
             }
 
-            Task.WaitAll(tasks.ToArray(), CancellationToken.None);
+            await Task.WhenAll(tasks.ToArray());
 
             {
                 using var scope = serviceScopeFactory.CreateScope();

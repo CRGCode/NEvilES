@@ -62,7 +62,7 @@ namespace NEvilES.DataStore.SQL.Tests
         }
 
         [Fact]
-        public void Save_FirstEvent()
+        public async Task Save_FirstEvent()
         {
             var repository = scope.ServiceProvider.GetRequiredService<IAsyncRepository>();
 
@@ -73,7 +73,7 @@ namespace NEvilES.DataStore.SQL.Tests
                 InitialUsers = new HashSet<Guid> { },
                 Name = "Biz Room"
             });
-            var commit = repository.SaveAsync(chatRoom).GetAwaiter().GetResult();
+            var commit = await repository.SaveAsync(chatRoom);
 
             Assert.NotNull(commit);
         }
