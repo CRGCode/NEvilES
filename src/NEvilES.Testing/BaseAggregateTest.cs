@@ -65,17 +65,17 @@ namespace NEvilES.Testing
                     case object[] gotEvents when gotEvents.Length > expectedEvents.Length:
                     {
                         var diff = string.Join(", ", EventDiff(gotEvents, expectedEvents));
-                        Assert.True(false, $"Expected event(s) missing: {diff}");
+                        Assert.Fail($"Expected event(s) missing: {diff}");
                         break;
                     }
                     case object[] gotEvents:
                     {
                         var diff = string.Join(", ", EventDiff(expectedEvents, gotEvents));
-                        Assert.True(false, $"Unexpected event(s) emitted: {diff}");
+                        Assert.Fail($"Unexpected event(s) emitted: {diff}");
                         break;
                     }
                     default:
-                        Assert.True(false, $"Expected events, but got exception {got.GetType().Name}");
+                        Assert.Fail($"Expected events, but got exception {got.GetType().Name}");
                         break;
                 }
             };

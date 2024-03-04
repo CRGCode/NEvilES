@@ -10,7 +10,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
-        <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
         <ProjectReference Include="..\NEvilES.Testing\NEvilES.Testing.csproj" />
         <ProjectReference Include="..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
         <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
