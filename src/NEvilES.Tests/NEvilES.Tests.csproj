@@ -9,27 +9,27 @@
         <Authors>Craig Gardiner</Authors>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
+        <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.4.0" />
         <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
         <ProjectReference Include="..\NEvilES.Testing\NEvilES.Testing.csproj" />
         <ProjectReference Include="..\NEvilES.DataStore.SQL\NEvilES.DataStore.SQL.csproj" />
         <ProjectReference Include="..\NEvilES\NEvilES.csproj" />
         <ProjectReference Include="..\NEvilES.Tests.CommonDomain\NEvilES.Tests.CommonDomain.csproj" />
         <ProjectReference Include="..\NEvilES.Abstractions\NEvilES.Abstractions.csproj" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
         <PackageReference Include="FluentAssertions" Version="5.10.3" />
-        <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />
-        <PackageReference Include="MSTest.TestFramework" Version="1.2.0" />
-        <PackageReference Include="xunit" Version="2.5.1" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+        <PackageReference Include="MSTest.TestAdapter" Version="3.4.3" />
+        <PackageReference Include="MSTest.TestFramework" Version="3.4.3" />
+        <PackageReference Include="xunit" Version="2.8.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.32" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.32" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.32" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.32" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     </ItemGroup>
     <ItemGroup>
       <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />

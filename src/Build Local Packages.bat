@@ -1,4 +1,4 @@
-set version=4.0.7
+set version=4.0.8
 dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion=%version% .\NEvilES.Abstractions -o ..\Packages 
 dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion=%version% .\NEvilES -o ..\Packages 
 dotnet pack -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PackageVersion=%version% .\NEvilES.Testing -o ..\Packages 

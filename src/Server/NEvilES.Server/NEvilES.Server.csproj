@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 		<PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
+		<OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
-	  <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-	  <PackageReference Include="NetMQ" Version="4.0.1.8" />
+	  <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+	  <PackageReference Include="NetMQ" Version="4.0.1.13" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +26,4 @@
     <ProjectReference Include="..\NEvilES.Server.Abstractions\NEvilES.Server.Abstractions.csproj" />
     <ProjectReference Include="..\NEvilES.Server.ClientApi\NEvilES.Server.ClientApi.csproj" />
   </ItemGroup>
-
-
 </Project>
