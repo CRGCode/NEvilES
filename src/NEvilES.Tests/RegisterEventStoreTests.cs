@@ -23,7 +23,7 @@ namespace NEvilES.Tests
             services.Configure<ServiceBusOptions>(options =>
             {
                 options.TopicSubscription = "Topic:Sub";
-                options.ConnectionString = "Endpoint=sb://oa-servicebus-pilot.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=UBlZGK2dwHbM7Bisdfa4i5/DD5X5x74yIU8OnSR7XFA=";
+                options.ConnectionString = "<DB_CONNECTION_HERE>";
             });
 
             services.AddLogging(loggingBuilder =>
